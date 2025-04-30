@@ -8,6 +8,7 @@ logs
 .env
 package-lock.json
 {{uuid}}.plugin/backend
+{{uuid}}.plugin/config.json
 `;
 
 // 模板：package.json
