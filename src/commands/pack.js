@@ -4,7 +4,7 @@ import path from 'path';
 import archiver from 'archiver'; 
 import logger from '../utils/logger.js';
 import Ajv from 'ajv';
-import manifestSchema from '../assets/manifest_schema.json' assert { type: 'json' };
+import manifestSchema from '../assets/manifest_schema.json' with { type: 'json' };
 
 
 const ajv = new Ajv();
