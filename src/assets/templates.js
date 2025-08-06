@@ -36,7 +36,7 @@ export const packageJsonTemplate = `{
     "rollup": "^4.0.2"
   },
   "dependencies": {
-    "@eniac/flexdesigner": "^1.0.1"
+    "@eniac/flexdesigner": "^1.0.7"
   }
 }
 `;
@@ -107,10 +107,10 @@ export const manifestJsonTemplate = `{
     "description": "{{description}}",
     "repo": "{{repo}}",
     "sdk": {
-        "version": "1.0.0"
+        "version": "1.0.7"
     },
     "software": {
-        "minimumVersion": "1.0.0"
+        "minimumVersion": "1.3.0"
     },
     "os": [
         {
