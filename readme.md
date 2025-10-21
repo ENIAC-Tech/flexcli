@@ -13,7 +13,7 @@ This document provides an overview and guide for using the CLI tool that interac
 Install the FlexDesigner CLI Tool by running the following command.
 
 ```
-npm install -g @eniactech/flexcli
+npm install -g @eniac/flexcli
 ```
 
 
