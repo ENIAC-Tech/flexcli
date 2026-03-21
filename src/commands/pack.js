@@ -4,7 +4,9 @@ import path from 'path';
 import archiver from 'archiver'; 
 import logger from '../utils/logger.js';
 import Ajv from 'ajv';
-import manifestSchema from '../assets/manifest_schema.json' with { type: 'json' };
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const manifestSchema = require('../assets/manifest_schema.json');
 
 
 const ajv = new Ajv();
