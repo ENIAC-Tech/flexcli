@@ -1,0 +1,94 @@
+name: Sync v2 template FlexSDK versions
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: flexcli-sync-sdk-template
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_PAT || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Query latest @flexsdk packages
+        id: sdk
+        run: |
+          RUNTIME=$(npm view @flexsdk/runtime version --registry=https://registry.npmjs.org)
+          TYPES=$(npm view @flexsdk/types version --registry=https://registry.npmjs.org)
+          echo "runtime=$RUNTIME" >> "$GITHUB_OUTPUT"
+          echo "types=$TYPES" >> "$GITHUB_OUTPUT"
+          echo "Latest @flexsdk/runtime=$RUNTIME @flexsdk/types=$TYPES"
+
+      - name: Update v2 create template dependency ranges
+        id: template
+        env:
+          RUNTIME_LATEST: ${{ steps.sdk.outputs.runtime }}
+          TYPES_LATEST: ${{ steps.sdk.outputs.types }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const gh = process.env.GITHUB_OUTPUT;
+          const runtimeLatest = process.env.RUNTIME_LATEST;
+          const typesLatest = process.env.TYPES_LATEST;
+          if (!runtimeLatest || !typesLatest) {
+            console.error('Missing RUNTIME_LATEST or TYPES_LATEST');
+            process.exit(1);
+          }
+          const createPath = path.join('src', 'commands', 'v2', 'create.js');
+          let s = fs.readFileSync(createPath, 'utf8');
+          const nextR = `'@flexsdk/runtime': '^${runtimeLatest}'`;
+          const nextT = `'@flexsdk/types': '^${typesLatest}'`;
+          const reR = /'@flexsdk\/runtime':\s*'\^[^']+'/;
+          const reT = /'@flexsdk\/types':\s*'\^[^']+'/;
+          if (!reR.test(s) || !reT.test(s)) {
+            console.error('Could not find @flexsdk template lines in create.js');
+            process.exit(1);
+          }
+          const out = s.replace(reR, nextR).replace(reT, nextT);
+          if (out === s) {
+            fs.appendFileSync(gh, 'changed=false\n');
+            process.exit(0);
+          }
+          fs.writeFileSync(createPath, out);
+          fs.appendFileSync(gh, 'changed=true\n');
+          NODE
+
+      - name: Bump patch, commit, tag, and push
+        if: steps.template.outputs.changed == 'true'
+        env:
+          RELEASE_PAT: ${{ secrets.RELEASE_PAT }}
+          RUNTIME_LATEST: ${{ steps.sdk.outputs.runtime }}
+          TYPES_LATEST: ${{ steps.sdk.outputs.types }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          npm version patch --no-git-tag-version
+          npm install --package-lock-only --ignore-scripts
+          NEW_VER=$(node -p "require('./package.json').version")
+          git add src/commands/v2/create.js package.json package-lock.json
+          git commit -m "chore: sync v2 template to @flexsdk ^${RUNTIME_LATEST} / ^${TYPES_LATEST}; bump ${NEW_VER}"
+          git tag "v${NEW_VER}"
+          if [ -n "$RELEASE_PAT" ]; then
+            git remote set-url origin "https://x-access-token:${RELEASE_PAT}@github.com/${GITHUB_REPOSITORY}.git"
+          fi
+          git push origin "HEAD:${DEFAULT_BRANCH}"
+          git push origin "v${NEW_VER}"

@@ -1,5 +1,5 @@
 // commands/debug.js
-import logger from '../utils/logger.js';
+import logger from '../../utils/logger.js';
 
 /**
  * Handles the 'debug' command.

@@ -1,5 +1,5 @@
 // commands/unlink.js
-import logger from '../utils/logger.js';
+import logger from '../../utils/logger.js';
 
 /**
  * Handles the 'unlink' command.

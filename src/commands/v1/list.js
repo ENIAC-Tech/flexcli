@@ -1,5 +1,5 @@
 // commands/list.js
-import logger from '../utils/logger.js';
+import logger from '../../utils/logger.js';
 
 /**
  * Handles the 'list' command.

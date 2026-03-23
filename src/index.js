@@ -9,17 +9,22 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 
-import linkCommand from './commands/link.js';
-import restartCommand from './commands/restart.js';
-import unlinkCommand from './commands/unlink.js';
-import debugCommand from './commands/debug.js';
-import listCommand from './commands/list.js';
-import packCommand from './commands/pack.js';
-import installCommand from './commands/install.js';
-import uninstallCommand from './commands/uninstall.js';
-import validateCommand from './commands/validate.js';
-import createCommand from './commands/create.js';
-import killCommand from './commands/kill.js';
+import linkCommand from './commands/v1/link.js';
+import restartCommand from './commands/v1/restart.js';
+import unlinkCommand from './commands/v1/unlink.js';
+import debugCommand from './commands/v1/debug.js';
+import listCommand from './commands/v1/list.js';
+import packCommand from './commands/v1/pack.js';
+import installCommand from './commands/v1/install.js';
+import uninstallCommand from './commands/v1/uninstall.js';
+import validateCommand from './commands/v1/validate.js';
+import createCommand from './commands/v1/create.js';
+import killCommand from './commands/v1/kill.js';
+import createV2Command from './commands/v2/create.js';
+import { createV2Client } from './commands/v2/control.js';
+import { buildV2Command } from './commands/v2/build.js';
+import { packV2Command } from './commands/v2/pack.js';
+import { runV2DevCommand } from './commands/v2/dev.js';
 
 // Get port number from user data directory
 function getPortFromFile() {
@@ -167,7 +172,6 @@ plugin
   .option('--skip-validate', 'Skip validation', false)
   .action(async (options) => {
     try {
-      const port = getPort(program.opts().port);
       if (!options.skipValidate) {
         await validateCommand(null, options);
       }
@@ -231,10 +235,24 @@ plugin
 
   plugin
   .command('create')
-  .description('Create a basic plugin workspace')
+  .description('Create a plugin workspace (v1 or v2, default: v2)')
   .action(async () => {
     try {
-      const answers = await inquirer.prompt([
+      // Ask for version first
+      const { sdkVersion } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'sdkVersion',
+          message: 'FlexDesigner SDK version:',
+          choices: [
+            { name: 'v2 (recommended: TypeScript + FlexSDK2, does not support flexbar v1)', value: 'v2' },
+            { name: 'v1 (legacy: JavaScript + Rollup, only for flexbar v1)', value: 'v1' }
+          ],
+          default: 'v2'
+        }
+      ]);
+
+      const commonQuestions = [
         {
           type: 'input',
           name: 'name',
@@ -244,10 +262,8 @@ plugin
         {
           type: 'input',
           name: 'pluginPath',
-          message: 'Plugin path:',
-          default: (ans) => {
-            return ans.name
-          }
+          message: 'Plugin directory path:',
+          default: (ans) => ans.name.toLowerCase().replace(/\s+/g, '-')
         },
         {
           type: 'input',
@@ -258,30 +274,21 @@ plugin
         {
           type: 'input',
           name: 'uuid',
-          message: 'Reversed domain UUID (e.g. "com.author.myplugin"):',
+          message: 'Plugin UUID (reverse-domain, e.g. "com.author.myplugin"):',
           default: (ans) => {
             const sanitizedAuthor = ans.author.replace(/\s+/g, '_').replace(/[^a-zA-Z_]/g, '');
             const sanitizedName = ans.name.replace(/\s+/g, '_').replace(/[^a-zA-Z_]/g, '');
             return `com.${sanitizedAuthor.toLowerCase()}.${sanitizedName.toLowerCase()}`;
           },
           validate: (input) => {
-            // only letters, underscores, and dots are allowed
-            if (!/^[a-zA-Z._]+$/.test(input)) {
-              return 'Invalid UUID. Only letters, underscores, and dots are allowed.';
+            if (!/^[a-zA-Z0-9._-]+$/.test(input)) {
+              return 'Invalid UUID. Use letters, numbers, dots, hyphens, and underscores only.';
             }
-            // must have 3 domains
-            if (input.split('.').length != 3) {
-              return 'Invalid UUID. Must have 3 domains.';
+            if (input.split('.').length < 2) {
+              return 'Invalid UUID. Must have at least 2 domain parts (e.g. com.author.name).';
             }
-            // too long
-            if (input.length > 50) {
-              return 'Invalid UUID. Too long.';
-            }
-            // domain too short
-            for (const domain of input.split('.').slice(1)) {
-              if (domain.length < 2) {
-                return `Invalid UUID. Domain "${domain}" is too short.`;
-              }
+            if (input.length > 100) {
+              return 'Invalid UUID. Too long (max 100 chars).';
             }
             return true;
           }
@@ -301,19 +308,274 @@ plugin
         {
           type: 'input',
           name: 'description',
-          message: 'Description (e.g. "My Plugin Description"):'
-        },
-        {
+          message: 'Description (optional):'
+        }
+      ];
+
+      if (sdkVersion === 'v1') {
+        // v1 also needs repo field
+        commonQuestions.push({
           type: 'input',
           name: 'repo',
-          message: 'Repo (e.g. "https://github.com/ENIAC-Tech/FlexDesigner-SDK"):'
-        }
-      ]);
+          message: 'Repository URL (optional):'
+        });
+      }
 
-      await createCommand(answers);
-      logger.info(`Workspace for plugin "${answers.name}" created successfully.`);
+      const answers = await inquirer.prompt(commonQuestions);
+      answers.sdkVersion = sdkVersion;
+
+      if (sdkVersion === 'v2') {
+        await createV2Command(answers);
+        logger.info(`\n✓ v2 Plugin workspace "${answers.name}" created at: ${answers.pluginPath}`);
+        logger.info('Run: cd ' + answers.pluginPath + ' && npm install && npm run build');
+      } else {
+        await createCommand(answers);
+        logger.info(`Workspace for plugin "${answers.name}" created successfully.`);
+      }
     } catch (error) {
       logger.error(`Error creating plugin workspace: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+// ── v2 plugin management commands ─────────────────────────────────────────────
+const pluginV2 = program.command('plugin-v2').description('FlexDesigner v2 plugin management');
+
+pluginV2
+  .command('list')
+  .description('List all v2 plugins')
+  .option('--host <host>', 'WS host', '127.0.0.1')
+  .option('--port <port>', 'WS port', '34579')
+  .option('--token <token>', 'Auth token (optional in dev; or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN)')
+  .action(async (options) => {
+    try {
+      const client = await createV2Client(options);
+      const plugins = await client.command('listPlugins');
+      console.log(JSON.stringify(plugins, null, 2));
+      client.disconnect();
+    } catch (err) {
+      logger.error(`Error: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+pluginV2
+  .command('install <source>')
+  .description('Install a v2 plugin from directory or zip')
+  .option('--host <host>', 'WS host', '127.0.0.1')
+  .option('--port <port>', 'WS port', '34579')
+  .option('--token <token>', 'Auth token (or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN env var)')
+  .action(async (source, options) => {
+    try {
+      const client = await createV2Client(options);
+      const result = await client.command('installPlugin', { sourcePath: path.resolve(source) });
+      if (result?.success === false) {
+        logger.error(`Installation failed: ${result.error}`);
+      } else {
+        logger.info('Plugin installed successfully');
+      }
+      client.disconnect();
+    } catch (err) {
+      logger.error(`Error: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+pluginV2
+  .command('uninstall <uuid>')
+  .description('Uninstall a v2 plugin')
+  .option('--host <host>', 'WS host', '127.0.0.1')
+  .option('--port <port>', 'WS port', '34579')
+  .option('--token <token>', 'Auth token (or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN env var)')
+  .action(async (uuid, options) => {
+    try {
+      const client = await createV2Client(options);
+      const result = await client.command('uninstallPlugin', { pluginUUID: uuid });
+      if (result?.success === false) {
+        logger.error(`Uninstall failed: ${result.error ?? 'unknown error'}`);
+        process.exitCode = 1;
+      } else {
+        logger.info(`Plugin ${uuid} uninstalled`);
+      }
+      client.disconnect();
+    } catch (err) {
+      logger.error(`Error: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+pluginV2
+  .command('enable <uuid>')
+  .description('Enable a v2 plugin')
+  .option('--host <host>', 'WS host', '127.0.0.1')
+  .option('--port <port>', 'WS port', '34579')
+  .option('--token <token>', 'Auth token (optional in dev; or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN)')
+  .action(async (uuid, options) => {
+    try {
+      const client = await createV2Client(options);
+      await client.command('enablePlugin', { pluginUUID: uuid });
+      logger.info(`Plugin ${uuid} enabled`);
+      client.disconnect();
+    } catch (err) {
+      logger.error(`Error: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+pluginV2
+  .command('disable <uuid>')
+  .description('Disable a v2 plugin')
+  .option('--host <host>', 'WS host', '127.0.0.1')
+  .option('--port <port>', 'WS port', '34579')
+  .option('--token <token>', 'Auth token (optional in dev; or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN)')
+  .action(async (uuid, options) => {
+    try {
+      const client = await createV2Client(options);
+      await client.command('disablePlugin', { pluginUUID: uuid });
+      logger.info(`Plugin ${uuid} disabled`);
+      client.disconnect();
+    } catch (err) {
+      logger.error(`Error: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+pluginV2
+  .command('reload <uuid>')
+  .description('Hot-reload a v2 plugin')
+  .option('--host <host>', 'WS host', '127.0.0.1')
+  .option('--port <port>', 'WS port', '34579')
+  .option('--token <token>', 'Auth token (optional in dev; or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN)')
+  .action(async (uuid, options) => {
+    try {
+      const client = await createV2Client(options);
+      await client.command('reloadPlugin', { pluginUUID: uuid });
+      logger.info(`Plugin ${uuid} reloaded`);
+      client.disconnect();
+    } catch (err) {
+      logger.error(`Error: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+pluginV2
+  .command('logs <uuid>')
+  .description('Stream live logs from a v2 plugin')
+  .option('--host <host>', 'WS host', '127.0.0.1')
+  .option('--port <port>', 'WS port', '34579')
+  .option('--token <token>', 'Auth token (optional in dev; or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN)')
+  .action(async (uuid, options) => {
+    try {
+      const client = await createV2Client(options);
+
+      const result = await client.command('subscribeLogs', { pluginUUID: uuid });
+
+      // Print ring buffer replay
+      if (result?.replay?.length > 0) {
+        logger.info(`--- Last ${result.replay.length} log entries ---`);
+        for (const entry of result.replay) {
+          const ts = new Date(entry.timestamp).toLocaleTimeString();
+          const line = `${ts} [${entry.source}] ${entry.message}`;
+          const level = ['debug', 'info', 'warn', 'error'].includes(entry.level) ? entry.level : 'info';
+          logger[level](line);
+          if (entry.data !== undefined) {
+            logger[level]('  ' + JSON.stringify(entry.data));
+          }
+        }
+        logger.info('--- Live logs follow ---');
+      }
+
+      // Set up live handler
+      client.ws.on('message', (raw) => {
+        try {
+          const msg = JSON.parse(raw.toString());
+          if (msg.type === 'log' && msg.data?.pluginUUID === uuid) {
+            const entry = msg.data;
+            const ts = new Date(entry.timestamp).toLocaleTimeString();
+            const line = `${ts} [${entry.source}] ${entry.message}`;
+            const level = ['debug', 'info', 'warn', 'error'].includes(entry.level) ? entry.level : 'info';
+            logger[level](line);
+            if (entry.data !== undefined) logger[level]('  ' + JSON.stringify(entry.data));
+          }
+        } catch {}
+      });
+
+      logger.info(`Streaming logs for ${uuid}. Press Ctrl+C to stop.`);
+      process.on('SIGINT', () => { client.disconnect(); process.exit(0); });
+      await new Promise(() => {});
+    } catch (err) {
+      logger.error(`Error: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+pluginV2
+  .command('dev <plugin-dir>')
+  .description('Build and mount a v2 plugin directory for development (watch + auto reload)')
+  .option('--host <host>', 'WS host', '127.0.0.1')
+  .option('--port <port>', 'WS port', '34579')
+  .option('--token <token>', 'Auth token (optional in dev; or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN)')
+  .action(async (pluginDir, options) => {
+    try {
+      await runV2DevCommand(pluginDir, options);
+    } catch (err) {
+      logger.error(`Error: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+pluginV2
+  .command('build')
+  .description('Compile and assemble a v2 plugin for distribution')
+  .option('--plugin-dir <dir>', 'Plugin root directory (default: cwd)')
+  .option('--out-dir <dir>', 'Output directory (default: <plugin-dir>/dist)')
+  .option('--minify', 'Minify backend bundle', false)
+  .action(async (options) => {
+    try {
+      const success = await buildV2Command({
+        pluginDir: options.pluginDir,
+        outDir: options.outDir,
+        minify: options.minify
+      });
+      if (!success) process.exit(1);
+    } catch (err) {
+      logger.error(`Build failed: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+pluginV2
+  .command('pack')
+  .description('Package a built v2 plugin into a .flexplugin archive (zip-based)')
+  .option('--dist-dir <dir>', 'Built plugin directory (default: cwd/dist)')
+  .option('--output <path>', 'Output .flexplugin path (default: <plugin-root>/release/<name>-<version>.flexplugin)')
+  .action(async (options) => {
+    try {
+      const result = await packV2Command({
+        distDir: options.distDir,
+        output: options.output
+      });
+      if (!result) process.exit(1);
+    } catch (err) {
+      logger.error(`Pack failed: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+pluginV2
+  .command('diagnostics')
+  .description('Get diagnostics from the v2 plugin system')
+  .option('--host <host>', 'WS host', '127.0.0.1')
+  .option('--port <port>', 'WS port', '34579')
+  .option('--token <token>', 'Auth token (optional in dev; or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN)')
+  .action(async (options) => {
+    try {
+      const client = await createV2Client(options);
+      const diag = await client.command('getDiagnostics');
+      console.log(JSON.stringify(diag, null, 2));
+      client.disconnect();
+    } catch (err) {
+      logger.error(`Error: ${err.message}`);
       process.exit(1);
     }
   });

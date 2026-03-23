@@ -1,4 +1,4 @@
-// commands/create.js
+// commands/v1/create.js
 import fs from 'fs';
 import path from 'path';
 import Handlebars from 'handlebars';
@@ -12,11 +12,11 @@ import {
   counterUITemplate,
   readmeTemplate,
   githubCITemplate
-} from '../assets/templates.js';
+} from '../../assets/templates.js';
 import { exec } from 'child_process';
 import ora from 'ora';
 
-import logger from '../utils/logger.js';
+import logger from '../../utils/logger.js';
 
 /**
  * Creates a basic workspace for a plugin.

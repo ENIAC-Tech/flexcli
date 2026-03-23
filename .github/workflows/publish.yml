@@ -1,33 +1,52 @@
-name: Publish to npm
+name: Publish to npm and GitHub Release
 
 on:
   push:
     tags:
-      - 'v*.*.*' 
+      - 'v*.*.*'
+
+concurrency:
+  group: flexcli-publish-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@eniac'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Log in to npm
-        uses: actions/setup-node@v3
-        with:
-          registry-url: https://registry.npmjs.org/
-          scope: '@eniac'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Verify tag matches package.json version
+        run: |
+          TAG_VER="${GITHUB_REF#refs/tags/v}"
+          PKG_VER=$(node -p "require('./package.json').version")
+          if [ "$TAG_VER" != "$PKG_VER" ]; then
+            echo "Tag version v${TAG_VER} does not match package.json version ${PKG_VER}"
+            exit 1
+          fi
 
       - name: Publish to npm
         run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: '@eniac/flexcli ${{ github.ref_name }}'
+          generate_release_notes: true

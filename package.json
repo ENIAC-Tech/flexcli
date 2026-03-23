@@ -16,9 +16,11 @@
   "author": "eniac",
   "license": "MIT",
   "dependencies": {
+    "chokidar": "^4.0.3",
     "ajv": "^8.17.1",
     "archiver": "^7.0.1",
     "commander": "^13.0.0",
+    "esbuild": "^0.24.0",
     "handlebars": "^4.7.8",
     "inquirer": "^12.4.1",
     "ora": "^8.2.0",
