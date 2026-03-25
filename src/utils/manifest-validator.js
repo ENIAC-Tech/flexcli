@@ -18,6 +18,7 @@ const permissionEnum = [
   'project',
   'resource',
   'bus',
+  'unit',
   'definitions',
   'ui',
   'electron.app',
