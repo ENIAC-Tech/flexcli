@@ -25,6 +25,7 @@ import { createV2Client } from './commands/v2/control.js';
 import { buildV2Command } from './commands/v2/build.js';
 import { packV2Command } from './commands/v2/pack.js';
 import { runV2DevCommand } from './commands/v2/dev.js';
+import { validateV2PluginCommand } from './commands/v2/validate-plugin.js';
 
 // Get port number from user data directory
 function getPortFromFile() {
@@ -520,6 +521,26 @@ pluginV2
       await runV2DevCommand(pluginDir, options);
     } catch (err) {
       logger.error(`Error: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+pluginV2
+  .command('validate')
+  .description('Validate manifest.json and/or a PluginDefinitionsPayload JSON file (canvas/custom/standard rules)')
+  .option('--plugin-dir <dir>', 'Plugin root directory (default: cwd)')
+  .option('--definitions <file>', 'Path to definitions JSON (libraries + units) for schema + consistency checks')
+  .option('--skip-manifest', 'Only validate --definitions (skip manifest.json)', false)
+  .action(async (options) => {
+    try {
+      const ok = await validateV2PluginCommand({
+        pluginDir: options.pluginDir,
+        definitions: options.definitions,
+        skipManifest: options.skipManifest
+      });
+      if (!ok) process.exit(1);
+    } catch (err) {
+      logger.error(`Validate failed: ${err.message}`);
       process.exit(1);
     }
   });

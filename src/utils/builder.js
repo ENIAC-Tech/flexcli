@@ -66,8 +66,8 @@ export async function buildBackend(config) {
     format: 'cjs',
     sourcemap: !minify,
     minify,
-    // Native .node binaries are loaded at runtime, not bundled
-    external: ['*.node', 'electron'],
+    // Native .node binaries and native canvas are loaded at runtime, not bundled
+    external: ['*.node', 'electron', '@napi-rs/canvas'],
     logLevel: 'silent'
   };
 
