@@ -26,20 +26,21 @@ import { buildV2Command } from './commands/v2/build.js';
 import { packV2Command } from './commands/v2/pack.js';
 import { runV2DevCommand } from './commands/v2/dev.js';
 import { validateV2PluginCommand } from './commands/v2/validate-plugin.js';
+import { HOST_APP_V1, HOST_APP_V2 } from './constants/host-app.js';
 
-// Get port number from user data directory
+// Get port number from user data directory (v1 host: FlexDesigner)
 function getPortFromFile() {
   try {
     let userDataDir;
     
     // Determine user data directory based on operating system
     if (process.platform === 'win32') {
-      userDataDir = path.join(process.env.APPDATA, 'FlexDesigner', 'data', 'temp');
+      userDataDir = path.join(process.env.APPDATA, HOST_APP_V1, 'data', 'temp');
     } else if (process.platform === 'darwin') {
-      userDataDir = path.join(os.homedir(), 'Library', 'Application Support', 'FlexDesigner', 'data', 'temp');
+      userDataDir = path.join(os.homedir(), 'Library', 'Application Support', HOST_APP_V1, 'data', 'temp');
     } else {
       // Linux and other systems
-      userDataDir = path.join(os.homedir(), '.config', 'FlexDesigner', 'data', 'temp');
+      userDataDir = path.join(os.homedir(), '.config', HOST_APP_V1, 'data', 'temp');
     }
     
     const portFilePath = path.join(userDataDir, 'plugin_port.txt');
@@ -244,7 +245,7 @@ plugin
         {
           type: 'list',
           name: 'sdkVersion',
-          message: 'FlexDesigner SDK version:',
+          message: `Plugin SDK version (v1: ${HOST_APP_V1}, v2: ${HOST_APP_V2}):`,
           choices: [
             { name: 'v2 (recommended: TypeScript + FlexSDK2, does not support flexbar v1)', value: 'v2' },
             { name: 'v1 (legacy: JavaScript + Rollup, only for flexbar v1)', value: 'v1' }
@@ -340,7 +341,7 @@ plugin
   });
 
 // ── v2 plugin management commands ─────────────────────────────────────────────
-const pluginV2 = program.command('plugin-v2').description('FlexDesigner v2 plugin management');
+const pluginV2 = program.command('plugin-v2').description(`${HOST_APP_V2} plugin management (v2 API)`);
 
 pluginV2
   .command('list')

@@ -1,4 +1,6 @@
 // assets/templates.js
+// V1 plugin scaffolding only (see commands/v1/create.js). Host app: FlexDesigner.
+// V2 plugins are created by commands/v2/create.js and do not use these templates.
 import Handlebars from 'handlebars';
 
 // 模板：.gitignore
@@ -273,7 +275,7 @@ plugin.on('plugin.data', (payload) => {
     }
 })
 
-// Connect to flexdesigner and start the plugin
+// Connect to FlexDesigner (v1 host) and start the plugin
 plugin.start()
 `;
 
@@ -317,6 +319,7 @@ export default {
 <style scoped></style>
 `
 
+// README embedded in v1 plugin projects; prerequisites refer to FlexDesigner (v1 host), not FlexStudio.
 export const readmeTemplate = `
 # {{name}}
 
@@ -328,7 +331,7 @@ export const readmeTemplate = `
 ### **Prerequisites**
 
 - Node.js 18 or later  
-- FlexDesigner v1.0.0 or later  
+- FlexDesigner v1.0.0 or later (v1 plugin host)  
 - A Flexbar device 
 - Install FlexCLI  
   \`\`\`

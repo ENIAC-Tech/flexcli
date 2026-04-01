@@ -2,13 +2,14 @@
  * @file commands/v2/control.js
  * @brief v2 plugin control commands for FlexCLI
  *
- * Connects to the FlexDesigner v2 WS control server and provides
+ * Connects to the FlexStudio (v2) WS control server and provides
  * management commands for v2 plugins.
  */
 
 import WebSocket from 'ws';
 import crypto from 'crypto';
 import logger from '../../utils/logger.js';
+import { HOST_APP_V2 } from '../../constants/host-app.js';
 
 const DEFAULT_PORT = 34579;
 
@@ -57,8 +58,8 @@ export class V2ControlClient {
       this.ws.on('error', (err) => {
         if (!this.connected) {
           reject(new Error(
-            `Cannot connect to FlexDesigner v2 at ${url}: ${err.message}\n` +
-            `Make sure FlexDesigner is running (v2 mode).`
+            `Cannot connect to ${HOST_APP_V2} (v2 plugin API) at ${url}: ${err.message}\n` +
+            `Make sure ${HOST_APP_V2} is running.`
           ));
         }
       });
@@ -153,7 +154,7 @@ export async function createV2Client(options) {
     await client.connect();
     return client;
   } catch (err) {
-    logger.error(`Failed to connect to FlexDesigner v2: ${err.message}`);
+    logger.error(`Failed to connect to ${HOST_APP_V2} (v2 plugin API): ${err.message}`);
     process.exit(1);
   }
 }

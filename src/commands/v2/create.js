@@ -1,11 +1,12 @@
 /**
  * @file commands/v2/create.js
- * @brief Scaffold a FlexDesigner v2 plugin project (Vue3 + Vuetify3 + TypeScript)
+ * @brief Scaffold a FlexStudio v2 plugin project (Vue3 + Vuetify3 + TypeScript)
  */
 
 import fs from 'fs';
 import path from 'path';
 import logger from '../../utils/logger.js';
+import { HOST_APP_V2 } from '../../constants/host-app.js';
 
 export default async function createV2Command(answers) {
   const { name, pluginPath, author, uuid, version, description } = answers;
@@ -36,7 +37,7 @@ export default async function createV2Command(answers) {
     name,
     version,
     repo: 'https://github.com/example/my-flex-plugin',
-    description: description || `${name} - A FlexDesigner v2 plugin`,
+    description: description || `${name} - A ${HOST_APP_V2} v2 plugin`,
     author: { name: author, email: '' },
     platforms: ['win32', 'darwin', 'linux'],
     permissions: ['store', 'logger', 'system', 'definitions', 'bus', 'device'],

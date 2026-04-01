@@ -1,29 +1,44 @@
 # FlexCLI Tool Documentation
 
-This document provides an overview and guide for using the CLI tool that interacts with plugins and FlexDesigner. The tool provides various commands for managing plugins such as linking, restarting, debugging, installing, and uninstalling plugins. It also supports creating a plugin project and validating the plugin structure.
+This document describes the FlexCLI (`@eniac/flexcli`) tool for developing and managing plugins. Commands are split by **plugin API version** and the **host desktop app** they talk to.
+
+## Host applications
+
+| API | Host app | CLI command group | Notes |
+|-----|----------|-------------------|--------|
+| **v1** (legacy) | **FlexDesigner** | `flexcli plugin …` | Uses the legacy WebSocket bridge; port can be read from FlexDesigner user data when `--port` is `0`. |
+| **v2** | **FlexStudio** | `flexcli plugin-v2 …` | Connects to FlexStudio’s v2 plugin control WebSocket (default port `34579`). |
+
+Use **`plugin`** with FlexDesigner running. Use **`plugin-v2`** with FlexStudio running.
 
 ## Installation
 
 ### Prerequisites
-- Node.js version 18 or higher
-- FlexDesigner version 1.0.0 or higher.
+
+- Node.js 18 or higher
+- **v1 commands:** FlexDesigner 1.0.0 or higher (running when you use `plugin` commands)
+- **v2 commands:** FlexStudio with the v2 plugin API (running when you use `plugin-v2` commands)
 
 ### Setup
 
-Install the FlexDesigner CLI Tool by running the following command.
+Install FlexCLI globally:
 
 ```
 npm install -g @eniac/flexcli
 ```
 
+---
 
+## `plugin` — v1 plugin commands (FlexDesigner)
 
-## Commands
+These commands manage **legacy (v1)** plugins against **FlexDesigner**.
 
 ### `plugin link`
-Links a plugin to the FlexDesigner.
 
-#### Options:
+Links a plugin to FlexDesigner.
+
+#### Options
+
 - `--path <path>`: Path to the plugin directory (required)
 - `--uuid <uuid>`: UUID of the plugin (required)
 - `--debug <debug>`: Enable or disable debug mode (default: false)
@@ -31,146 +46,184 @@ Links a plugin to the FlexDesigner.
 - `--force`: Force override of an existing plugin (default: false)
 - `--start <start>`: Whether to start the plugin after linking (default: true)
 
-#### Description:
-This command links a plugin to the FlexDesigner by specifying its path and UUID. It also provides options to enable debug mode, skip validation, force override, and start the plugin after linking.
+#### Description
+
+Links a plugin by path and UUID, with optional debug, validation skip, force, and auto-start.
 
 ---
 
 ### `plugin restart`
+
 Restarts a plugin.
 
-#### Options:
-- `--uuid <uuid>`: UUID of the plugin to restart (required)
+#### Options
 
-#### Description:
-This command restarts a plugin using the provided UUID.
+- `--uuid <uuid>`: UUID of the plugin to restart (required)
 
 ---
 
 ### `plugin unlink`
-Unlinks a plugin from the FlexDesigner.
 
-#### Options:
+Unlinks a plugin from FlexDesigner.
+
+#### Options
+
 - `--uuid <uuid>`: UUID of the plugin to unlink (required)
 - `--silent`: Run in silent mode without output (default: false)
-
-#### Description:
-This command unlinks a plugin from the FlexDesigner using the specified UUID.
 
 ---
 
 ### `plugin debug`
+
 Debugs a plugin.
 
-#### Options:
-- `--uuid <uuid>`: UUID of the plugin to debug (required)
+#### Options
 
-#### Description:
-This command is used to debug a plugin using its UUID. It connects to the plugin and provides debugging information.
+- `--uuid <uuid>`: UUID of the plugin to debug (required)
 
 ---
 
 ### `plugin list`
-Lists all the installed plugins.
 
-#### Description:
-This command lists all the plugins currently installed in the FlexDesigner.
+Lists all installed plugins in FlexDesigner.
 
 ---
 
 ### `plugin pack`
+
 Packs a plugin into a `.flexplugin` file.
 
-#### Options:
+#### Options
+
 - `--path <path>`: Path to the plugin directory (required)
 - `--output <output>`: Output path for the `.flexplugin` file
 - `--skip-validate`: Skip validation (default: false)
 
-#### Description:
-This command packages the plugin into a `.flexplugin` file, with options for specifying the output path and skipping validation.
-
 ---
 
 ### `plugin install`
+
 Installs a plugin from a `.flexplugin` file.
 
-#### Options:
+#### Options
+
 - `--path <path>`: Path to the `.flexplugin` file (required)
 - `--force`: Force the installation (default: false)
-
-#### Description:
-This command installs a plugin using the `.flexplugin` file. If the file extension is not `.flexplugin`, an error will be shown. The `--force` option allows forcing the installation.
 
 ---
 
 ### `plugin uninstall`
+
 Uninstalls a plugin.
 
-#### Options:
-- `--uuid <uuid>`: UUID of the plugin to uninstall (required)
+#### Options
 
-#### Description:
-This command uninstalls the plugin using the specified UUID.
+- `--uuid <uuid>`: UUID of the plugin to uninstall (required)
 
 ---
 
 ### `plugin validate`
+
 Validates the structure and manifest of a plugin.
 
-#### Options:
-- `--path <path>`: Path to the plugin directory (required)
+#### Options
 
-#### Description:
-This command validates the plugin directory and its manifest to ensure that it follows the correct structure.
+- `--path <path>`: Path to the plugin directory (required)
 
 ---
 
 ### `plugin create`
-Creates a basic plugin workspace.
 
-#### Description:
-This command creates a basic workspace for a new plugin, allowing you to specify details like the plugin path, name, version, author, description, and repository URL.
+Creates a plugin workspace. You will be prompted for **v1** (FlexDesigner, legacy JS/Rollup) or **v2** (FlexStudio, TypeScript / FlexSDK2). Default is v2.
 
-It will prompt you for the following information:
-- Plugin path
-- Plugin name
-- Author name
-- Reversed domain UUID (e.g., `com.author.myplugin`)
-- Version (in format `x.y.z`)
-- Description
-- Repository URL
+#### Prompted fields (varies by version)
 
-The created workspace will be initialized with the provided information.
+- Plugin path, name, author, UUID (reverse-domain), version, description
+- v1 only: repository URL (optional)
 
 ---
 
-## General Options
-- `--port <number>`: Specifies the WebSocket server port (default: 60109)
+### `plugin kill`
+
+Terminates a running plugin (v1).
+
+#### Options
+
+- `--uuid <uuid>`: UUID of the plugin to kill (required)
 
 ---
 
-## Example Usage
+### General options (`plugin` commands)
 
-To link a plugin:
+- `--port <number>`: WebSocket port for FlexDesigner’s v1 bridge. Default `0` means: read the port from FlexDesigner user data (`plugin_port.txt` under the app data temp folder for FlexDesigner).
+
+---
+
+## `plugin-v2` — v2 plugin commands (FlexStudio)
+
+These commands talk to **FlexStudio** over the v2 plugin control WebSocket.
+
+### Common options (where applicable)
+
+- `--host <host>`: WebSocket host (default: `127.0.0.1`)
+- `--port <port>`: WebSocket port (default: `34579`)
+- `--token <token>`: Auth token; optional in some dev setups. Can also use env vars `FLEX_WS_TOKEN` or `PLUGIN_WS_TOKEN`.
+
+### Subcommands
+
+| Subcommand | Description |
+|------------|-------------|
+| `list` | List all v2 plugins |
+| `install <source>` | Install from a directory or zip |
+| `uninstall <uuid>` | Uninstall a plugin |
+| `enable <uuid>` | Enable a plugin |
+| `disable <uuid>` | Disable a plugin |
+| `reload <uuid>` | Hot-reload a plugin |
+| `logs <uuid>` | Stream live logs |
+| `dev <plugin-dir>` | Build, watch, and mount a plugin for development |
+| `validate` | Validate `manifest.json` and/or definitions JSON |
+| `build` | Build a v2 plugin for distribution |
+| `pack` | Package built output into a `.flexplugin` archive |
+| `diagnostics` | Print v2 plugin system diagnostics |
+
+Run `flexcli plugin-v2 --help` and `flexcli plugin-v2 <subcommand> --help` for full flags.
+
+---
+
+## Example usage
+
+Link a v1 plugin (FlexDesigner):
 
 ```bash
 flexcli plugin link --path /path/to/plugin --uuid com.example.plugin --debug true
 ```
 
-To restart a plugin:
+Restart a v1 plugin:
 
 ```bash
 flexcli plugin restart --uuid com.example.plugin
 ```
 
-To list all plugins:
+List v1 plugins:
 
 ```bash
 flexcli plugin list
 ```
 
-To create a new plugin workspace:
+Create a new plugin workspace (prompts v1 vs v2):
 
 ```bash
 flexcli plugin create
+```
+
+List v2 plugins (FlexStudio):
+
+```bash
+flexcli plugin-v2 list
+```
+
+Install a v2 plugin from a folder:
+
+```bash
+flexcli plugin-v2 install /path/to/built-plugin
 ```
