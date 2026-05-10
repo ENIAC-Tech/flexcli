@@ -52,7 +52,7 @@ export default async function createV2Command(answers) {
     repo: repoUrlFromUuid(uuid),
     description: manifestDescription,
     author: { name: author, email: '' },
-    minHostVersion: '1.0.0',
+    minHostVersion: '2.5.0',
     native: false,
     platforms: ['win32-x64', 'darwin-arm64', 'darwin-x64', 'linux-x64'],
     devices: ['flow2pro', 'flexbar', 'flex2'],
@@ -237,7 +237,8 @@ export default class ${safeName}Plugin extends FlexPluginBase {
     'utf-8'
   );
 
-  fs.writeFileSync(path.join(baseDir, '.marketplace', 'README.md'), marketplaceReadmeGuide(), 'utf-8');
+  fs.writeFileSync(path.join(baseDir, '.marketplace', 'README.en.md'), marketplaceReadmeEn(name, manifestDescription), 'utf-8');
+  fs.writeFileSync(path.join(baseDir, '.marketplace', 'README.zh.md'), marketplaceReadmeZh(), 'utf-8');
   fs.writeFileSync(path.join(baseDir, 'README.md'), rootReadme(name, manifestDescription), 'utf-8');
 
   logger.info(`Plugin workspace created at: ${baseDir}`);
@@ -317,7 +318,8 @@ If your plugin requires native Node.js addons (\`native: true\` in manifest.json
 \`\`\`
 ├── .github/workflows/publish.yml   # Automated release workflow
 ├── .marketplace/
-│   └── README.md                   # How to add localized listing READMEs (author doc)
+│   ├── README.en.md                # Marketplace listing (English)
+│   └── README.zh.md                # Marketplace listing (Chinese, optional)
 ├── src/
 │   ├── backend/index.ts            # Plugin backend entry point
 │   └── frontend/                   # UI pages (Vue 3 + Vuetify 3)
@@ -330,35 +332,51 @@ If your plugin requires native Node.js addons (\`native: true\` in manifest.json
 `;
 }
 
-/**
- * @brief Author documentation for `.marketplace/` locale-specific README layout (not storefront content).
- */
-function marketplaceReadmeGuide() {
-  return `# Marketplace README files (plugin authors)
+function marketplaceReadmeEn(name, blurb) {
+  return `# ${name}
 
-FlexDesigner loads plugin documentation from your GitHub repository using the **same language codes as the host app** (FlexStudio / FlexDesigner renderer i18next keys in \`src/renderer/main.ts\`). Use these codes exactly in filenames so the server and client need no mapping.
+${blurb}
 
-## Add per-locale storefront READMEs
+## Features
 
-Create Markdown files under \`.marketplace/\`:
+- Describe what your plugin does
+- List key features
 
-| Filename | Host UI language |
-|----------|------------------|
-| \`README.en.md\` | English (\`en\`) |
-| \`README.zh-CN.md\` | Chinese (\`zh-CN\`) |
-| \`README.de.md\` | German (\`de\`) |
-| \`README.fr.md\` | French (\`fr\`) |
-| \`README.ja.md\` | Japanese (\`ja\`) |
+## Installation
 
-Example: for Simplified Chinese, the path is \`.marketplace/README.zh-CN.md\` (not \`README.zh.md\`).
+Install directly from FlexDesigner Marketplace.
 
-## Fallback
+## Usage
 
-If no \`README.<language>.md\` exists for the user's current UI language, the marketplace falls back to the **repository root** \`README.md\` on the branch or tag being read.
+Describe how to use the plugin after installation.
 
-## About this file
+## Configuration
 
-This \`.marketplace/README.md\` is **documentation for authors only**. It is not shown as the public listing description on the marketplace.
+Describe any configuration options available in the config page.
+`;
+}
+
+function marketplaceReadmeZh() {
+  return `# 插件名称
+
+插件的简短描述。
+
+## 功能
+
+- 描述插件的功能
+- 列出主要特性
+
+## 安装
+
+直接在 FlexDesigner 插件市场中安装。
+
+## 使用方法
+
+描述安装后如何使用插件。
+
+## 配置
+
+描述配置页面中可用的配置项。
 `;
 }
 
