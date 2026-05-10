@@ -6,7 +6,6 @@
 import fs from 'fs';
 import path from 'path';
 import logger from '../../utils/logger.js';
-import { HOST_APP_V2 } from '../../constants/host-app.js';
 
 export default async function createV2Command(answers) {
   const { name, pluginPath, author, uuid, version, description } = answers;
@@ -21,26 +20,32 @@ export default async function createV2Command(answers) {
   const dirs = [
     baseDir,
     path.join(baseDir, '.github', 'workflows'),
+    path.join(baseDir, '.marketplace'),
     path.join(baseDir, 'src', 'backend'),
     path.join(baseDir, 'src', 'frontend'),
-    path.join(baseDir, 'locales'),
-    path.join(baseDir, 'assets')
+    path.join(baseDir, 'locales')
   ];
   dirs.forEach((dir) => fs.mkdirSync(dir, { recursive: true }));
 
   const safeName = name.replace(/[^a-zA-Z0-9]/g, '');
   const packageName = name.toLowerCase().replace(/\s+/g, '-');
 
+  const manifestDescription = description || 'A short description of your plugin.';
+  const packageDescription = description || 'A FlexStudio plugin';
+
   const manifest = {
     schemaVersion: '1.0',
     uuid,
     name,
-    version,
-    repo: 'https://github.com/example/my-flex-plugin',
-    description: description || `${name} - A ${HOST_APP_V2} v2 plugin`,
+    repo: `https://github.com/${uuid.replace('@', '')}`,
+    description: manifestDescription,
     author: { name: author, email: '' },
-    platforms: ['win32', 'darwin', 'linux'],
-    permissions: ['store', 'logger', 'system', 'definitions', 'bus', 'device'],
+    minHostVersion: '2.5.0',
+    native: false,
+    platforms: ['win32-x64', 'darwin-arm64', 'darwin-x64', 'linux-x64'],
+    devices: ['flow2pro', 'flexbar', 'flex2'],
+    requiredCapabilities: [],
+    permissions: ['store', 'logger', 'device', 'definitions', 'bus', 'unit', 'ui'],
     dependencies: [],
     hasConfigPage: true,
     entry: {
@@ -59,7 +64,7 @@ export default async function createV2Command(answers) {
     name: packageName,
     version,
     private: true,
-    description: manifest.description,
+    description: packageDescription,
     scripts: {
       build: 'flexcli plugin-v2 build',
       dev: 'flexcli plugin-v2 dev .',
@@ -160,7 +165,6 @@ export default class ${safeName}Plugin extends FlexPluginBase {
     await super.onLoad(ctx);
     this.logger.info('Plugin loaded');
 
-    // Renderer RPC — called from the unit editor iframe.
     this.registerRendererRpc('getMessage', async () => {
       return ctx.hostApi.store.get('message', 'Hello from plugin!');
     });
@@ -170,22 +174,13 @@ export default class ${safeName}Plugin extends FlexPluginBase {
       return { success: true };
     });
 
-    // Device key events — fired when the physical key mapped to this unit is interacted with.
     await this.on(
       \`device.plugin.\${UNIT_TYPE_ID}.pressed\`,
       async (event: PluginEventEnvelope) => {
-        this.logger.info('Key pressed', { payload: event.payload, seq: event.sequence });
+        this.logger.info('Key pressed', { payload: event.payload });
       }
     );
 
-    await this.on(
-      \`device.plugin.\${UNIT_TYPE_ID}.released\`,
-      async (event: PluginEventEnvelope) => {
-        this.logger.debug('Key released', { seq: event.sequence });
-      }
-    );
-
-    // Device connection state — subscribe with snapshot to get current state immediately.
     await this.on(
       'device.connection.changed',
       (event: PluginEventEnvelope) => {
@@ -219,16 +214,20 @@ export default class ${safeName}Plugin extends FlexPluginBase {
 
   writeJson(path.join(baseDir, 'locales/en.json'), {
     [`${uuid}.exampleUnit.name`]: 'Example Unit',
-    [`${uuid}.config.title`]: `${name} Settings`
+    [`${uuid}.config.title`]: 'Plugin Settings'
   });
 
   fs.writeFileSync(path.join(baseDir, '.gitignore'), 'node_modules/\ndist/\n*.log\n*.flexplugin\n', 'utf-8');
 
   fs.writeFileSync(
-    path.join(baseDir, '.github', 'workflows', 'release.yml'),
-    pluginReleaseWorkflowYml(),
+    path.join(baseDir, '.github', 'workflows', 'publish.yml'),
+    pluginPublishWorkflowYml(),
     'utf-8'
   );
+
+  fs.writeFileSync(path.join(baseDir, '.marketplace', 'README.en.md'), marketplaceReadmeEn(name, manifestDescription), 'utf-8');
+  fs.writeFileSync(path.join(baseDir, '.marketplace', 'README.zh.md'), marketplaceReadmeZh(), 'utf-8');
+  fs.writeFileSync(path.join(baseDir, 'README.md'), rootReadme(name, manifestDescription), 'utf-8');
 
   logger.info(`Plugin workspace created at: ${baseDir}`);
   logger.info('Next steps:');
@@ -243,51 +242,150 @@ function writeJson(filePath, data) {
 }
 
 /**
+ * @brief Root README.md (matches flex-plugin-template wording; title/blurb from user input).
+ */
+function rootReadme(name, blurb) {
+  return `# ${name}
+
+${blurb}
+
+## Development
+
+\`\`\`bash
+npm install
+npm run dev
+\`\`\`
+
+\`npm run dev\` starts a local dev server and connects to FlexDesigner via WebSocket. Changes to backend code are hot-reloaded automatically.
+
+## Building
+
+\`\`\`bash
+npm run build
+\`\`\`
+
+Compiles TypeScript and bundles frontend pages into \`dist/\`.
+
+## Publishing to the Marketplace
+
+Releases are automated via GitHub Actions.
+
+### First-time setup
+
+1. Register your plugin in FlexDesigner Marketplace (Settings → My Uploads → Publish Plugin)
+2. Copy the generated webhook secret
+3. Add it to your GitHub repo: **Settings → Secrets → Actions** → \`FLEX_MARKETPLACE_WEBHOOK_SECRET\`
+
+### Releasing a new version
+
+1. Push your changes to \`main\`
+2. Create a new GitHub Release with a semver tag (e.g. \`v1.0.0\`)
+3. The workflow builds, packs, and notifies the marketplace server automatically
+4. If no permission or platform changes, the update goes live immediately
+5. If permissions or platforms changed, it enters the review queue
+
+### Native plugins
+
+If your plugin requires native Node.js addons (\`native: true\` in manifest.json), the workflow runs a matrix build across all declared platforms. Each platform produces a separate \`.flexplugin\` artifact.
+
+## Manifest fields
+
+| Field | Description |
+|---|---|
+| \`uuid\` | \`@username/plugin-name\` — must match your marketplace account |
+| \`minHostVersion\` | Minimum FlexDesigner version required |
+| \`native\` | Set \`true\` if the plugin uses native addons |
+| \`platforms\` | Supported OS+arch combinations |
+| \`devices\` | Target device models |
+| \`requiredCapabilities\` | Device capabilities the plugin needs at runtime |
+| \`permissions\` | Host API permissions (sensitive ones require review) |
+| \`dependencies\` | Other marketplace plugins this plugin depends on |
+
+## Project structure
+
+\`\`\`
+├── .github/workflows/publish.yml   # Automated release workflow
+├── .marketplace/
+│   ├── README.en.md                # Marketplace listing (English)
+│   └── README.zh.md                # Marketplace listing (Chinese, optional)
+├── src/
+│   ├── backend/index.ts            # Plugin backend entry point
+│   └── frontend/                   # UI pages (Vue 3 + Vuetify 3)
+├── locales/en.json                 # i18n strings
+├── manifest.json                   # Plugin manifest
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
+\`\`\`
+`;
+}
+
+function marketplaceReadmeEn(name, blurb) {
+  return `# ${name}
+
+${blurb}
+
+## Features
+
+- Describe what your plugin does
+- List key features
+
+## Installation
+
+Install directly from FlexDesigner Marketplace.
+
+## Usage
+
+Describe how to use the plugin after installation.
+
+## Configuration
+
+Describe any configuration options available in the config page.
+`;
+}
+
+function marketplaceReadmeZh() {
+  return `# 插件名称
+
+插件的简短描述。
+
+## 功能
+
+- 描述插件的功能
+- 列出主要特性
+
+## 安装
+
+直接在 FlexDesigner 插件市场中安装。
+
+## 使用方法
+
+描述安装后如何使用插件。
+
+## 配置
+
+描述配置页面中可用的配置项。
+`;
+}
+
+/**
  * @brief GitHub Actions workflow for tag-triggered build, pack, and release of the .flexplugin artifact.
  * @return {string} Workflow YAML (escape ${{ }} for use inside JS template literals).
  */
-function pluginReleaseWorkflowYml() {
-  return `name: Build and release plugin
+function pluginPublishWorkflowYml() {
+  return `name: Publish to FlexStudio Marketplace
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
-
-concurrency:
-  group: plugin-release-\${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: write
+  release:
+    types: [published]
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build
-        run: npm run build
-
-      - name: Pack
-        run: npm run pack
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: '*.flexplugin'
-          generate_release_notes: true
+  publish:
+    uses: eniacelec/flex-plugin-actions/.github/workflows/publish.yml@v1
+    with:
+      flexcli-version: "latest"
+    secrets:
+      webhook-secret: \${{ secrets.FLEX_MARKETPLACE_WEBHOOK_SECRET }}
 `;
 }
 
@@ -336,9 +434,7 @@ void mountFlexPage({
   setupApp(app) {
     app.use(vuetify);
   },
-  themeSync: {
-    vuetify
-  }
+  themeSync: { vuetify }
 });
 `;
 }
@@ -422,9 +518,7 @@ const title = ref('');
 
 watch(isReady, async (ready) => {
   if (!ready || !bridge.value) return;
-  bridge.value.onHostEvent('unit-updated', () => {
-    void refresh();
-  });
+  bridge.value.onHostEvent('unit-updated', () => { void refresh(); });
   await refresh();
 });
 
