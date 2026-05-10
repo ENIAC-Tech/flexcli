@@ -52,7 +52,7 @@ export default async function createV2Command(answers) {
     repo: repoUrlFromUuid(uuid),
     description: manifestDescription,
     author: { name: author, email: '' },
-    minHostVersion: '2.5.0',
+    minHostVersion: '1.0.0',
     native: false,
     platforms: ['win32-x64', 'darwin-arm64', 'darwin-x64', 'linux-x64'],
     devices: ['flow2pro', 'flexbar', 'flex2'],
@@ -284,9 +284,9 @@ Releases are automated via GitHub Actions.
 
 ### First-time setup
 
-1. Register your plugin in FlexDesigner Marketplace (Settings → My Uploads → Publish Plugin)
+1. Register your plugin in FlexDesigner Marketplace (Settings �?My Uploads �?Publish Plugin)
 2. Copy the generated webhook secret
-3. Add it to your GitHub repo: **Settings → Secrets → Actions** → \`FLEX_MARKETPLACE_WEBHOOK_SECRET\`
+3. Add it to your GitHub repo: **Settings �?Secrets �?Actions** �?\`FLEX_MARKETPLACE_WEBHOOK_SECRET\`
 
 ### Releasing a new version
 
@@ -304,7 +304,7 @@ If your plugin requires native Node.js addons (\`native: true\` in manifest.json
 
 | Field | Description |
 |---|---|
-| \`uuid\` | \`@username/plugin-name\` — must match your marketplace account |
+| \`uuid\` | \`@username/plugin-name\` �?must match your marketplace account |
 | \`minHostVersion\` | Minimum FlexDesigner version required |
 | \`native\` | Set \`true\` if the plugin uses native addons |
 | \`platforms\` | Supported OS+arch combinations |
@@ -318,11 +318,11 @@ If your plugin requires native Node.js addons (\`native: true\` in manifest.json
 \`\`\`
 ├── .github/workflows/publish.yml   # Automated release workflow
 ├── .marketplace/
-│   ├── README.en.md                # Marketplace listing (English)
-│   └── README.zh.md                # Marketplace listing (Chinese, optional)
+�?  ├── README.en.md                # Marketplace listing (English)
+�?  └── README.zh.md                # Marketplace listing (Chinese, optional)
 ├── src/
-│   ├── backend/index.ts            # Plugin backend entry point
-│   └── frontend/                   # UI pages (Vue 3 + Vuetify 3)
+�?  ├── backend/index.ts            # Plugin backend entry point
+�?  └── frontend/                   # UI pages (Vue 3 + Vuetify 3)
 ├── locales/en.json                 # i18n strings
 ├── manifest.json                   # Plugin manifest
 ├── package.json
@@ -359,24 +359,24 @@ Describe any configuration options available in the config page.
 function marketplaceReadmeZh() {
   return `# 插件名称
 
-插件的简短描述。
+插件的简短描述�?
 
 ## 功能
 
-- 描述插件的功能
-- 列出主要特性
+- 描述插件的功�?
+- 列出主要特�?
 
 ## 安装
 
-直接在 FlexDesigner 插件市场中安装。
+直接�?FlexDesigner 插件市场中安装�?
 
 ## 使用方法
 
-描述安装后如何使用插件。
+描述安装后如何使用插件�?
 
 ## 配置
 
-描述配置页面中可用的配置项。
+描述配置页面中可用的配置项�?
 `;
 }
 
