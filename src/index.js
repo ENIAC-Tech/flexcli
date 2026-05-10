@@ -276,13 +276,30 @@ plugin
         {
           type: 'input',
           name: 'uuid',
-          message: 'Plugin UUID (reverse-domain, e.g. "com.author.myplugin"):',
+          message:
+            'Plugin UUID (marketplace: @owner/repo-name, or legacy reverse-domain com.author.plugin):',
           default: (ans) => {
-            const sanitizedAuthor = ans.author.replace(/\s+/g, '_').replace(/[^a-zA-Z_]/g, '');
-            const sanitizedName = ans.name.replace(/\s+/g, '_').replace(/[^a-zA-Z_]/g, '');
-            return `com.${sanitizedAuthor.toLowerCase()}.${sanitizedName.toLowerCase()}`;
+            const slug = ans.name
+              .toLowerCase()
+              .replace(/\s+/g, '-')
+              .replace(/[^a-z0-9._-]/g, '');
+            const owner =
+              String(ans.author || 'owner')
+                .toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^a-z0-9._-]/g, '') || 'owner';
+            return `@${owner}/${slug}`;
           },
           validate: (input) => {
+            if (input.startsWith('@')) {
+              if (!/^@[a-zA-Z0-9_-]+\/[a-zA-Z0-9._-]+$/.test(input)) {
+                return 'Invalid marketplace UUID. Use @owner/repo-name (e.g. @ENIAC-Tech/my-plugin).';
+              }
+              if (input.length > 150) {
+                return 'Invalid UUID. Too long.';
+              }
+              return true;
+            }
             if (!/^[a-zA-Z0-9._-]+$/.test(input)) {
               return 'Invalid UUID. Use letters, numbers, dots, hyphens, and underscores only.';
             }

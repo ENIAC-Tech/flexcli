@@ -33,11 +33,23 @@ export default async function createV2Command(answers) {
   const manifestDescription = description || 'A short description of your plugin.';
   const packageDescription = description || 'A FlexStudio plugin';
 
+  /** GitHub repo URL for manifest.repo (supports marketplace UUID @org/repo-name). */
+  const repoUrlFromUuid = (id) => {
+    if (id.startsWith('@')) {
+      const rest = id.slice(1);
+      if (!rest.includes('/')) {
+        throw new Error(`Invalid marketplace UUID "${id}". Expected @owner/repo-name`);
+      }
+      return `https://github.com/${rest}`;
+    }
+    return `https://github.com/${id}`;
+  };
+
   const manifest = {
     schemaVersion: '1.0',
     uuid,
     name,
-    repo: `https://github.com/${uuid.replace('@', '')}`,
+    repo: repoUrlFromUuid(uuid),
     description: manifestDescription,
     author: { name: author, email: '' },
     minHostVersion: '2.5.0',
@@ -381,7 +393,7 @@ on:
 
 jobs:
   publish:
-    uses: eniacelec/flex-plugin-actions/.github/workflows/publish.yml@v1
+    uses: ENIAC-Tech/flex-plugin-actions/.github/workflows/publish.yml@v1
     with:
       flexcli-version: "latest"
     secrets:
