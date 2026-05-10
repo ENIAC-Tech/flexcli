@@ -393,9 +393,9 @@ on:
 
 jobs:
   publish:
-    uses: ENIAC-Tech/flex-plugin-actions/.github/workflows/publish.yml@v1
+    uses: ENIAC-Tech/flex-plugin-actions/.github/workflows/publish.yml@v1.1.0
     with:
-      flexcli-version: "latest"
+      flexcli-package: "https://github.com/ENIAC-Tech/flexcli/tarball/refs/heads/v2"
     secrets:
       webhook-secret: \${{ secrets.FLEX_MARKETPLACE_WEBHOOK_SECRET }}
 `;
