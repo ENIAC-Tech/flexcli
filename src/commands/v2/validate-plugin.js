@@ -31,7 +31,7 @@ export async function validateV2PluginCommand(options = {}) {
       for (const e of manifestResult.errors ?? []) logger.error(`  - ${e}`);
       ok = false;
     } else {
-      logger.info(`manifest.json OK: ${manifestResult.manifest.name} v${manifestResult.manifest.version}`);
+      logger.info(`manifest.json OK: ${manifestResult.manifest.name} (${manifestResult.manifest.uuid})`);
     }
   }
 

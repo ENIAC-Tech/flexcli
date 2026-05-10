@@ -570,12 +570,14 @@ pluginV2
   .command('pack')
   .description('Package a built v2 plugin into a .flexplugin archive (zip-based)')
   .option('--dist-dir <dir>', 'Built plugin directory (default: cwd/dist)')
-  .option('--output <path>', 'Output .flexplugin path (default: <plugin-root>/release/<name>-<version>.flexplugin)')
+  .option('--output <path>', 'Output .flexplugin path (overrides default naming)')
+  .option('--platform <platform>', 'Target platform (win32-x64, darwin-arm64, darwin-x64, linux-x64). Defaults to "universal" for non-native plugins.')
   .action(async (options) => {
     try {
       const result = await packV2Command({
         distDir: options.distDir,
-        output: options.output
+        output: options.output,
+        platform: options.platform
       });
       if (!result) process.exit(1);
     } catch (err) {

@@ -1,6 +1,6 @@
 /**
  * @file manifest-validator.js
- * @brief Plugin manifest validation (schemaVersion 1.0 — units come from backend getDefinitions / host pull)
+ * @brief Plugin manifest validation
  */
 
 import fs from 'fs';
@@ -31,14 +31,20 @@ const permissionEnum = [
   'electron.screen'
 ];
 
+const platformEnum = ['win32-x64', 'darwin-arm64', 'darwin-x64', 'linux-x64'];
+
+const capabilityEnum = ['encoder', 'touchscreen', 'knob', 'slider', 'lcd', 'vibration'];
+
 const manifestSchema = {
   type: 'object',
-  required: ['schemaVersion', 'uuid', 'name', 'version', 'entry'],
+  required: ['schemaVersion', 'uuid', 'name', 'entry'],
   properties: {
     schemaVersion: { type: 'string', const: '1.0' },
-    uuid: { type: 'string', minLength: 1 },
+    uuid: {
+      type: 'string',
+      pattern: '^@[a-zA-Z0-9_-]+/[a-zA-Z0-9._-]+$'
+    },
     name: { type: 'string', minLength: 1 },
-    version: { type: 'string', pattern: '^\\d+\\.\\d+\\.\\d+$' },
     repo: { type: 'string', minLength: 1 },
     description: { type: 'string' },
     author: {
@@ -51,9 +57,18 @@ const manifestSchema = {
       }
     },
     minHostVersion: { type: 'string' },
+    native: { type: 'boolean' },
     platforms: {
       type: 'array',
-      items: { type: 'string', enum: ['win32', 'darwin', 'linux'] }
+      items: { type: 'string', enum: platformEnum }
+    },
+    devices: {
+      type: 'array',
+      items: { type: 'string' }
+    },
+    requiredCapabilities: {
+      type: 'array',
+      items: { type: 'string', enum: capabilityEnum }
     },
     permissions: {
       type: 'array',
@@ -63,11 +78,10 @@ const manifestSchema = {
       type: 'array',
       items: {
         type: 'object',
-        required: ['pluginUUID', 'minVersion'],
+        required: ['uuid', 'minVersion'],
         properties: {
-          pluginUUID: { type: 'string' },
-          minVersion: { type: 'string' },
-          optional: { type: 'boolean' }
+          uuid: { type: 'string', pattern: '^@[a-zA-Z0-9_-]+/[a-zA-Z0-9._-]+$' },
+          minVersion: { type: 'string' }
         }
       }
     },
@@ -80,6 +94,10 @@ const manifestSchema = {
         unitFunctionEditor: { type: 'string' },
         unitAppearanceEditor: { type: 'string' },
         unitView: { type: 'string' },
+        unitViewOverrides: {
+          type: 'object',
+          additionalProperties: { type: 'string' }
+        },
         configPage: { type: 'string' }
       }
     },
@@ -104,8 +122,8 @@ export function validateManifest(manifest) {
   const valid = validate(manifest);
   if (!valid) {
     const errors = (validate.errors ?? []).map((err) => {
-      const path = err.instancePath || '(root)';
-      return `${path}: ${err.message}`;
+      const p = err.instancePath || '(root)';
+      return `${p}: ${err.message}`;
     });
     return { valid: false, errors, warnings };
   }
@@ -132,7 +150,7 @@ export function parseAndValidateManifest(raw) {
 }
 
 /**
- * Read manifest.json from disk and validate it (shared by plugin-v2 build/pack).
+ * Read manifest.json from disk and validate it.
  * @param {string} manifestPath - Absolute path to manifest.json
  * @returns {{ ok: true, manifest: object, warnings: string[] } | { ok: false, manifest?: object, errors: string[], warnings: string[], missing?: boolean }}
  */
