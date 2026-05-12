@@ -393,7 +393,7 @@ on:
 
 jobs:
   publish:
-    uses: ENIAC-Tech/flex-plugin-actions/.github/workflows/publish.yml@v1.1.0
+    uses: ENIAC-Tech/flex-plugin-actions/.github/workflows/publish.yml@v1.2.0
     with:
       flexcli-package: "https://github.com/ENIAC-Tech/flexcli/tarball/refs/heads/v2"
     secrets:
