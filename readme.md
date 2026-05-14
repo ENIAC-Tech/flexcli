@@ -141,7 +141,7 @@ For v2 projects, FlexCLI clones the shared plugin template repository and then a
 Default v2 template:
 
 ```text
-https://github.com/icyqwq/flex-plugin-template.git#master
+https://github.com/ENIAC-Tech/flex-plugin-template.git#master
 ```
 
 The generated v2 project includes a local agent skill at `.agents/skills/flexstudio-plugin-developer/SKILL.md`. Ask your agent to use that skill when developing the plugin; it includes a bundled snapshot of the FlexStudio plugin docs.

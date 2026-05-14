@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const DEFAULT_TEMPLATE_REPO = 'https://github.com/icyqwq/flex-plugin-template.git';
+const DEFAULT_TEMPLATE_REPO = 'https://github.com/ENIAC-Tech/flex-plugin-template.git';
 const DEFAULT_TEMPLATE_REF = 'master';
 const TEMPLATE_UUID = '@your-username/your-plugin-name';
 const TEMPLATE_NAME = 'Your Plugin Name';

@@ -10,7 +10,7 @@ test('formats v2 create success output without logger prefixes', () => {
   const output = formatV2CreateSuccessMessage({
     name: 'Test',
     baseDir: 'C:\\Users\\tongy\\Desktop\\test',
-    template: 'https://github.com/icyqwq/flex-plugin-template.git#master'
+    template: 'https://github.com/ENIAC-Tech/flex-plugin-template.git#master'
   });
 
   assert.equal(
@@ -23,7 +23,7 @@ test('formats v2 create success output without logger prefixes', () => {
       '  C:\\Users\\tongy\\Desktop\\test',
       '',
       'Template:',
-      '  https://github.com/icyqwq/flex-plugin-template.git#master',
+      '  https://github.com/ENIAC-Tech/flex-plugin-template.git#master',
       '',
       'Agent skill:',
       '  .agents/skills/flexstudio-plugin-developer/SKILL.md',
