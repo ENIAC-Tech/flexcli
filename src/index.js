@@ -20,7 +20,7 @@ import uninstallCommand from './commands/v1/uninstall.js';
 import validateCommand from './commands/v1/validate.js';
 import createCommand from './commands/v1/create.js';
 import killCommand from './commands/v1/kill.js';
-import createV2Command from './commands/v2/create.js';
+import createV2Command, { formatV2CreateSuccessMessage } from './commands/v2/create.js';
 import { createV2Client } from './commands/v2/control.js';
 import { buildV2Command } from './commands/v2/build.js';
 import { packV2Command } from './commands/v2/pack.js';
@@ -344,9 +344,8 @@ plugin
       answers.sdkVersion = sdkVersion;
 
       if (sdkVersion === 'v2') {
-        await createV2Command(answers);
-        logger.info(`\n✓ v2 Plugin workspace "${answers.name}" created at: ${answers.pluginPath}`);
-        logger.info('Run: cd ' + answers.pluginPath + ' && npm install && npm run build');
+        const result = await createV2Command(answers);
+        console.log(formatV2CreateSuccessMessage(result));
       } else {
         await createCommand(answers);
         logger.info(`Workspace for plugin "${answers.name}" created successfully.`);

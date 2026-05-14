@@ -5,7 +5,6 @@
 
 import fs from 'fs';
 import path from 'path';
-import logger from '../../utils/logger.js';
 
 export default async function createV2Command(answers) {
   const { name, pluginPath, author, uuid, version, description } = answers;
@@ -14,8 +13,6 @@ export default async function createV2Command(answers) {
   if (fs.existsSync(baseDir)) {
     throw new Error(`Directory already exists: ${baseDir}`);
   }
-
-  logger.info(`Creating v2 plugin: ${name} (${uuid})`);
 
   const dirs = [
     baseDir,
@@ -241,12 +238,7 @@ export default class ${safeName}Plugin extends FlexPluginBase {
   fs.writeFileSync(path.join(baseDir, '.marketplace', 'README.zh.md'), marketplaceReadmeZh(), 'utf-8');
   fs.writeFileSync(path.join(baseDir, 'README.md'), rootReadme(name, manifestDescription), 'utf-8');
 
-  logger.info(`Plugin workspace created at: ${baseDir}`);
-  logger.info('Next steps:');
-  logger.info(`  cd ${path.basename(baseDir)}`);
-  logger.info('  npm install');
-  logger.info('  npm run build');
-  logger.info('  npm run dev');
+  return { name, baseDir };
 }
 
 function writeJson(filePath, data) {
@@ -578,4 +570,20 @@ async function save() {
   </v-app>
 </template>
 `;
+}
+
+export function formatV2CreateSuccessMessage({ name, baseDir }) {
+  return [
+    '',
+    `Created FlexStudio v2 plugin "${name}"`,
+    '',
+    'Path:',
+    `  ${baseDir}`,
+    '',
+    'Next steps:',
+    `  cd ${path.basename(baseDir)}`,
+    '  npm install',
+    '  npm run build',
+    '  npm run dev'
+  ].join('\n');
 }
