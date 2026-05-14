@@ -21,6 +21,7 @@ const permissionEnum = [
   'unit',
   'definitions',
   'ui',
+  'pluginApi',
   'electron.app',
   'electron.browserWindow',
   'electron.clipboard',
