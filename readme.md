@@ -136,9 +136,25 @@ Validates the structure and manifest of a plugin.
 
 Creates a plugin workspace. You will be prompted for **v1** (FlexDesigner, legacy JS/Rollup) or **v2** (FlexStudio, TypeScript / FlexSDK2). Default is v2.
 
+For v2 projects, FlexCLI clones the shared plugin template repository and then applies the prompted identity fields. FlexCLI does not maintain a separate v2 scaffold.
+
+Default v2 template:
+
+```text
+https://github.com/icyqwq/flex-plugin-template.git#master
+```
+
+The generated v2 project includes a local agent skill at `.agents/skills/flexstudio-plugin-developer/SKILL.md`. Ask your agent to use that skill when developing the plugin; it includes a bundled snapshot of the FlexStudio plugin docs.
+
+#### v2 template overrides
+
+- `FLEX_PLUGIN_TEMPLATE_PATH`: copy from a local template directory instead of cloning Git.
+- `FLEX_PLUGIN_TEMPLATE_REPO`: clone a different Git template repository.
+- `FLEX_PLUGIN_TEMPLATE_REF`: clone a different branch or tag. Defaults to `master`.
+
 #### Prompted fields (varies by version)
 
-- Plugin path, name, author, UUID (reverse-domain), version, description
+- Plugin path, name, author, UUID, version, description
 - v1 only: repository URL (optional)
 
 ---
