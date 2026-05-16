@@ -53,7 +53,7 @@ export async function validateV2PluginCommand(options = {}) {
       for (const e of result.errors) logger.error(`  - ${e}`);
       ok = false;
     } else {
-      logger.info(`definitions OK (${(raw.units ?? []).length} unit(s)): ${definitionsPath}`);
+      logger.info(`definitions OK (${(raw.units ?? []).length} plugin unit(s), ${(raw.builtinUnits ?? []).length} builtin unit template(s)): ${definitionsPath}`);
     }
   }
 
