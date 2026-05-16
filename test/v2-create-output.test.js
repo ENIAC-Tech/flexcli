@@ -5,6 +5,20 @@ import os from 'node:os';
 import path from 'node:path';
 
 import createV2Command, { formatV2CreateSuccessMessage } from '../src/commands/v2/create.js';
+import { validateManifest } from '../src/utils/manifest-validator.js';
+
+
+test('accepts chart permission in v2 manifest validation', () => {
+  const result = validateManifest({
+    schemaVersion: '1.0',
+    uuid: '@tester/chart-plugin',
+    name: 'Chart Plugin',
+    permissions: ['chart'],
+    entry: { backend: 'src/backend/index.js' }
+  });
+
+  assert.equal(result.valid, true, result.errors.join('\n'));
+});
 
 test('formats v2 create success output without logger prefixes', () => {
   const output = formatV2CreateSuccessMessage({

@@ -19,6 +19,7 @@ const permissionEnum = [
   'resource',
   'bus',
   'unit',
+  'chart',
   'definitions',
   'ui',
   'pluginApi',
