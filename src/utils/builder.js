@@ -87,13 +87,14 @@ export async function buildBackend(config) {
 }
 
 /**
- * Copy manifest.json and locale files to output directory
+ * Copy manifest.json, package.json, locale files, and static assets to output directory
  * @param {string} pluginDir
  * @param {string} outDir
  */
 export async function copyManifest(pluginDir, outDir) {
   await fsp.mkdir(outDir, { recursive: true });
   await fsp.copyFile(path.join(pluginDir, 'manifest.json'), path.join(outDir, 'manifest.json'));
+  await fsp.copyFile(path.join(pluginDir, 'package.json'), path.join(outDir, 'package.json'));
 
   // Copy locales if present
   const localesDir = path.join(pluginDir, 'locales');

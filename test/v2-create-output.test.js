@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import createV2Command, { formatV2CreateSuccessMessage } from '../src/commands/v2/create.js';
 import { validateManifest } from '../src/utils/manifest-validator.js';
+import { copyManifest } from '../src/utils/builder.js';
 
 
 test('accepts chart permission in v2 manifest validation', () => {
@@ -138,4 +139,34 @@ test('creates v2 project from a local template path', async (t) => {
   assert.match(readme, /^# My Plugin/m);
   assert.match(readme, /Created from the shared template\./);
   assert.equal(readme.includes('FlexDesigner'), false);
+});
+
+test('copies package.json into v2 build output metadata', async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'flexcli-copy-metadata-'));
+  const pluginDir = path.join(root, 'plugin');
+  const outDir = path.join(root, 'dist');
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+
+  fs.mkdirSync(pluginDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(pluginDir, 'manifest.json'),
+    JSON.stringify({
+      schemaVersion: '1.0',
+      uuid: '@tester/plugin',
+      name: 'Plugin',
+      permissions: [],
+      entry: { backend: 'backend.js' }
+    }),
+    'utf8'
+  );
+  fs.writeFileSync(
+    path.join(pluginDir, 'package.json'),
+    JSON.stringify({ name: 'plugin', version: '1.2.3' }),
+    'utf8'
+  );
+
+  await copyManifest(pluginDir, outDir);
+
+  const packageJson = JSON.parse(fs.readFileSync(path.join(outDir, 'package.json'), 'utf8'));
+  assert.equal(packageJson.version, '1.2.3');
 });

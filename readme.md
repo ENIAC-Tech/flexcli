@@ -202,6 +202,9 @@ These commands talk to **FlexStudio** over the v2 plugin control WebSocket.
 | `pack` | Package built output into a `.flexplugin` archive |
 | `diagnostics` | Print v2 plugin system diagnostics |
 
+`plugin-v2 build` requires `package.json` with a non-empty `version` field and copies it into
+`dist/`. FlexStudio uses that package version for local plugin installs.
+
 Run `flexcli plugin-v2 --help` and `flexcli plugin-v2 <subcommand> --help` for full flags.
 
 ---

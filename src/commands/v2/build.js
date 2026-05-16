@@ -95,7 +95,26 @@ export async function buildV2Command(options = {}) {
     logger.warn(`manifest.json: ${w}`);
   }
 
-  logger.info(`[1/5] Manifest valid: ${rawManifest.name} v${rawManifest.version}`);
+  const packagePath = path.join(pluginDir, 'package.json');
+  if (!fs.existsSync(packagePath)) {
+    logger.error(`package.json not found in ${pluginDir}`);
+    logger.error('Fix: Add package.json with a non-empty version field');
+    return false;
+  }
+  let packageJson;
+  try {
+    packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf-8'));
+  } catch (err) {
+    logger.error(`package.json is invalid: ${err.message}`);
+    return false;
+  }
+  const packageVersion = typeof packageJson.version === 'string' ? packageJson.version.trim() : '';
+  if (!packageVersion) {
+    logger.error('package.json version is required for FlexStudio plugin builds');
+    return false;
+  }
+
+  logger.info(`[1/5] Manifest valid: ${rawManifest.name} v${packageVersion}`);
 
   // 2) Clean output directory
   await cleanOutputDirectory(outDir, { preserveDistLogs: options.preserveDistLogs ?? false });
@@ -147,10 +166,10 @@ export async function buildV2Command(options = {}) {
     logger.info('[4/5] No frontend entries declared, skipping');
   }
 
-  // 5) Copy manifest + locales + static assets
+  // 5) Copy manifest + package metadata + locales + static assets
   await copyManifest(pluginDir, outDir);
   await ensureRootHtmlAliases(outDir, rawManifest);
-  logger.info('[5/5] Manifest and locales copied');
+  logger.info('[5/5] Manifest, package metadata, and locales copied');
 
   logger.info(`Build complete -> ${outDir}`);
   return true;
