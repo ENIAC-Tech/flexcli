@@ -123,10 +123,7 @@ export function validateManifest(manifest) {
   }
   const valid = validate(manifest);
   if (!valid) {
-    const errors = (validate.errors ?? []).map((err) => {
-      const p = err.instancePath || '(root)';
-      return `${p}: ${err.message}`;
-    });
+    const errors = (validate.errors ?? []).map((err) => formatAjvError(err, manifest));
     return { valid: false, errors, warnings };
   }
 
@@ -180,4 +177,55 @@ export function readValidateManifestFile(manifestPath) {
     return { ok: false, manifest: raw, errors, warnings: warnings ?? [] };
   }
   return { ok: true, manifest: raw, warnings: warnings ?? [] };
+}
+
+function formatAjvError(err, rootData) {
+  const path = err.instancePath || '(root)';
+  const message = err.message || 'is invalid';
+  const parts = [`${path}: ${message}`];
+  const value = Object.prototype.hasOwnProperty.call(err, 'data') ? err.data : resolveJsonPointer(rootData, err.instancePath);
+
+  if (value !== undefined) {
+    parts.push(`value ${formatValue(value)}`);
+  }
+
+  const allowedValues = err.params?.allowedValues;
+  if (Array.isArray(allowedValues) && allowedValues.length > 0) {
+    parts.push(`allowed values: ${allowedValues.map(formatValue).join(', ')}`);
+  }
+
+  if (err.keyword && err.keyword !== 'enum') {
+    parts.push(`keyword: ${err.keyword}`);
+  }
+
+  return parts.join('; ');
+}
+
+function resolveJsonPointer(rootData, pointer) {
+  if (!pointer) return rootData;
+
+  const segments = pointer
+    .split('/')
+    .slice(1)
+    .map((segment) => segment.replace(/~1/g, '/').replace(/~0/g, '~'));
+  let current = rootData;
+  for (const segment of segments) {
+    if (current == null) return undefined;
+    current = current[segment];
+  }
+  return current;
+}
+
+function formatValue(value) {
+  if (typeof value === 'string') {
+    return JSON.stringify(value);
+  }
+  if (value === undefined) {
+    return 'undefined';
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
 }

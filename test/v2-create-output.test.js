@@ -21,6 +21,24 @@ test('accepts chart permission in v2 manifest validation', () => {
   assert.equal(result.valid, true, result.errors.join('\n'));
 });
 
+test('reports invalid manifest enum values with the rejected value and allowed values', () => {
+  const result = validateManifest({
+    schemaVersion: '1.0',
+    uuid: '@tester/bad-permission-plugin',
+    name: 'Bad Permission Plugin',
+    permissions: ['http', 'websocket'],
+    entry: { backend: 'src/backend/index.js' }
+  });
+
+  assert.equal(result.valid, false);
+  assert.equal(result.errors.length, 1);
+  assert.match(result.errors[0], /\/permissions\/1/);
+  assert.match(result.errors[0], /value "websocket"/);
+  assert.match(result.errors[0], /allowed values:/);
+  assert.match(result.errors[0], /"http"/);
+  assert.match(result.errors[0], /"pluginApi"/);
+});
+
 test('formats v2 create success output without logger prefixes', () => {
   const output = formatV2CreateSuccessMessage({
     name: 'Test',
