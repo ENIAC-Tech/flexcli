@@ -21,21 +21,34 @@ test('accepts chart permission in v2 manifest validation', () => {
   assert.equal(result.valid, true, result.errors.join('\n'));
 });
 
+test('accepts websocket permission in v2 manifest validation', () => {
+  const result = validateManifest({
+    schemaVersion: '1.0',
+    uuid: '@tester/websocket-plugin',
+    name: 'WebSocket Plugin',
+    permissions: ['websocket'],
+    entry: { backend: 'src/backend/index.js' }
+  });
+
+  assert.equal(result.valid, true, result.errors.join('\n'));
+});
+
 test('reports invalid manifest enum values with the rejected value and allowed values', () => {
   const result = validateManifest({
     schemaVersion: '1.0',
     uuid: '@tester/bad-permission-plugin',
     name: 'Bad Permission Plugin',
-    permissions: ['http', 'websocket'],
+    permissions: ['http', 'badPermission'],
     entry: { backend: 'src/backend/index.js' }
   });
 
   assert.equal(result.valid, false);
   assert.equal(result.errors.length, 1);
   assert.match(result.errors[0], /\/permissions\/1/);
-  assert.match(result.errors[0], /value "websocket"/);
+  assert.match(result.errors[0], /value "badPermission"/);
   assert.match(result.errors[0], /allowed values:/);
   assert.match(result.errors[0], /"http"/);
+  assert.match(result.errors[0], /"websocket"/);
   assert.match(result.errors[0], /"pluginApi"/);
 });
 

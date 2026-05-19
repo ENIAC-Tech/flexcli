@@ -11,6 +11,7 @@ const ajv = new Ajv({ allErrors: true });
 const permissionEnum = [
   'file',
   'http',
+  'websocket',
   'system',
   'store',
   'logger',
