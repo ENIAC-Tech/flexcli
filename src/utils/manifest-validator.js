@@ -36,7 +36,7 @@ const permissionEnum = [
 
 const platformEnum = ['win32-x64', 'darwin-arm64', 'darwin-x64', 'linux-x64'];
 
-const capabilityEnum = ['encoder', 'touchscreen', 'knob', 'slider', 'lcd', 'vibration'];
+const capabilityEnum = ['encoder', 'touchscreen', 'knob', 'slider', 'lcd', 'oled', 'vibration'];
 
 const manifestSchema = {
   type: 'object',

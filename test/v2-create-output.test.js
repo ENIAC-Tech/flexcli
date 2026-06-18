@@ -33,6 +33,19 @@ test('accepts websocket permission in v2 manifest validation', () => {
   assert.equal(result.valid, true, result.errors.join('\n'));
 });
 
+test('accepts MassX and oled capability in v2 manifest validation', () => {
+  const result = validateManifest({
+    schemaVersion: '1.0',
+    uuid: '@tester/massx-plugin',
+    name: 'MassX Plugin',
+    devices: ['MassX'],
+    capabilities: ['oled'],
+    entry: { backend: 'src/backend/index.js' }
+  });
+
+  assert.equal(result.valid, true, result.errors.join('\n'));
+});
+
 test('reports invalid manifest enum values with the rejected value and allowed values', () => {
   const result = validateManifest({
     schemaVersion: '1.0',
