@@ -33,6 +33,98 @@ test('accepts websocket permission in v2 manifest validation', () => {
   assert.equal(result.valid, true, result.errors.join('\n'));
 });
 
+test('accepts new sensitive permissions in v2 manifest validation', () => {
+  const result = validateManifest({
+    schemaVersion: '1.0',
+    uuid: '@tester/sensitive-plugin',
+    name: 'Sensitive Plugin',
+    permissions: ['secrets', 'oauth', 'jobs'],
+    entry: { backend: 'src/backend/index.js' }
+  });
+
+  assert.equal(result.valid, true, result.errors.join('\n'));
+  assert.deepEqual(result.warnings, []);
+});
+
+test('accepts requiresNetwork and runtime metadata in v2 manifest validation', () => {
+  const result = validateManifest({
+    schemaVersion: '1.0',
+    uuid: '@tester/runtime-plugin',
+    name: 'Runtime Plugin',
+    requiresNetwork: true,
+    runtime: {
+      startupTimeoutMs: 15000,
+      expectedIdleMemoryMb: 96,
+      expectedActiveMemoryMb: 256,
+      backgroundService: true
+    },
+    entry: { backend: 'src/backend/index.js' }
+  });
+
+  assert.equal(result.valid, true, result.errors.join('\n'));
+  assert.deepEqual(result.warnings, []);
+});
+
+test('rejects native plugins without explicit platforms', () => {
+  const missingPlatforms = validateManifest({
+    schemaVersion: '1.0',
+    uuid: '@tester/native-plugin-missing-platforms',
+    name: 'Native Plugin Missing Platforms',
+    native: true,
+    entry: { backend: 'src/backend/index.js' }
+  });
+
+  assert.equal(missingPlatforms.valid, false);
+  assert.match(missingPlatforms.errors[0], /native/i);
+  assert.match(missingPlatforms.errors[0], /platforms/i);
+
+  const emptyPlatforms = validateManifest({
+    schemaVersion: '1.0',
+    uuid: '@tester/native-plugin-empty-platforms',
+    name: 'Native Plugin Empty Platforms',
+    native: true,
+    platforms: [],
+    entry: { backend: 'src/backend/index.js' }
+  });
+
+  assert.equal(emptyPlatforms.valid, false);
+  assert.match(emptyPlatforms.errors[0], /native/i);
+  assert.match(emptyPlatforms.errors[0], /platforms/i);
+});
+
+test('warns when network permissions are declared without requiresNetwork', () => {
+  const result = validateManifest({
+    schemaVersion: '1.0',
+    uuid: '@tester/network-warning-plugin',
+    name: 'Network Warning Plugin',
+    permissions: ['http', 'websocket'],
+    entry: { backend: 'src/backend/index.js' }
+  });
+
+  assert.equal(result.valid, true, result.errors.join('\n'));
+  assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0], /requiresNetwork/);
+  assert.match(result.warnings[0], /http/);
+  assert.match(result.warnings[0], /websocket/);
+});
+
+test('warns when runtime startup timeout is outside the documented range', () => {
+  const result = validateManifest({
+    schemaVersion: '1.0',
+    uuid: '@tester/runtime-warning-plugin',
+    name: 'Runtime Warning Plugin',
+    runtime: {
+      startupTimeoutMs: 999999
+    },
+    entry: { backend: 'src/backend/index.js' }
+  });
+
+  assert.equal(result.valid, true, result.errors.join('\n'));
+  assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0], /runtime\.startupTimeoutMs/);
+  assert.match(result.warnings[0], /documented range/i);
+});
+
 test('accepts MassX and oled capability in v2 manifest validation', () => {
   const result = validateManifest({
     schemaVersion: '1.0',

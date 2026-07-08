@@ -23,6 +23,9 @@ const permissionEnum = [
   'chart',
   'definitions',
   'ui',
+  'secrets',
+  'oauth',
+  'jobs',
   'pluginApi',
   'electron.app',
   'electron.browserWindow',
@@ -37,6 +40,7 @@ const permissionEnum = [
 const platformEnum = ['win32-x64', 'darwin-arm64', 'darwin-x64', 'linux-x64'];
 
 const capabilityEnum = ['encoder', 'touchscreen', 'knob', 'slider', 'lcd', 'oled', 'vibration'];
+const STARTUP_TIMEOUT_RANGE_MS = { min: 1000, max: 120000 };
 
 const manifestSchema = {
   type: 'object',
@@ -64,6 +68,17 @@ const manifestSchema = {
     platforms: {
       type: 'array',
       items: { type: 'string', enum: platformEnum }
+    },
+    requiresNetwork: { type: 'boolean' },
+    runtime: {
+      type: 'object',
+      properties: {
+        startupTimeoutMs: { type: 'number' },
+        expectedIdleMemoryMb: { type: 'number' },
+        expectedActiveMemoryMb: { type: 'number' },
+        backgroundService: { type: 'boolean' }
+      },
+      additionalProperties: true
     },
     devices: {
       type: 'array',
@@ -134,6 +149,34 @@ export function validateManifest(manifest) {
     } catch {
       return { valid: false, errors: ['/repo: must be a valid URL'], warnings };
     }
+  }
+
+  if (manifest.native === true && (!Array.isArray(manifest.platforms) || manifest.platforms.length === 0)) {
+    return {
+      valid: false,
+      errors: ['/platforms: native plugins must declare at least one platform'],
+      warnings
+    };
+  }
+
+  const networkPermissions = (manifest.permissions ?? []).filter(
+    (permission) => permission === 'http' || permission === 'websocket'
+  );
+  if (networkPermissions.length > 0 && manifest.requiresNetwork !== true) {
+    warnings.push(
+      `/permissions: ${networkPermissions.join(', ')} permission requires manifest.requiresNetwork=true to match host network metadata`
+    );
+  }
+
+  const startupTimeoutMs = manifest.runtime?.startupTimeoutMs;
+  if (
+    typeof startupTimeoutMs === 'number' &&
+    (startupTimeoutMs < STARTUP_TIMEOUT_RANGE_MS.min || startupTimeoutMs > STARTUP_TIMEOUT_RANGE_MS.max)
+  ) {
+    warnings.push(
+      `/runtime.startupTimeoutMs: ${startupTimeoutMs} is outside the documented range ` +
+        `${STARTUP_TIMEOUT_RANGE_MS.min}-${STARTUP_TIMEOUT_RANGE_MS.max} ms after FlexStudio clamping`
+    );
   }
 
   return { valid: true, errors: [], warnings };
