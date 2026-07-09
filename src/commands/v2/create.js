@@ -132,7 +132,14 @@ function parameterizeTemplate(baseDir, answers) {
 
   writeJson(path.join(baseDir, 'locales', 'en.json'), {
     [`${uuid}.exampleUnit.name`]: 'Example Unit',
-    [`${uuid}.config.title`]: 'Plugin Settings'
+    [`${uuid}.config.title`]: 'Plugin Settings',
+    'actions.save': 'Save',
+    'actions.saveAppearance': 'Save appearance',
+    'actions.saveSettings': 'Save Settings',
+    'appearance.unitNameLabel': 'Unit name',
+    'config.defaultMessageLabel': 'Default Message',
+    'message.default': 'Hello from plugin!',
+    'unit.messageLabel': 'Message'
   });
 
   updateRootReadme(path.join(baseDir, 'README.md'), name, manifestDescription);

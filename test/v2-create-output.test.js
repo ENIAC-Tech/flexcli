@@ -275,6 +275,10 @@ test('creates v2 project from a local template path', async (t) => {
   assert.match(readme, /^# My Plugin/m);
   assert.match(readme, /Created from the shared template\./);
   assert.equal(readme.includes('FlexDesigner'), false);
+
+  const locale = JSON.parse(fs.readFileSync(path.join(target, 'locales', 'en.json'), 'utf8'));
+  assert.equal(locale['@tester/my-plugin.exampleUnit.name'], 'Example Unit');
+  assert.equal(locale['actions.saveSettings'], 'Save Settings');
 });
 
 test('copies package.json into v2 build output metadata', async (t) => {
