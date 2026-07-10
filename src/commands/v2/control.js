@@ -28,7 +28,7 @@ export class V2ControlClient {
 
   async connect() {
     const url = `ws://${this.host}:${this.port}`;
-    
+
     await new Promise((resolve, reject) => {
       this.ws = new WebSocket(url);
 

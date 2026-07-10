@@ -1,4 +1,3 @@
 node_modules
 logs
 *.tgz
-package-lock.json

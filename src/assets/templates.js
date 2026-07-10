@@ -331,7 +331,7 @@ export const readmeTemplate = `
 ### **Prerequisites**
 
 - Node.js 18 or later  
-- FlexDesigner v1.0.0 or later (v1 plugin host)  
+- FlexDesigner v1.0.0 or later (v1 plugin host)
 - A Flexbar device 
 - Install FlexCLI  
   \`\`\`
