@@ -7,8 +7,10 @@
  */
 
 import Ajv from 'ajv';
+import { PANEL_DEFINITION_JSON_SCHEMA } from './plugin-panel-schema.js';
+import { resolvePluginPanelDefinition } from './plugin-panel-model.js';
 
-const PLUGIN_UNIT_TYPES = ['standard', 'custom', 'canvas', 'cycled', 'slider', 'value-label', 'label'];
+const PLUGIN_UNIT_TYPES = ['standard', 'custom', 'canvas', 'cycled', 'slider', 'value-label', 'label', 'panel'];
 const EPSILON = 1e-9;
 const MAX_DECIMALS = 6;
 
@@ -74,6 +76,8 @@ export const PLUGIN_DEFINITIONS_JSON_SCHEMA = {
         hasFunctionEditor: { type: 'boolean' },
         hasAppearanceEditor: { type: 'boolean' },
         hasView: { type: 'boolean' },
+        panel: PANEL_DEFINITION_JSON_SCHEMA,
+        tapAction: { const: 'page' },
         platforms: {
           type: 'array',
           items: { type: 'string', enum: ['win32', 'darwin', 'linux'] }
@@ -308,6 +312,15 @@ function validateUnitTypeFields(unit) {
     throw new Error(`Unit ${unit.typeId}: unsupported plugin.type '${type}'`);
   }
 
+  if (type === 'panel') {
+    if (!unit.panel) throw new Error('panel-definition-required');
+    resolvePluginPanelDefinition(unit.panel);
+    if (unit.hasView || unit.hasAppearanceEditor || ['functions','slider','valueLabel','label','tapAction','interactionMode','defaultActivation','buttonGroup'].some(key=>unit[key]!==undefined))
+      throw new Error('panel-incompatible-runtime-fields');
+    return;
+  }
+  if(unit.panel!==undefined)throw new Error('panel-definition-on-other-type');
+  if(unit.tapAction!==undefined&&!['label','value-label'].includes(type))throw new Error('tap-action-on-other-type');
   if (type === 'custom') {
     if (!unit.hasView) throw new Error(`Unit ${unit.typeId}: plugin.type 'custom' requires hasView: true`);
     if (unit.appearanceOverride || unit.functions || unit.slider || unit.valueLabel || unit.label) {
