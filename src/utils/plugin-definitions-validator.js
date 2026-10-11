@@ -40,13 +40,14 @@ export const PLUGIN_DEFINITIONS_JSON_SCHEMA = {
     revision: { type: 'string' }
   },
   definitions: {
+    pluginDisplayText: { anyOf: [{ type:'string', minLength:1 }, {type:'object', required:['default'], additionalProperties:false, properties:{default:{type:'string'},translations:{type:'object',additionalProperties:{type:'string'}}}}] },
     pluginLibraryDefinition: {
       type: 'object',
       required: ['libraryUUID', 'name'],
       additionalProperties: false,
       properties: {
         libraryUUID: { type: 'string', minLength: 1 },
-        name: { type: 'string', minLength: 1 },
+        name: { $ref: '#/definitions/pluginDisplayText' },
         icon: { type: 'string' },
         categoryId: { type: 'string' }
       }
@@ -69,13 +70,14 @@ export const PLUGIN_DEFINITIONS_JSON_SCHEMA = {
       properties: {
         unitId: { type: 'string', minLength: 1 },
         typeId: { type: 'string', minLength: 1 },
-        name: { type: 'string', minLength: 1 },
+        name: { $ref: '#/definitions/pluginDisplayText' },
         categoryId: { type: 'string', minLength: 1 },
         plugin: { $ref: '#/definitions/pluginUnit' },
         icon: { type: 'string' },
         hasFunctionEditor: { type: 'boolean' },
         hasAppearanceEditor: { type: 'boolean' },
         hasView: { type: 'boolean' },
+        interactionMode: {type:'string',enum:['click','continuous','display']},
         panel: PANEL_DEFINITION_JSON_SCHEMA,
         tapAction: { const: 'page' },
         platforms: {
@@ -98,7 +100,7 @@ export const PLUGIN_DEFINITIONS_JSON_SCHEMA = {
             additionalProperties: false,
             properties: {
               functionId: { type: 'string', minLength: 1 },
-              name: { type: 'string' },
+              name: { $ref: '#/definitions/pluginDisplayText' },
               data: { type: 'object', additionalProperties: true },
               appearanceOverride: { type: 'object', additionalProperties: true }
             }
@@ -155,7 +157,7 @@ export const PLUGIN_DEFINITIONS_JSON_SCHEMA = {
       properties: {
         uuid: { type: 'string', minLength: 1 },
         typeId: { type: 'string', minLength: 1 },
-        name: { type: 'string', minLength: 1 },
+        name: { $ref: '#/definitions/pluginDisplayText' },
         icon: { type: 'string' },
         config: { type: 'object', additionalProperties: true },
         geometry: { $ref: '#/definitions/geometry' },
@@ -176,7 +178,7 @@ export const PLUGIN_DEFINITIONS_JSON_SCHEMA = {
                   properties: {
                     typeId: { type: 'string', minLength: 1 },
                     uuid: { type: 'string', minLength: 1 },
-                    name: { type: 'string' },
+                    name: { $ref: '#/definitions/pluginDisplayText' },
                     identifier: { type: 'string' },
                     config: { type: 'object', additionalProperties: true },
                     geometry: { $ref: '#/definitions/geometry' },

@@ -22,3 +22,10 @@ test('model limits and event delivery ceiling fail before native submission',()=
  model.items[0].id='item';assert.doesNotThrow(()=>validatePanelDelivery(model,'unit','test.panel'));
  model.items[0].title='中'.repeat(81);assert.throws(()=>validatePanelModel(model),/panel-line-too-large/);
 });
+
+test('localized panel and display label names match the runtime definition contract',()=>{
+ const input=panel({name:{default:'Console',translations:{'zh-CN':'控制台'}}});assert.equal(validate(input).ok,true);
+ input.units[0].interactionMode='display';assert.equal(validate(input).ok,false);
+ const label=panel({name:{default:'Status'},panel:undefined,label:{fontFamily:'puhuiti'},interactionMode:'display',tapAction:'page'});delete label.units[0].panel;label.units[0].plugin.type='label';assert.equal(validate(label).ok,true);
+ label.units[0].name.translations={'zh-CN':42};assert.equal(validate(label).ok,false);
+});
