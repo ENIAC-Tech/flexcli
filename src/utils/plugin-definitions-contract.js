@@ -1,6 +1,352 @@
 // Generated from FlexStudio plugin contracts. Run script/sync-plugin-contracts.mjs; do not edit.
+// src/common/plugin-panel-model.ts
+var PANEL_LIMITS = Object.freeze({ modelBytes: 12288, items: 8, pagesPerItem: 4, actionsPerPage: 4, linesPerPage: 4, lineBytes: 240, defaultStaleAfterMs: 3e4 });
+var PLUGIN_UNIT_STATES = ["idle", "active", "attention", "success", "error", "disabled"];
+var PanelValidationError = class extends Error {
+  code;
+  constructor(code) {
+    super(code);
+    this.name = "PanelValidationError";
+    this.code = code;
+  }
+};
+var fail = (code = "panel-invalid") => {
+  throw new PanelValidationError(code);
+};
+var bytes = (value) => new TextEncoder().encode(value).byteLength;
+function object(value, allowed, required = []) {
+  if (!value || typeof value !== "object" || Array.isArray(value) || Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null) fail();
+  if (Object.keys(value).some((key) => !allowed.includes(key)) || required.some((key) => !Object.prototype.hasOwnProperty.call(value, key))) fail();
+}
+function text(value, required = false) {
+  if (value === void 0 && !required) return;
+  if (typeof value !== "string" || value.includes("\0")) fail();
+  if (bytes(value) > PANEL_LIMITS.lineBytes) fail("panel-line-too-large");
+}
+function id(value) {
+  if (typeof value !== "string" || !value || value.includes("\0")) fail();
+}
+function integer(value, minimum = 0) {
+  if (!Number.isSafeInteger(value) || value < minimum) fail();
+}
+function timer(value) {
+  if (value === void 0) return;
+  object(value, ["since"], ["since"]);
+  integer(value.since);
+}
+function bool(value) {
+  if (value !== void 0 && typeof value !== "boolean") fail();
+}
+function array(value, max) {
+  if (!Array.isArray(value) || value.length > max) fail("panel-limit-exceeded");
+}
+function unique(entries) {
+  const ids = /* @__PURE__ */ new Set();
+  for (const entry of entries) {
+    id(entry?.id);
+    if (ids.has(entry.id)) fail("panel-duplicate-id");
+    ids.add(entry.id);
+  }
+}
+function validatePanelModel(value) {
+  const model = value;
+  object(model, ["v", "notice", "defaultItem", "staleAfterMs", "items"], ["v", "items"]);
+  if (model.v !== 1) fail("panel-version-unsupported");
+  if (model.notice !== null) text(model.notice);
+  if (model.defaultItem !== void 0 && model.defaultItem !== null) id(model.defaultItem);
+  if (model.staleAfterMs !== void 0) integer(model.staleAfterMs, 1);
+  array(model.items, PANEL_LIMITS.items);
+  unique(model.items);
+  for (const item of model.items) {
+    object(item, ["id", "title", "subtitle", "state", "stateText", "badge", "timer", "pages"], ["id", "title", "state", "pages"]);
+    text(item.title, true);
+    text(item.subtitle);
+    text(item.stateText);
+    if (!PLUGIN_UNIT_STATES.includes(item.state)) fail();
+    if (item.badge !== void 0) integer(item.badge);
+    timer(item.timer);
+    array(item.pages, PANEL_LIMITS.pagesPerItem);
+    unique(item.pages);
+    for (const page of item.pages) {
+      object(page, ["id", "title", "timer", "lines", "progress", "actions"], ["id", "lines", "actions"]);
+      text(page.title);
+      timer(page.timer);
+      array(page.lines, PANEL_LIMITS.linesPerPage);
+      array(page.actions, PANEL_LIMITS.actionsPerPage);
+      unique(page.actions);
+      for (const line of page.lines) {
+        object(line, ["text", "mono", "secondary"], ["text"]);
+        text(line.text, true);
+        bool(line.mono);
+        bool(line.secondary);
+      }
+      if (page.progress !== void 0) {
+        if (!Array.isArray(page.progress) || page.progress.length !== 2) fail();
+        integer(page.progress[0]);
+        integer(page.progress[1]);
+        if (page.progress[0] > page.progress[1]) fail();
+      }
+      for (const action of page.actions) {
+        object(action, ["id", "label", "style", "confirm", "priority", "requireFullLabel", "enabled"], ["id", "label"]);
+        text(action.label, true);
+        if (action.style !== void 0 && !["normal", "primary", "danger"].includes(action.style)) fail();
+        if (action.confirm !== void 0 && action.confirm !== "hold") fail();
+        if (action.priority !== void 0 && !Number.isFinite(action.priority)) fail();
+        bool(action.requireFullLabel);
+        bool(action.enabled);
+      }
+    }
+  }
+  if (model.defaultItem != null && !model.items.some((item) => item.id === model.defaultItem)) fail("panel-default-item-missing");
+  let serialized;
+  try {
+    serialized = JSON.stringify(model);
+  } catch {
+    fail();
+  }
+  if (bytes(serialized) > PANEL_LIMITS.modelBytes) fail("panel-model-too-large");
+}
+function buildPanelModel(model) {
+  validatePanelModel(model);
+  return JSON.parse(JSON.stringify(model));
+}
+function resolvePluginPanelDefinition(value) {
+  object(value, ["defaultItemCount", "staleAfterMs", "exampleModel"]);
+  const defaultItemCount = value.defaultItemCount ?? 3, staleAfterMs = value.staleAfterMs ?? PANEL_LIMITS.defaultStaleAfterMs;
+  integer(defaultItemCount, 1);
+  if (defaultItemCount > PANEL_LIMITS.items) fail();
+  integer(staleAfterMs, 1);
+  if (value.exampleModel !== void 0) validatePanelModel(value.exampleModel);
+  return { defaultItemCount, staleAfterMs, ...value.exampleModel ? { exampleModel: buildPanelModel(value.exampleModel) } : {} };
+}
+
 // src/main/plugin/plugin-definitions-validate.ts
 import Ajv from "ajv";
+
+// src/common/plugin-panel-schema.ts
+var PANEL_DEFINITION_JSON_SCHEMA = {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "defaultItemCount": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8
+    },
+    "staleAfterMs": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "exampleModel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "v",
+        "items"
+      ],
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "notice": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[^\\u0000]*$"
+        },
+        "defaultItem": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[^\\u0000]*$"
+        },
+        "staleAfterMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "items": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "title",
+              "state",
+              "pages"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\u0000]*$"
+              },
+              "title": {
+                "type": "string",
+                "pattern": "^[^\\u0000]*$"
+              },
+              "subtitle": {
+                "type": "string",
+                "pattern": "^[^\\u0000]*$"
+              },
+              "state": {
+                "enum": [
+                  "idle",
+                  "active",
+                  "attention",
+                  "success",
+                  "error",
+                  "disabled"
+                ]
+              },
+              "stateText": {
+                "type": "string",
+                "pattern": "^[^\\u0000]*$"
+              },
+              "badge": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "timer": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "since"
+                ],
+                "properties": {
+                  "since": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                }
+              },
+              "pages": {
+                "type": "array",
+                "maxItems": 4,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "lines",
+                    "actions"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "pattern": "^[^\\u0000]*$"
+                    },
+                    "title": {
+                      "type": "string",
+                      "pattern": "^[^\\u0000]*$"
+                    },
+                    "timer": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "since"
+                      ],
+                      "properties": {
+                        "since": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      }
+                    },
+                    "lines": {
+                      "type": "array",
+                      "maxItems": 4,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "text"
+                        ],
+                        "properties": {
+                          "text": {
+                            "type": "string",
+                            "pattern": "^[^\\u0000]*$"
+                          },
+                          "mono": {
+                            "type": "boolean"
+                          },
+                          "secondary": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    },
+                    "progress": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "actions": {
+                      "type": "array",
+                      "maxItems": 4,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "id",
+                          "label"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 1,
+                            "pattern": "^[^\\u0000]*$"
+                          },
+                          "label": {
+                            "type": "string",
+                            "pattern": "^[^\\u0000]*$"
+                          },
+                          "style": {
+                            "enum": [
+                              "normal",
+                              "primary",
+                              "danger"
+                            ]
+                          },
+                          "confirm": {
+                            "const": "hold"
+                          },
+                          "priority": {
+                            "type": "number"
+                          },
+                          "requireFullLabel": {
+                            "type": "boolean"
+                          },
+                          "enabled": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+};
 
 // src/common/data/appearance-schema.ts
 var APPEARANCE_SCHEMA_DEFINITIONS = {
@@ -232,7 +578,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
       required: ["type", "pluginUUID", "pluginVersion", "unitId"],
       additionalProperties: false,
       properties: {
-        type: { type: "string", enum: ["standard", "custom", "canvas", "cycled", "slider", "value-label", "label", "button-group"] },
+        type: { type: "string", enum: ["standard", "custom", "canvas", "cycled", "slider", "value-label", "label", "button-group", "panel"] },
         pluginUUID: { type: "string", minLength: 1 },
         pluginVersion: { type: "string", minLength: 1 },
         unitId: { type: "string", minLength: 1 }
@@ -290,9 +636,23 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
         slider: { $ref: "#/definitions/sliderDefinition" },
         valueLabel: { $ref: "#/definitions/valueLabelDefinition" },
         label: { $ref: "#/definitions/labelDefinition" },
+        panel: PANEL_DEFINITION_JSON_SCHEMA,
+        tapAction: { const: "page" },
         buttonGroup: { $ref: "#/definitions/buttonGroupDefinition" }
       },
       allOf: [
+        {
+          if: { properties: { plugin: { properties: { type: { const: "panel" } } } } },
+          then: {
+            required: ["panel"],
+            properties: { hasView: { const: false }, hasAppearanceEditor: { const: false }, interactionMode: false, defaultActivation: false, functions: false, slider: false, valueLabel: false, label: false, buttonGroup: false, tapAction: false }
+          },
+          else: { properties: { panel: false } }
+        },
+        {
+          if: { properties: { plugin: { properties: { type: { enum: ["label", "value-label"] } } } } },
+          else: { properties: { tapAction: false } }
+        },
         {
           if: { $ref: "#/definitions/isStandardUnitDefinition" },
           then: {
@@ -1204,6 +1564,7 @@ function validateBuiltinPluginTemplateBinding(pluginTemplate, label, unitByTypeI
 }
 function validateUnitTypeFields(unit) {
   const type = unit.plugin.type;
+  if (type === "panel") resolvePluginPanelDefinition(unit.panel);
   const disallowClick = /* @__PURE__ */ new Set(["slider", "button-group", "value-label", "label"]);
   if (unit.interactionMode === "click" && disallowClick.has(type)) {
     throw new Error(`Unit ${unit.typeId}: plugin.type '${type}' cannot declare interactionMode 'click'`);
@@ -1338,18 +1699,18 @@ function validateButtonGroupDefinition(unit) {
   }
   const seen = /* @__PURE__ */ new Set();
   for (const button of buttons) {
-    const id = button.buttonId;
-    const normalizedId = id.trim();
+    const id2 = button.buttonId;
+    const normalizedId = id2.trim();
     if (!normalizedId) {
       throw new Error(`button-group '${unit.typeId}' has an empty buttonId`);
     }
-    if (normalizedId !== id) {
-      throw new Error(`button-group '${unit.typeId}' buttonId '${id}' must not have leading or trailing whitespace`);
+    if (normalizedId !== id2) {
+      throw new Error(`button-group '${unit.typeId}' buttonId '${id2}' must not have leading or trailing whitespace`);
     }
-    if (seen.has(id)) {
-      throw new Error(`Duplicate button-group buttonId '${id}' in '${unit.typeId}'`);
+    if (seen.has(id2)) {
+      throw new Error(`Duplicate button-group buttonId '${id2}' in '${unit.typeId}'`);
     }
-    seen.add(id);
+    seen.add(id2);
   }
   const defaultSeen = /* @__PURE__ */ new Set();
   const defaultActiveButtonIds = unit.buttonGroup?.defaultActiveButtonIds ?? [];
