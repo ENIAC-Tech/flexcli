@@ -21,6 +21,7 @@ const permissionEnum = [
   'bus',
   'unit',
   'chart',
+  'input',
   'definitions',
   'ui',
   'secrets',
