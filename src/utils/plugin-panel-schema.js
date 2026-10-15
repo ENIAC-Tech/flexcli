@@ -226,6 +226,11 @@ const PANEL_DEFINITION_JSON_SCHEMA = {
                             "type": "string",
                             "pattern": "^[^\\u0000]*$",
                             "minLength": 1
+                          },
+                          "icon": {
+                            "enum": [
+                              "open-in-new"
+                            ]
                           }
                         },
                         "dependencies": {
@@ -267,6 +272,17 @@ const PANEL_DEFINITION_JSON_SCHEMA = {
               "maximum": 9007199254740991
             }
           }
+        },
+        "layout": {
+          "const": "sessions"
+        },
+        "noticeIcon": {
+          "enum": [
+            "power",
+            "loading",
+            "link-off",
+            "inbox"
+          ]
         }
       }
     }

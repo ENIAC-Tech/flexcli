@@ -49,8 +49,10 @@ function unique(entries) {
 }
 function validatePanelModel(value) {
   const model = value;
-  object(model, ["v", "notice", "defaultItem", "staleAfterMs", "pagination", "items"], ["v", "items"]);
+  object(model, ["v", "layout", "noticeIcon", "notice", "defaultItem", "staleAfterMs", "pagination", "items"], ["v", "items"]);
   if (model.v !== 1) fail("panel-version-unsupported");
+  if (model.layout !== void 0 && model.layout !== "sessions") fail();
+  if (model.noticeIcon !== void 0 && !["power", "loading", "link-off", "inbox"].includes(model.noticeIcon)) fail();
   if (model.pagination !== void 0) {
     object(model.pagination, ["offset", "total"], ["offset", "total"]);
     integer(model.pagination.offset);
@@ -94,10 +96,11 @@ function validatePanelModel(value) {
         if (page.progress[0] > page.progress[1]) fail();
       }
       for (const action of page.actions) {
-        object(action, ["id", "label", "description", "buttonLabel", "style", "confirm", "priority", "requireFullLabel", "enabled"], ["id", "label"]);
+        object(action, ["id", "label", "description", "buttonLabel", "icon", "style", "confirm", "priority", "requireFullLabel", "enabled"], ["id", "label"]);
         text(action.label, true);
         text(action.description);
         text(action.buttonLabel);
+        if (action.icon !== void 0 && action.icon !== "open-in-new") fail();
         if (action.buttonLabel !== void 0 && (!action.buttonLabel || action.description === void 0 || page.layout !== "decision")) fail();
         if (action.style !== void 0 && !["normal", "primary", "danger"].includes(action.style)) fail();
         if (action.confirm !== void 0 && action.confirm !== "hold") fail();
