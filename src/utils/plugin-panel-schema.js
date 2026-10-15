@@ -283,6 +283,87 @@ const PANEL_DEFINITION_JSON_SCHEMA = {
             "link-off",
             "inbox"
           ]
+        },
+        "navigation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "token",
+            "view",
+            "item"
+          ],
+          "properties": {
+            "token": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[^\\u0000]*$",
+              "maxLength": 64
+            },
+            "view": {
+              "enum": [
+                "overview",
+                "detail"
+              ]
+            },
+            "item": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[^\\u0000]*$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "page": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[^\\u0000]*$"
+            },
+            "action": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[^\\u0000]*$"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "view": {
+                    "const": "overview"
+                  }
+                }
+              },
+              "then": {
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "page"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "action"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "else": {
+                "properties": {
+                  "item": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\u0000]*$"
+                  }
+                }
+              }
+            }
+          ]
         }
       }
     }

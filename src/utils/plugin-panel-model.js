@@ -49,7 +49,7 @@ function unique(entries) {
 }
 function validatePanelModel(value) {
   const model = value;
-  object(model, ["v", "layout", "noticeIcon", "notice", "defaultItem", "staleAfterMs", "pagination", "items"], ["v", "items"]);
+  object(model, ["v", "layout", "noticeIcon", "notice", "defaultItem", "staleAfterMs", "pagination", "navigation", "items"], ["v", "items"]);
   if (model.v !== 1) fail("panel-version-unsupported");
   if (model.layout !== void 0 && model.layout !== "sessions") fail();
   if (model.noticeIcon !== void 0 && !["power", "loading", "link-off", "inbox"].includes(model.noticeIcon)) fail();
@@ -111,6 +111,30 @@ function validatePanelModel(value) {
     }
   }
   if (model.defaultItem != null && !model.items.some((item) => item.id === model.defaultItem)) fail("panel-default-item-missing");
+  if (model.navigation !== void 0) {
+    const nav = model.navigation;
+    object(nav, ["token", "view", "item", "page", "action"], ["token", "view", "item"]);
+    id(nav.token);
+    if (bytes(nav.token) > 64) fail();
+    if (!["overview", "detail"].includes(nav.view)) fail();
+    const item = model.items.find((item2) => item2.id === nav.item);
+    if (nav.item !== null) {
+      id(nav.item);
+      if (!item) fail("panel-navigation-target-missing");
+    }
+    if (nav.view === "overview") {
+      if (nav.page !== void 0 || nav.action !== void 0) fail();
+    } else {
+      if (!item) fail("panel-navigation-target-missing");
+      if (nav.page !== void 0) id(nav.page);
+      const page = nav.page === void 0 ? item.pages[0] : item.pages.find((page2) => page2.id === nav.page);
+      if (nav.page !== void 0 && !page) fail("panel-navigation-target-missing");
+      if (nav.action !== void 0) {
+        id(nav.action);
+        if (!page?.actions.some((action) => action.id === nav.action)) fail("panel-navigation-target-missing");
+      }
+    }
+  }
   let serialized;
   try {
     serialized = JSON.stringify(model);
