@@ -21,7 +21,7 @@ import validateCommand from './commands/v1/validate.js';
 import createCommand from './commands/v1/create.js';
 import killCommand from './commands/v1/kill.js';
 import createV2Command, { formatV2CreateSuccessMessage } from './commands/v2/create.js';
-import { createV2Client } from './commands/v2/control.js';
+import { createV2Client, getV2ConnectionSettings, saveV2ConnectionPort } from './commands/v2/control.js';
 import { buildV2Command } from './commands/v2/build.js';
 import { packV2Command } from './commands/v2/pack.js';
 import { runV2DevCommand } from './commands/v2/dev.js';
@@ -359,15 +359,33 @@ plugin
 // ── v2 plugin management commands ─────────────────────────────────────────────
 const pluginV2 = program.command('plugin-v2').description(`${HOST_APP_V2} plugin management (v2 API)`);
 
+// Commander accepts the legacy global --port at any command position.
+// Ignore its v1 default, but honor an explicitly supplied port for v2 too.
+function v2ConnectionOptions(options) {
+  const port = options.port ?? (program.getOptionValueSource('port') === 'cli' ? program.opts().port : undefined);
+  return { ...options, port };
+}
+
+pluginV2.command('config')
+  .description('Show or save the plugin development connection port')
+  .option('--port <port>', 'Save the plugin development port')
+  .action(options => {
+    try {
+      const { port } = v2ConnectionOptions(options);
+      const settings = port === undefined ? getV2ConnectionSettings() : saveV2ConnectionPort(port);
+      console.log(JSON.stringify(settings, null, 2));
+    } catch (error) { logger.error(error.message); process.exitCode = 1; }
+  });
+
+
 pluginV2
   .command('list')
   .description('List all v2 plugins')
   .option('--host <host>', 'WS host', '127.0.0.1')
-  .option('--port <port>', 'WS port', '34579')
-  .option('--token <token>', 'Auth token (optional in dev; or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN)')
+  .option('--port <port>', 'Plugin development port (saved for future commands)')
   .action(async (options) => {
     try {
-      const client = await createV2Client(options);
+      const client = await createV2Client(v2ConnectionOptions(options));
       const plugins = await client.command('listPlugins');
       console.log(JSON.stringify(plugins, null, 2));
       client.disconnect();
@@ -381,11 +399,10 @@ pluginV2
   .command('install <source>')
   .description('Install a v2 plugin from directory or zip')
   .option('--host <host>', 'WS host', '127.0.0.1')
-  .option('--port <port>', 'WS port', '34579')
-  .option('--token <token>', 'Auth token (or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN env var)')
+  .option('--port <port>', 'Plugin development port (saved for future commands)')
   .action(async (source, options) => {
     try {
-      const client = await createV2Client(options);
+      const client = await createV2Client(v2ConnectionOptions(options));
       const result = await client.command('installPlugin', { sourcePath: path.resolve(source) });
       if (result?.success === false) {
         logger.error(`Installation failed: ${result.error}`);
@@ -403,11 +420,10 @@ pluginV2
   .command('uninstall <uuid>')
   .description('Uninstall a v2 plugin')
   .option('--host <host>', 'WS host', '127.0.0.1')
-  .option('--port <port>', 'WS port', '34579')
-  .option('--token <token>', 'Auth token (or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN env var)')
+  .option('--port <port>', 'Plugin development port (saved for future commands)')
   .action(async (uuid, options) => {
     try {
-      const client = await createV2Client(options);
+      const client = await createV2Client(v2ConnectionOptions(options));
       const result = await client.command('uninstallPlugin', { pluginUUID: uuid });
       if (result?.success === false) {
         logger.error(`Uninstall failed: ${result.error ?? 'unknown error'}`);
@@ -426,11 +442,10 @@ pluginV2
   .command('enable <uuid>')
   .description('Enable a v2 plugin')
   .option('--host <host>', 'WS host', '127.0.0.1')
-  .option('--port <port>', 'WS port', '34579')
-  .option('--token <token>', 'Auth token (optional in dev; or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN)')
+  .option('--port <port>', 'Plugin development port (saved for future commands)')
   .action(async (uuid, options) => {
     try {
-      const client = await createV2Client(options);
+      const client = await createV2Client(v2ConnectionOptions(options));
       await client.command('enablePlugin', { pluginUUID: uuid });
       logger.info(`Plugin ${uuid} enabled`);
       client.disconnect();
@@ -444,11 +459,10 @@ pluginV2
   .command('disable <uuid>')
   .description('Disable a v2 plugin')
   .option('--host <host>', 'WS host', '127.0.0.1')
-  .option('--port <port>', 'WS port', '34579')
-  .option('--token <token>', 'Auth token (optional in dev; or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN)')
+  .option('--port <port>', 'Plugin development port (saved for future commands)')
   .action(async (uuid, options) => {
     try {
-      const client = await createV2Client(options);
+      const client = await createV2Client(v2ConnectionOptions(options));
       await client.command('disablePlugin', { pluginUUID: uuid });
       logger.info(`Plugin ${uuid} disabled`);
       client.disconnect();
@@ -462,11 +476,10 @@ pluginV2
   .command('reload <uuid>')
   .description('Hot-reload a v2 plugin')
   .option('--host <host>', 'WS host', '127.0.0.1')
-  .option('--port <port>', 'WS port', '34579')
-  .option('--token <token>', 'Auth token (optional in dev; or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN)')
+  .option('--port <port>', 'Plugin development port (saved for future commands)')
   .action(async (uuid, options) => {
     try {
-      const client = await createV2Client(options);
+      const client = await createV2Client(v2ConnectionOptions(options));
       await client.command('reloadPlugin', { pluginUUID: uuid });
       logger.info(`Plugin ${uuid} reloaded`);
       client.disconnect();
@@ -480,11 +493,10 @@ pluginV2
   .command('logs <uuid>')
   .description('Stream live logs from a v2 plugin')
   .option('--host <host>', 'WS host', '127.0.0.1')
-  .option('--port <port>', 'WS port', '34579')
-  .option('--token <token>', 'Auth token (optional in dev; or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN)')
+  .option('--port <port>', 'Plugin development port (saved for future commands)')
   .action(async (uuid, options) => {
     try {
-      const client = await createV2Client(options);
+      const client = await createV2Client(v2ConnectionOptions(options));
 
       const result = await client.command('subscribeLogs', { pluginUUID: uuid });
 
@@ -531,11 +543,10 @@ pluginV2
   .command('dev <plugin-dir>')
   .description('Build and mount a v2 plugin directory for development (watch + auto reload)')
   .option('--host <host>', 'WS host', '127.0.0.1')
-  .option('--port <port>', 'WS port', '34579')
-  .option('--token <token>', 'Auth token (optional in dev; or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN)')
+  .option('--port <port>', 'Plugin development port (saved for future commands)')
   .action(async (pluginDir, options) => {
     try {
-      await runV2DevCommand(pluginDir, options);
+      await runV2DevCommand(pluginDir, v2ConnectionOptions(options));
     } catch (err) {
       logger.error(`Error: ${err.message}`);
       process.exit(1);
@@ -606,11 +617,10 @@ pluginV2
   .command('diagnostics')
   .description('Get diagnostics from the v2 plugin system')
   .option('--host <host>', 'WS host', '127.0.0.1')
-  .option('--port <port>', 'WS port', '34579')
-  .option('--token <token>', 'Auth token (optional in dev; or FLEX_WS_TOKEN / PLUGIN_WS_TOKEN)')
+  .option('--port <port>', 'Plugin development port (saved for future commands)')
   .action(async (options) => {
     try {
-      const client = await createV2Client(options);
+      const client = await createV2Client(v2ConnectionOptions(options));
       const diag = await client.command('getDiagnostics');
       console.log(JSON.stringify(diag, null, 2));
       client.disconnect();

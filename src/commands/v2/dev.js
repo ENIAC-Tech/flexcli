@@ -48,7 +48,6 @@ function collectWatchTargets(pluginDir) {
  * @param {object} options
  * @param {string} [options.host]
  * @param {string|number} [options.port]
- * @param {string} [options.token]
  */
 export async function runV2DevCommand(pluginDir, options) {
   const absDir = path.resolve(pluginDir);

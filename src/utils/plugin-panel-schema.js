@@ -98,12 +98,17 @@ const PANEL_DEFINITION_JSON_SCHEMA = {
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 9007199254740991
+                  },
+                  "elapsedMs": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
                   }
                 }
               },
               "pages": {
                 "type": "array",
-                "maxItems": 4,
+                "maxItems": 8,
                 "items": {
                   "type": "object",
                   "additionalProperties": false,
@@ -130,6 +135,11 @@ const PANEL_DEFINITION_JSON_SCHEMA = {
                       ],
                       "properties": {
                         "since": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "elapsedMs": {
                           "type": "integer",
                           "minimum": 0,
                           "maximum": 9007199254740991
@@ -207,13 +217,54 @@ const PANEL_DEFINITION_JSON_SCHEMA = {
                           },
                           "enabled": {
                             "type": "boolean"
+                          },
+                          "description": {
+                            "type": "string",
+                            "pattern": "^[^\\u0000]*$"
+                          },
+                          "buttonLabel": {
+                            "type": "string",
+                            "pattern": "^[^\\u0000]*$",
+                            "minLength": 1
                           }
+                        },
+                        "dependencies": {
+                          "buttonLabel": [
+                            "description"
+                          ]
                         }
                       }
+                    },
+                    "layout": {
+                      "const": "decision"
                     }
                   }
                 }
+              },
+              "activity": {
+                "type": "string",
+                "pattern": "^[^\\u0000]*$"
               }
+            }
+          }
+        },
+        "pagination": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "offset",
+            "total"
+          ],
+          "properties": {
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "total": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
             }
           }
         }

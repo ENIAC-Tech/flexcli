@@ -177,18 +177,33 @@ Terminates a running plugin (v1).
 
 ## `plugin-v2` — v2 plugin commands (FlexStudio)
 
-These commands talk to **FlexStudio** over the v2 plugin control WebSocket.
+These commands talk directly to **FlexStudio** over the local v2 plugin control WebSocket.
+Enable **Settings > Plugins > Debug mode** in FlexStudio first. It is off
+by default. The host saves the enabled state and port; its default port is `34579`.
+
+Set and save the matching CLI port without connecting to the host:
+
+```bash
+flexcli plugin-v2 config --port 34579
+flexcli plugin-v2 config
+```
+
+The CLI uses this saved port for subsequent commands. Explicit `--port` on a
+connection command also saves the port. Valid ports are integers from 1 to 65535.
+Configuration is stored in `%APPDATA%/flexcli/config.json` on Windows or
+`$XDG_CONFIG_HOME/flexcli/config.json` (default `~/.config/flexcli/config.json`)
+elsewhere. `FLEXCLI_CONFIG_PATH` explicitly overrides the file location.
 
 ### Common options (where applicable)
 
 - `--host <host>`: WebSocket host (default: `127.0.0.1`)
-- `--port <port>`: WebSocket port (default: `34579`)
-- `--token <token>`: Auth token; optional in some dev setups. Can also use env vars `FLEX_WS_TOKEN` or `PLUGIN_WS_TOKEN`.
+- `--port <port>`: WebSocket port; saved for subsequent commands (initial default: `34579`).
 
 ### Subcommands
 
 | Subcommand | Description |
 |------------|-------------|
+| `config` | Show or persist the plugin development port |
 | `list` | List all v2 plugins |
 | `install <source>` | Install from a directory or zip |
 | `uninstall <uuid>` | Uninstall a plugin |

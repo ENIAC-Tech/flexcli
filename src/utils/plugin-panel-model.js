@@ -1,4 +1,4 @@
-const PANEL_LIMITS = Object.freeze({ modelBytes: 12288, items: 8, pagesPerItem: 4, actionsPerPage: 4, linesPerPage: 4, lineBytes: 240, defaultStaleAfterMs: 3e4 });
+const PANEL_LIMITS = Object.freeze({ modelBytes: 12288, items: 8, pagesPerItem: 8, actionsPerPage: 4, linesPerPage: 4, lineBytes: 240, defaultStaleAfterMs: 3e4 });
 const PLUGIN_UNIT_STATES = ["idle", "active", "attention", "success", "error", "disabled"];
 class PanelValidationError extends Error {
   code;
@@ -29,8 +29,9 @@ function integer(value, minimum = 0) {
 }
 function timer(value) {
   if (value === void 0) return;
-  object(value, ["since"], ["since"]);
+  object(value, ["since", "elapsedMs"], ["since"]);
   integer(value.since);
+  if (value.elapsedMs !== void 0) integer(value.elapsedMs);
 }
 function bool(value) {
   if (value !== void 0 && typeof value !== "boolean") fail();
@@ -48,17 +49,24 @@ function unique(entries) {
 }
 function validatePanelModel(value) {
   const model = value;
-  object(model, ["v", "notice", "defaultItem", "staleAfterMs", "items"], ["v", "items"]);
+  object(model, ["v", "notice", "defaultItem", "staleAfterMs", "pagination", "items"], ["v", "items"]);
   if (model.v !== 1) fail("panel-version-unsupported");
+  if (model.pagination !== void 0) {
+    object(model.pagination, ["offset", "total"], ["offset", "total"]);
+    integer(model.pagination.offset);
+    integer(model.pagination.total, 1);
+    if (model.pagination.offset >= model.pagination.total || model.pagination.offset + (model.items?.length ?? 0) > model.pagination.total) fail();
+  }
   if (model.notice !== null) text(model.notice);
   if (model.defaultItem !== void 0 && model.defaultItem !== null) id(model.defaultItem);
   if (model.staleAfterMs !== void 0) integer(model.staleAfterMs, 1);
   array(model.items, PANEL_LIMITS.items);
   unique(model.items);
   for (const item of model.items) {
-    object(item, ["id", "title", "subtitle", "state", "stateText", "badge", "timer", "pages"], ["id", "title", "state", "pages"]);
+    object(item, ["id", "title", "subtitle", "activity", "state", "stateText", "badge", "timer", "pages"], ["id", "title", "state", "pages"]);
     text(item.title, true);
     text(item.subtitle);
+    text(item.activity);
     text(item.stateText);
     if (!PLUGIN_UNIT_STATES.includes(item.state)) fail();
     if (item.badge !== void 0) integer(item.badge);
@@ -66,8 +74,9 @@ function validatePanelModel(value) {
     array(item.pages, PANEL_LIMITS.pagesPerItem);
     unique(item.pages);
     for (const page of item.pages) {
-      object(page, ["id", "title", "timer", "lines", "progress", "actions"], ["id", "lines", "actions"]);
+      object(page, ["id", "title", "layout", "timer", "lines", "progress", "actions"], ["id", "lines", "actions"]);
       text(page.title);
+      if (page.layout !== void 0 && page.layout !== "decision") fail();
       timer(page.timer);
       array(page.lines, PANEL_LIMITS.linesPerPage);
       array(page.actions, PANEL_LIMITS.actionsPerPage);
@@ -85,8 +94,11 @@ function validatePanelModel(value) {
         if (page.progress[0] > page.progress[1]) fail();
       }
       for (const action of page.actions) {
-        object(action, ["id", "label", "style", "confirm", "priority", "requireFullLabel", "enabled"], ["id", "label"]);
+        object(action, ["id", "label", "description", "buttonLabel", "style", "confirm", "priority", "requireFullLabel", "enabled"], ["id", "label"]);
         text(action.label, true);
+        text(action.description);
+        text(action.buttonLabel);
+        if (action.buttonLabel !== void 0 && (!action.buttonLabel || action.description === void 0 || page.layout !== "decision")) fail();
         if (action.style !== void 0 && !["normal", "primary", "danger"].includes(action.style)) fail();
         if (action.confirm !== void 0 && action.confirm !== "hold") fail();
         if (action.priority !== void 0 && !Number.isFinite(action.priority)) fail();
@@ -111,7 +123,9 @@ function buildPanelModel(model) {
 function validatePanelEvent(value) {
   const event = value;
   if (!event || typeof event !== "object") fail("panel-event-invalid");
-  if (event.event === "select") {
+  if (event.event === "browse") {
+    integer(event.offset);
+  } else if (event.event === "select") {
     if (event.item !== null) id(event.item);
   } else if (event.event === "action") {
     for (const key of ["item", "page", "action", "token"]) id(event[key]);
