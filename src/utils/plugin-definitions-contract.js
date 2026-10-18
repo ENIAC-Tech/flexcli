@@ -67105,8 +67105,7 @@ var ELEMENT_CONTRACTS_V1 = {
   "panel-state": { schema: "panelState", rendering: "device", resources: [] },
   "panel-lines": { schema: "panelLines", rendering: "device", resources: ["background", "font"] },
   "panel-action": { schema: "panelAction", rendering: "device", resources: ["background", "font"] },
-  "panel-back": { schema: "panelBack", rendering: "device", resources: ["background", "font"] },
-  "panel-more": { schema: "panelMore", rendering: "device", resources: ["background", "font"] }
+  "panel-back": { schema: "panelBack", rendering: "device", resources: ["background", "font"] }
 };
 
 // src/common/data/theme-platform-registry-v1.ts
@@ -67237,7 +67236,6 @@ var definitions = {
     panelData({ view: { const: "detail" }, index: { type: "integer", minimum: 1, maximum: 4 } }, ["view", "index"])
   ),
   panelBack: chartElement("panel-back", optional(panelText), panelData({ view: { const: "detail" } }, ["view"])),
-  panelMore: chartElement("panel-more", optional({ ...panelText, showSummary: boolean }), panelData({ view: { const: "overview" } }, ["view"])),
   sourceCredit: object2(
     { themeName: name, authorName: name, authorId: uuid, listingId: uuid, versionId: uuid, version },
     ["themeName", "authorName", "listingId", "versionId", "version"]
