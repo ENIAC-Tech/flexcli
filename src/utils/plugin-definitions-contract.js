@@ -7616,8 +7616,14 @@ function validatePanelModel(value) {
   if (model.staleAfterMs !== void 0) integer(model.staleAfterMs, 1);
   array(model.items, PANEL_LIMITS.items);
   unique(model.items);
+  const occupiedSlots = /* @__PURE__ */ new Set();
   for (const item of model.items) {
-    object(item, ["id", "title", "subtitle", "activity", "state", "stateText", "badge", "timer", "pages"], ["id", "title", "state", "pages"]);
+    if (item.slot !== void 0) {
+      integer(item.slot, 1);
+      if (item.slot > 8 || occupiedSlots.has(item.slot)) fail();
+      occupiedSlots.add(item.slot);
+    }
+    object(item, ["id", "slot", "title", "subtitle", "activity", "state", "stateText", "badge", "timer", "pages"], ["id", "title", "state", "pages"]);
     text2(item.title, true);
     text2(item.subtitle);
     text2(item.activity);
@@ -7700,13 +7706,14 @@ function buildPanelModel(model) {
   return JSON.parse(JSON.stringify(model));
 }
 function resolvePluginPanelDefinition(value) {
-  object(value, ["defaultItemCount", "staleAfterMs", "exampleModel"]);
+  object(value, ["defaultItemCount", "sessionCatalogMethod", "staleAfterMs", "exampleModel"]);
   const defaultItemCount = value.defaultItemCount ?? 3, staleAfterMs = value.staleAfterMs ?? PANEL_LIMITS.defaultStaleAfterMs;
   integer(defaultItemCount, 1);
   if (defaultItemCount > PANEL_LIMITS.items) fail();
   integer(staleAfterMs, 1);
   if (value.exampleModel !== void 0) validatePanelModel(value.exampleModel);
-  return { defaultItemCount, staleAfterMs, ...value.exampleModel ? { exampleModel: buildPanelModel(value.exampleModel) } : {} };
+  if (value.sessionCatalogMethod !== void 0) id(value.sessionCatalogMethod);
+  return { defaultItemCount, staleAfterMs, ...value.sessionCatalogMethod ? { sessionCatalogMethod: value.sessionCatalogMethod } : {}, ...value.exampleModel ? { exampleModel: buildPanelModel(value.exampleModel) } : {} };
 }
 
 // src/common/plugin-native-data.ts
@@ -7722,6 +7729,10 @@ var PANEL_DEFINITION_JSON_SCHEMA = {
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "sessionCatalogMethod": {
+      "type": "string",
+      "minLength": 1
+    },
     "defaultItemCount": {
       "type": "integer",
       "minimum": 1,
@@ -7969,6 +7980,11 @@ var PANEL_DEFINITION_JSON_SCHEMA = {
               "activity": {
                 "type": "string",
                 "pattern": "^[^\\u0000]*$"
+              },
+              "slot": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 8
               }
             }
           }
@@ -67084,6 +67100,7 @@ var ELEMENT_CONTRACTS_V1 = {
   "@eniacelec/utility:vu-meter": { schema: "vuMeter", rendering: "device", resources: [] },
   slider: { schema: "slider", rendering: "device", resources: [] },
   // Native plugin panel elements: drawn by the device from geometry/style, text only in built-in faces.
+  "panel-session": { schema: "panelSession", rendering: "device", resources: [] },
   "panel-field": { schema: "panelField", rendering: "device", resources: ["background", "font"] },
   "panel-state": { schema: "panelState", rendering: "device", resources: [] },
   "panel-lines": { schema: "panelLines", rendering: "device", resources: ["background", "font"] },
@@ -67202,6 +67219,7 @@ var definitions = {
     object2({ dataSourceKey: string, updateInterval: nonnegative })
   ),
   // Native plugin panel elements (spec 2026-10-12-plugin-panel-elements-design): every style key is optional.
+  panelSession: chartElement("panel-session", object2({}), panelData({ view: { const: "overview" }, slot: panelSlot, itemId: name, itemTitle: string }, ["view", "slot"])),
   panelField: chartElement(
     "panel-field",
     optional({ ...panelText, colorMode: { enum: ["fixed", "state"] } }),
@@ -67305,8 +67323,17 @@ var THEME_PACKAGE_SCHEMA_V1 = {
   }, ["schemaVersion", "kind", "profile", "metadata", "themeUUID", "revision", "core", "deviceVariants", "migrationPolicies", "blobs"]),
   definitions
 };
-var CHART_APPEARANCE_SCHEMA_DEFINITIONS = Object.fromEntries(
-  ["chartProgress", "chartLine", "chartSeries", "chartGauge", "chartHeatmap", "chartText", "statusCount"].map((key) => {
+var PLUGIN_NATIVE_APPEARANCE_SCHEMA_DEFINITIONS = Object.fromEntries(
+  [
+    "chartProgress",
+    "chartLine",
+    "chartSeries",
+    "chartGauge",
+    "chartHeatmap",
+    "chartText",
+    "statusCount",
+    ...Object.entries(ELEMENT_CONTRACTS_V1).filter(([type]) => type.startsWith("panel-")).map(([, contract]) => contract.schema)
+  ].map((key) => {
     const schema = definitions[key];
     return [key, { ...schema, properties: { ...schema.properties, uuid: { type: "string", minLength: 1 } } }];
   })
@@ -67907,10 +67934,10 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
       }
     },
     ...APPEARANCE_SCHEMA_DEFINITIONS,
-    ...CHART_APPEARANCE_SCHEMA_DEFINITIONS,
+    ...PLUGIN_NATIVE_APPEARANCE_SCHEMA_DEFINITIONS,
     element: { oneOf: [
       ...APPEARANCE_SCHEMA_DEFINITIONS.element.oneOf,
-      ...Object.keys(CHART_APPEARANCE_SCHEMA_DEFINITIONS).map((key) => ({ $ref: `#/definitions/${key}` }))
+      ...Object.keys(PLUGIN_NATIVE_APPEARANCE_SCHEMA_DEFINITIONS).map((key) => ({ $ref: `#/definitions/${key}` }))
     ] }
   }
 };
@@ -68558,12 +68585,14 @@ function validateNoRuntimeLabelFields(unit) {
   }
 }
 function validateAppearanceReferences(unit) {
+  if (unit.plugin.type === "panel" && unit.appearanceOverride) throw new Error("Agent Panel appearance is platform-owned");
   if (unit.availableElements && !supportsStatusCountElementsV1(unit.plugin.type)) throw new Error("availableElements requires a native data Unit");
   if (unit.plugin.type === "standard" && unit.availableElements?.some((type) => type.startsWith("chart-"))) throw new Error("Chart element palette requires a Chart Unit");
-  const overrides = unit.plugin.type === "cycled" ? (unit.functions ?? []).map((fn) => fn.appearanceOverride) : unit.plugin.type === "standard" || unit.plugin.type === "slider" || unit.plugin.type === "chart" ? [unit.appearanceOverride] : [];
+  const overrides = unit.plugin.type === "cycled" ? (unit.functions ?? []).map((fn) => fn.appearanceOverride) : unit.plugin.type === "standard" || unit.plugin.type === "slider" || unit.plugin.type === "chart" || unit.plugin.type === "panel" ? [unit.appearanceOverride] : [];
   for (const override of overrides) {
     const ids = /* @__PURE__ */ new Set();
     for (const element of override?.elements ?? []) {
+      if (unit.plugin.type !== "panel" && element.typeId?.startsWith("panel-")) throw new Error("Panel elements require a Panel Unit");
       if (unit.plugin.type !== "chart" && element.typeId?.startsWith("chart-")) throw new Error("Chart elements require a Chart Unit");
       if (element.typeId === "status-count") {
         if (!supportsStatusCountElementsV1(unit.plugin.type)) throw new Error("status-count requires a standard display or Chart Unit");
@@ -68571,7 +68600,7 @@ function validateAppearanceReferences(unit) {
         if (!Array.isArray(options) || !options.length || new Set(options.map((option) => option.dataSourceKey)).size !== options.length || !options.some((option) => option.dataSourceKey === element.data?.dataSourceKey))
           throw new Error("status-count requires distinct options and a selected dataSourceKey");
       }
-      if (unit.plugin.type === "chart" || unit.availableElements) {
+      if (unit.plugin.type === "chart" || unit.plugin.type === "panel" || unit.availableElements) {
         if (element.identifier !== void 0) throw new Error(`Unit ${unit.typeId}: explicit element palettes require complete elements, not primary-element patches`);
         if (element.uuid && ids.has(element.uuid)) throw new Error(`Unit ${unit.typeId}: duplicate element uuid ${element.uuid}`);
         if (element.uuid) ids.add(element.uuid);

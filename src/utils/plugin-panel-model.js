@@ -64,8 +64,14 @@ function validatePanelModel(value) {
   if (model.staleAfterMs !== void 0) integer(model.staleAfterMs, 1);
   array(model.items, PANEL_LIMITS.items);
   unique(model.items);
+  const occupiedSlots = /* @__PURE__ */ new Set();
   for (const item of model.items) {
-    object(item, ["id", "title", "subtitle", "activity", "state", "stateText", "badge", "timer", "pages"], ["id", "title", "state", "pages"]);
+    if (item.slot !== void 0) {
+      integer(item.slot, 1);
+      if (item.slot > 8 || occupiedSlots.has(item.slot)) fail();
+      occupiedSlots.add(item.slot);
+    }
+    object(item, ["id", "slot", "title", "subtitle", "activity", "state", "stateText", "badge", "timer", "pages"], ["id", "title", "state", "pages"]);
     text(item.title, true);
     text(item.subtitle);
     text(item.activity);
@@ -162,13 +168,14 @@ function validatePanelEvent(value) {
   } else fail("panel-event-invalid");
 }
 function resolvePluginPanelDefinition(value) {
-  object(value, ["defaultItemCount", "staleAfterMs", "exampleModel"]);
+  object(value, ["defaultItemCount", "sessionCatalogMethod", "staleAfterMs", "exampleModel"]);
   const defaultItemCount = value.defaultItemCount ?? 3, staleAfterMs = value.staleAfterMs ?? PANEL_LIMITS.defaultStaleAfterMs;
   integer(defaultItemCount, 1);
   if (defaultItemCount > PANEL_LIMITS.items) fail();
   integer(staleAfterMs, 1);
   if (value.exampleModel !== void 0) validatePanelModel(value.exampleModel);
-  return { defaultItemCount, staleAfterMs, ...value.exampleModel ? { exampleModel: buildPanelModel(value.exampleModel) } : {} };
+  if (value.sessionCatalogMethod !== void 0) id(value.sessionCatalogMethod);
+  return { defaultItemCount, staleAfterMs, ...value.sessionCatalogMethod ? { sessionCatalogMethod: value.sessionCatalogMethod } : {}, ...value.exampleModel ? { exampleModel: buildPanelModel(value.exampleModel) } : {} };
 }
 function validatePanelDelivery(model, uuid, typeId) {
   const check = (event) => {

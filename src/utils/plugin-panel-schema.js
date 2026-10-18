@@ -2,6 +2,10 @@ const PANEL_DEFINITION_JSON_SCHEMA = {
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "sessionCatalogMethod": {
+      "type": "string",
+      "minLength": 1
+    },
     "defaultItemCount": {
       "type": "integer",
       "minimum": 1,
@@ -249,6 +253,11 @@ const PANEL_DEFINITION_JSON_SCHEMA = {
               "activity": {
                 "type": "string",
                 "pattern": "^[^\\u0000]*$"
+              },
+              "slot": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 8
               }
             }
           }
