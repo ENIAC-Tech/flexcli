@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validatePluginDefinitionsPayload as validate } from '../src/utils/plugin-definitions-validator.js';
 import { validatePanelModel, validatePanelDelivery } from '../src/utils/plugin-panel-model.js';
-const panel=(fields={})=>({libraries:[],units:[{unitId:'panel',typeId:'test.panel',name:'Panel',categoryId:'plugin',plugin:{type:'panel',pluginUUID:'test',pluginVersion:'1',unitId:'panel'},panel:{},...fields}]});
+const panel=(fields={})=>({libraries:[],units:[{unitId:'panel',typeId:'test.panel',name:'Panel',categoryId:'plugin',plugin:{type:'panel',pluginUUID:'test',pluginVersion:'1',unitId:'panel'},layouts:{default:{preferredSize:{width:3,height:1}}},panel:{},...fields}]});
 test('native panel and label definitions validate and reject removed tapAction',()=>{
  assert.equal(validate(panel()).ok,true);
  const label=panel({panel:undefined,label:{fontFamily:'puhuiti'}});label.units[0].plugin.type='label';delete label.units[0].panel;

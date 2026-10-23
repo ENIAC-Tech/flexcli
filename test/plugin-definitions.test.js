@@ -7,6 +7,7 @@ function payload() {
   return { libraries: [{ libraryUUID: owner, name: { default: 'Contract' } }], units: [{
     unitId: 'one', typeId: `${owner}.one`, name: { default: 'One' }, categoryId: 'plugin',
     plugin: { type: 'standard', pluginUUID: owner, pluginVersion: '1.0.0', unitId: 'one' },
+    layouts: { default: { preferredSize: { width: 1, height: 1 } } },
     visibleInLibrary: false, hasFunctionEditor: true,
     interactionMode: 'click', defaultActivation: { mode: 'hold', holdDurationMs: 800 }
   }] };
@@ -15,6 +16,27 @@ function builtin(uuid, extra = {}) {
   return { uuid, typeId: '@eniacelec/layout:container', name: 'Container', icon: '', config: {},
     geometry: { x: 0, y: 0, width: 1, height: 1 }, appearance: [], data: {}, ...extra };
 }
+
+test('accepts independent device layouts and rejects removed Unit fields or missing defaults', () => {
+  const definitions = payload();
+  definitions.units[0].layouts.devices = {
+    FlexbarV2: { preferredSize: { width: 2, height: 1 }, appearance: {
+      elements: [{ identifier: 'primary-text', geometry: { x: 35, y: 10, width: 60, height: 80 } }]
+    } }
+  };
+  assert.equal(validatePluginDefinitionsPayload(definitions).ok, true);
+  for (const edit of [
+    unit => { delete unit.layouts; },
+    unit => { delete unit.layouts.default; },
+    unit => { unit.layouts.devices.FlexbarV2.preferredSize.width = 0; },
+    unit => { unit.defaultGeometry = { x: 0, y: 0, width: 1, height: 1 }; },
+    unit => { unit.appearanceOverride = {}; }
+  ]) {
+    const invalid = structuredClone(definitions);
+    edit(invalid.units[0]);
+    assert.equal(validatePluginDefinitionsPayload(invalid).ok, false);
+  }
+});
 test('accepts host localized names, hidden definitions, activation and builtin editor binding', () => {
   const definitions = payload();
   definitions.builtinUnits = [builtin('root', {
@@ -43,7 +65,7 @@ test('accepts button groups but rejects duplicate IDs and unknown defaults', () 
   delete unit.interactionMode;
   delete unit.defaultActivation;
   unit.plugin.type = 'button-group';
-  unit.buttonGroup = { buttons: [{ buttonId: 'a' }, { buttonId: 'b' }] };
+  unit.buttonGroup = { presentationVersion: 1, buttons: [{ buttonId: 'a' }, { buttonId: 'b' }] };
   assert.equal(validatePluginDefinitionsPayload(definitions).ok, true);
   unit.buttonGroup.defaultActiveButtonIds = ['missing'];
   assert.equal(validatePluginDefinitionsPayload(definitions).ok, false);
@@ -54,12 +76,31 @@ test('accepts button groups but rejects duplicate IDs and unknown defaults', () 
 test('rejects legacy theme metadata, unknown appearance references and appearance in business data', () => {
   const definitions = payload();
   const unit = definitions.units[0];
-  unit.appearanceOverride = { _appliedThemeId: 'legacy' };
+  unit.layouts.default.appearance = { _appliedThemeId: 'legacy' };
   assert.equal(validatePluginDefinitionsPayload(definitions).ok, false);
-  unit.appearanceOverride = { elements: [{ identifier: 'missing', data: { text: 'x' } }] };
+  unit.layouts.default.appearance = { elements: [{ identifier: 'missing', data: { text: 'x' } }] };
   assert.equal(validatePluginDefinitionsPayload(definitions).ok, false);
-  delete unit.appearanceOverride;
+  delete unit.layouts.default.appearance;
   unit.plugin.type = 'cycled';
   unit.functions = [{ functionId: 'a', data: { appearance: {} } }, { functionId: 'b' }];
   assert.equal(validatePluginDefinitionsPayload(definitions).ok, false);
+});
+
+test('cycled indicator declarations follow the host rule', () => {
+  const owner = '@test/contract';
+  const cycled = (extra = {}) => ({ libraries: [{ libraryUUID: owner, name: { default: 'Contract' } }], units: [{
+    unitId: 'toggle', typeId: `${owner}.toggle`, name: { default: 'Toggle' }, categoryId: 'plugin',
+    plugin: { type: 'cycled', pluginUUID: owner, pluginVersion: '1.0.0', unitId: 'toggle' },
+    layouts: { default: { preferredSize: { width: 1, height: 1 } } },
+    functions: [{ functionId: 'off' }, { functionId: 'on' }], ...extra
+  }] });
+  assert.equal(validatePluginDefinitionsPayload(cycled({ indicator: { onFunctionIds: ['on'] } })).ok, true);
+  assert.equal(validatePluginDefinitionsPayload(cycled()).ok, true);
+  for (const indicator of [{ onFunctionIds: [] }, { onFunctionIds: ['missing'] }, { onFunctionIds: ['on', 'on'] }, {}]) {
+    assert.equal(validatePluginDefinitionsPayload(cycled({ indicator })).ok, false, JSON.stringify(indicator));
+  }
+  const standard = cycled({ indicator: { onFunctionIds: ['on'] } });
+  standard.units[0].plugin.type = 'standard';
+  delete standard.units[0].functions;
+  assert.equal(validatePluginDefinitionsPayload(standard).ok, false);
 });

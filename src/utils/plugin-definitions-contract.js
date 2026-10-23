@@ -1,8271 +1,6771 @@
 // Generated from FlexStudio plugin contracts. Run script/sync-plugin-contracts.mjs; do not edit.
-// src/common/plugin-form-dialog.ts
-var text = (v, max = 240) => typeof v === "string" && v.length <= max && !v.includes("\0");
-var finite = (v) => typeof v === "number" && Number.isFinite(v);
-function validatePluginFormField(value) {
-  const f = value;
-  if (!f || !text(f.key, 64) || !/^[a-zA-Z][\w-]*$/.test(f.key) || !text(f.label) || f.required !== void 0 && typeof f.required !== "boolean") throw new Error("invalid-plugin-form");
-  switch (f.type) {
-    case "text":
-    case "textarea":
-      if (!text(f.value, 24e3) || f.maxBytes !== void 0 && (!Number.isSafeInteger(f.maxBytes) || f.maxBytes < 1 || f.maxBytes > 24e3)) throw new Error("invalid-plugin-form");
-      break;
-    case "select":
-      if (!text(f.value) || !Array.isArray(f.items) || !f.items.length || f.items.length > 32 || f.items.some((i) => !i || !text(i.value) || !text(i.title)) || new Set(f.items.map((i) => i.value)).size !== f.items.length) throw new Error("invalid-plugin-form");
-      break;
-    case "number":
-      if (!finite(f.value) || [f.min, f.max, f.step].some((v) => v !== void 0 && !finite(v)) || f.min !== void 0 && f.max !== void 0 && f.min > f.max || f.step !== void 0 && f.step <= 0) throw new Error("invalid-plugin-form");
-      break;
-    case "switch":
-      if (typeof f.value !== "boolean") throw new Error("invalid-plugin-form");
-      break;
-    default:
-      throw new Error("invalid-plugin-form");
-  }
-}
-function pluginFormError(form, field, value) {
-  if (field.type === "switch") return typeof value === "boolean" ? "" : form.requiredText;
-  if (field.type === "number") {
-    if (!finite(value) || field.min !== void 0 && value < field.min || field.max !== void 0 && value > field.max) return form.requiredText;
-    const steps = (value - (field.min ?? 0)) / (field.step ?? 1);
-    return field.step !== void 0 && Math.abs(steps - Math.round(steps)) > 1e-8 ? form.requiredText : "";
-  }
-  if (typeof value !== "string" || field.required && !value.trim()) return form.requiredText;
-  if ("maxBytes" in field && field.maxBytes !== void 0 && new TextEncoder().encode(value).length > field.maxBytes) return form.tooLongText;
-  if (field.type === "select" && !field.items.some((i) => i.value === value)) return form.requiredText;
-  return "";
-}
-
-// src/common/generated/input-mdi.generated.ts
-var INPUT_MDI_NAMES = /* @__PURE__ */ new Set([
-  "mdi-ab-testing",
-  "mdi-abacus",
-  "mdi-abjad-arabic",
-  "mdi-abjad-hebrew",
-  "mdi-abugida-devanagari",
-  "mdi-abugida-thai",
-  "mdi-access-point",
-  "mdi-access-point-check",
-  "mdi-access-point-minus",
-  "mdi-access-point-network",
-  "mdi-access-point-network-off",
-  "mdi-access-point-off",
-  "mdi-access-point-plus",
-  "mdi-access-point-remove",
-  "mdi-account",
-  "mdi-account-alert",
-  "mdi-account-alert-outline",
-  "mdi-account-arrow-down",
-  "mdi-account-arrow-down-outline",
-  "mdi-account-arrow-left",
-  "mdi-account-arrow-left-outline",
-  "mdi-account-arrow-right",
-  "mdi-account-arrow-right-outline",
-  "mdi-account-arrow-up",
-  "mdi-account-arrow-up-outline",
-  "mdi-account-badge",
-  "mdi-account-badge-outline",
-  "mdi-account-box",
-  "mdi-account-box-edit-outline",
-  "mdi-account-box-minus-outline",
-  "mdi-account-box-multiple",
-  "mdi-account-box-multiple-outline",
-  "mdi-account-box-outline",
-  "mdi-account-box-plus-outline",
-  "mdi-account-cancel",
-  "mdi-account-cancel-outline",
-  "mdi-account-card",
-  "mdi-account-card-outline",
-  "mdi-account-cash",
-  "mdi-account-cash-outline",
-  "mdi-account-check",
-  "mdi-account-check-outline",
-  "mdi-account-child",
-  "mdi-account-child-circle",
-  "mdi-account-child-outline",
-  "mdi-account-circle",
-  "mdi-account-circle-outline",
-  "mdi-account-clock",
-  "mdi-account-clock-outline",
-  "mdi-account-cog",
-  "mdi-account-cog-outline",
-  "mdi-account-convert",
-  "mdi-account-convert-outline",
-  "mdi-account-cowboy-hat",
-  "mdi-account-cowboy-hat-outline",
-  "mdi-account-credit-card",
-  "mdi-account-credit-card-outline",
-  "mdi-account-details",
-  "mdi-account-details-outline",
-  "mdi-account-edit",
-  "mdi-account-edit-outline",
-  "mdi-account-eye",
-  "mdi-account-eye-outline",
-  "mdi-account-file",
-  "mdi-account-file-outline",
-  "mdi-account-file-text",
-  "mdi-account-file-text-outline",
-  "mdi-account-filter",
-  "mdi-account-filter-outline",
-  "mdi-account-group",
-  "mdi-account-group-outline",
-  "mdi-account-hard-hat",
-  "mdi-account-hard-hat-outline",
-  "mdi-account-heart",
-  "mdi-account-heart-outline",
-  "mdi-account-injury",
-  "mdi-account-injury-outline",
-  "mdi-account-key",
-  "mdi-account-key-outline",
-  "mdi-account-lock",
-  "mdi-account-lock-open",
-  "mdi-account-lock-open-outline",
-  "mdi-account-lock-outline",
-  "mdi-account-minus",
-  "mdi-account-minus-outline",
-  "mdi-account-multiple",
-  "mdi-account-multiple-check",
-  "mdi-account-multiple-check-outline",
-  "mdi-account-multiple-minus",
-  "mdi-account-multiple-minus-outline",
-  "mdi-account-multiple-outline",
-  "mdi-account-multiple-plus",
-  "mdi-account-multiple-plus-outline",
-  "mdi-account-multiple-remove",
-  "mdi-account-multiple-remove-outline",
-  "mdi-account-music",
-  "mdi-account-music-outline",
-  "mdi-account-network",
-  "mdi-account-network-off",
-  "mdi-account-network-off-outline",
-  "mdi-account-network-outline",
-  "mdi-account-off",
-  "mdi-account-off-outline",
-  "mdi-account-outline",
-  "mdi-account-plus",
-  "mdi-account-plus-outline",
-  "mdi-account-question",
-  "mdi-account-question-outline",
-  "mdi-account-reactivate",
-  "mdi-account-reactivate-outline",
-  "mdi-account-remove",
-  "mdi-account-remove-outline",
-  "mdi-account-school",
-  "mdi-account-school-outline",
-  "mdi-account-search",
-  "mdi-account-search-outline",
-  "mdi-account-settings",
-  "mdi-account-settings-outline",
-  "mdi-account-star",
-  "mdi-account-star-outline",
-  "mdi-account-supervisor",
-  "mdi-account-supervisor-circle",
-  "mdi-account-supervisor-circle-outline",
-  "mdi-account-supervisor-outline",
-  "mdi-account-switch",
-  "mdi-account-switch-outline",
-  "mdi-account-sync",
-  "mdi-account-sync-outline",
-  "mdi-account-tag",
-  "mdi-account-tag-outline",
-  "mdi-account-tie",
-  "mdi-account-tie-hat",
-  "mdi-account-tie-hat-outline",
-  "mdi-account-tie-outline",
-  "mdi-account-tie-voice",
-  "mdi-account-tie-voice-off",
-  "mdi-account-tie-voice-off-outline",
-  "mdi-account-tie-voice-outline",
-  "mdi-account-tie-woman",
-  "mdi-account-voice",
-  "mdi-account-voice-off",
-  "mdi-account-wrench",
-  "mdi-account-wrench-outline",
-  "mdi-adjust",
-  "mdi-advertisements",
-  "mdi-advertisements-off",
-  "mdi-air-conditioner",
-  "mdi-air-filter",
-  "mdi-air-horn",
-  "mdi-air-humidifier",
-  "mdi-air-humidifier-off",
-  "mdi-air-purifier",
-  "mdi-air-purifier-off",
-  "mdi-airbag",
-  "mdi-airballoon",
-  "mdi-airballoon-outline",
-  "mdi-airplane",
-  "mdi-airplane-alert",
-  "mdi-airplane-check",
-  "mdi-airplane-clock",
-  "mdi-airplane-cog",
-  "mdi-airplane-edit",
-  "mdi-airplane-landing",
-  "mdi-airplane-marker",
-  "mdi-airplane-minus",
-  "mdi-airplane-off",
-  "mdi-airplane-plus",
-  "mdi-airplane-remove",
-  "mdi-airplane-search",
-  "mdi-airplane-settings",
-  "mdi-airplane-takeoff",
-  "mdi-airport",
-  "mdi-alarm",
-  "mdi-alarm-bell",
-  "mdi-alarm-check",
-  "mdi-alarm-light",
-  "mdi-alarm-light-off",
-  "mdi-alarm-light-off-outline",
-  "mdi-alarm-light-outline",
-  "mdi-alarm-multiple",
-  "mdi-alarm-note",
-  "mdi-alarm-note-off",
-  "mdi-alarm-off",
-  "mdi-alarm-panel",
-  "mdi-alarm-panel-outline",
-  "mdi-alarm-plus",
-  "mdi-alarm-snooze",
-  "mdi-album",
-  "mdi-alert",
-  "mdi-alert-box",
-  "mdi-alert-box-outline",
-  "mdi-alert-circle",
-  "mdi-alert-circle-check",
-  "mdi-alert-circle-check-outline",
-  "mdi-alert-circle-outline",
-  "mdi-alert-decagram",
-  "mdi-alert-decagram-outline",
-  "mdi-alert-minus",
-  "mdi-alert-minus-outline",
-  "mdi-alert-octagon",
-  "mdi-alert-octagon-outline",
-  "mdi-alert-octagram",
-  "mdi-alert-octagram-outline",
-  "mdi-alert-outline",
-  "mdi-alert-plus",
-  "mdi-alert-plus-outline",
-  "mdi-alert-remove",
-  "mdi-alert-remove-outline",
-  "mdi-alert-rhombus",
-  "mdi-alert-rhombus-outline",
-  "mdi-alien",
-  "mdi-alien-outline",
-  "mdi-align-horizontal-center",
-  "mdi-align-horizontal-distribute",
-  "mdi-align-horizontal-left",
-  "mdi-align-horizontal-right",
-  "mdi-align-vertical-bottom",
-  "mdi-align-vertical-center",
-  "mdi-align-vertical-distribute",
-  "mdi-align-vertical-top",
-  "mdi-all-inclusive",
-  "mdi-all-inclusive-box",
-  "mdi-all-inclusive-box-outline",
-  "mdi-allergy",
-  "mdi-alpha",
-  "mdi-alpha-a",
-  "mdi-alpha-a-box",
-  "mdi-alpha-a-box-outline",
-  "mdi-alpha-a-circle",
-  "mdi-alpha-a-circle-outline",
-  "mdi-alpha-b",
-  "mdi-alpha-b-box",
-  "mdi-alpha-b-box-outline",
-  "mdi-alpha-b-circle",
-  "mdi-alpha-b-circle-outline",
-  "mdi-alpha-c",
-  "mdi-alpha-c-box",
-  "mdi-alpha-c-box-outline",
-  "mdi-alpha-c-circle",
-  "mdi-alpha-c-circle-outline",
-  "mdi-alpha-d",
-  "mdi-alpha-d-box",
-  "mdi-alpha-d-box-outline",
-  "mdi-alpha-d-circle",
-  "mdi-alpha-d-circle-outline",
-  "mdi-alpha-e",
-  "mdi-alpha-e-box",
-  "mdi-alpha-e-box-outline",
-  "mdi-alpha-e-circle",
-  "mdi-alpha-e-circle-outline",
-  "mdi-alpha-f",
-  "mdi-alpha-f-box",
-  "mdi-alpha-f-box-outline",
-  "mdi-alpha-f-circle",
-  "mdi-alpha-f-circle-outline",
-  "mdi-alpha-g",
-  "mdi-alpha-g-box",
-  "mdi-alpha-g-box-outline",
-  "mdi-alpha-g-circle",
-  "mdi-alpha-g-circle-outline",
-  "mdi-alpha-h",
-  "mdi-alpha-h-box",
-  "mdi-alpha-h-box-outline",
-  "mdi-alpha-h-circle",
-  "mdi-alpha-h-circle-outline",
-  "mdi-alpha-i",
-  "mdi-alpha-i-box",
-  "mdi-alpha-i-box-outline",
-  "mdi-alpha-i-circle",
-  "mdi-alpha-i-circle-outline",
-  "mdi-alpha-j",
-  "mdi-alpha-j-box",
-  "mdi-alpha-j-box-outline",
-  "mdi-alpha-j-circle",
-  "mdi-alpha-j-circle-outline",
-  "mdi-alpha-k",
-  "mdi-alpha-k-box",
-  "mdi-alpha-k-box-outline",
-  "mdi-alpha-k-circle",
-  "mdi-alpha-k-circle-outline",
-  "mdi-alpha-l",
-  "mdi-alpha-l-box",
-  "mdi-alpha-l-box-outline",
-  "mdi-alpha-l-circle",
-  "mdi-alpha-l-circle-outline",
-  "mdi-alpha-m",
-  "mdi-alpha-m-box",
-  "mdi-alpha-m-box-outline",
-  "mdi-alpha-m-circle",
-  "mdi-alpha-m-circle-outline",
-  "mdi-alpha-n",
-  "mdi-alpha-n-box",
-  "mdi-alpha-n-box-outline",
-  "mdi-alpha-n-circle",
-  "mdi-alpha-n-circle-outline",
-  "mdi-alpha-o",
-  "mdi-alpha-o-box",
-  "mdi-alpha-o-box-outline",
-  "mdi-alpha-o-circle",
-  "mdi-alpha-o-circle-outline",
-  "mdi-alpha-p",
-  "mdi-alpha-p-box",
-  "mdi-alpha-p-box-outline",
-  "mdi-alpha-p-circle",
-  "mdi-alpha-p-circle-outline",
-  "mdi-alpha-q",
-  "mdi-alpha-q-box",
-  "mdi-alpha-q-box-outline",
-  "mdi-alpha-q-circle",
-  "mdi-alpha-q-circle-outline",
-  "mdi-alpha-r",
-  "mdi-alpha-r-box",
-  "mdi-alpha-r-box-outline",
-  "mdi-alpha-r-circle",
-  "mdi-alpha-r-circle-outline",
-  "mdi-alpha-s",
-  "mdi-alpha-s-box",
-  "mdi-alpha-s-box-outline",
-  "mdi-alpha-s-circle",
-  "mdi-alpha-s-circle-outline",
-  "mdi-alpha-t",
-  "mdi-alpha-t-box",
-  "mdi-alpha-t-box-outline",
-  "mdi-alpha-t-circle",
-  "mdi-alpha-t-circle-outline",
-  "mdi-alpha-u",
-  "mdi-alpha-u-box",
-  "mdi-alpha-u-box-outline",
-  "mdi-alpha-u-circle",
-  "mdi-alpha-u-circle-outline",
-  "mdi-alpha-v",
-  "mdi-alpha-v-box",
-  "mdi-alpha-v-box-outline",
-  "mdi-alpha-v-circle",
-  "mdi-alpha-v-circle-outline",
-  "mdi-alpha-w",
-  "mdi-alpha-w-box",
-  "mdi-alpha-w-box-outline",
-  "mdi-alpha-w-circle",
-  "mdi-alpha-w-circle-outline",
-  "mdi-alpha-x",
-  "mdi-alpha-x-box",
-  "mdi-alpha-x-box-outline",
-  "mdi-alpha-x-circle",
-  "mdi-alpha-x-circle-outline",
-  "mdi-alpha-y",
-  "mdi-alpha-y-box",
-  "mdi-alpha-y-box-outline",
-  "mdi-alpha-y-circle",
-  "mdi-alpha-y-circle-outline",
-  "mdi-alpha-z",
-  "mdi-alpha-z-box",
-  "mdi-alpha-z-box-outline",
-  "mdi-alpha-z-circle",
-  "mdi-alpha-z-circle-outline",
-  "mdi-alphabet-aurebesh",
-  "mdi-alphabet-cyrillic",
-  "mdi-alphabet-greek",
-  "mdi-alphabet-latin",
-  "mdi-alphabet-piqad",
-  "mdi-alphabet-tengwar",
-  "mdi-alphabetical",
-  "mdi-alphabetical-off",
-  "mdi-alphabetical-variant",
-  "mdi-alphabetical-variant-off",
-  "mdi-altimeter",
-  "mdi-ambulance",
-  "mdi-ammunition",
-  "mdi-ampersand",
-  "mdi-amplifier",
-  "mdi-amplifier-off",
-  "mdi-anchor",
-  "mdi-android",
-  "mdi-android-studio",
-  "mdi-angle-acute",
-  "mdi-angle-obtuse",
-  "mdi-angle-right",
-  "mdi-angular",
-  "mdi-angularjs",
-  "mdi-animation",
-  "mdi-animation-outline",
-  "mdi-animation-play",
-  "mdi-animation-play-outline",
-  "mdi-ansible",
-  "mdi-antenna",
-  "mdi-anvil",
-  "mdi-apache-kafka",
-  "mdi-api",
-  "mdi-api-off",
-  "mdi-apple",
-  "mdi-apple-finder",
-  "mdi-apple-icloud",
-  "mdi-apple-ios",
-  "mdi-apple-keyboard-caps",
-  "mdi-apple-keyboard-command",
-  "mdi-apple-keyboard-control",
-  "mdi-apple-keyboard-option",
-  "mdi-apple-keyboard-shift",
-  "mdi-apple-safari",
-  "mdi-application",
-  "mdi-application-array",
-  "mdi-application-array-outline",
-  "mdi-application-braces",
-  "mdi-application-braces-outline",
-  "mdi-application-brackets",
-  "mdi-application-brackets-outline",
-  "mdi-application-cog",
-  "mdi-application-cog-outline",
-  "mdi-application-edit",
-  "mdi-application-edit-outline",
-  "mdi-application-export",
-  "mdi-application-import",
-  "mdi-application-outline",
-  "mdi-application-parentheses",
-  "mdi-application-parentheses-outline",
-  "mdi-application-settings",
-  "mdi-application-settings-outline",
-  "mdi-application-variable",
-  "mdi-application-variable-outline",
-  "mdi-approximately-equal",
-  "mdi-approximately-equal-box",
-  "mdi-apps",
-  "mdi-apps-box",
-  "mdi-arch",
-  "mdi-archive",
-  "mdi-archive-alert",
-  "mdi-archive-alert-outline",
-  "mdi-archive-arrow-down",
-  "mdi-archive-arrow-down-outline",
-  "mdi-archive-arrow-up",
-  "mdi-archive-arrow-up-outline",
-  "mdi-archive-cancel",
-  "mdi-archive-cancel-outline",
-  "mdi-archive-check",
-  "mdi-archive-check-outline",
-  "mdi-archive-clock",
-  "mdi-archive-clock-outline",
-  "mdi-archive-cog",
-  "mdi-archive-cog-outline",
-  "mdi-archive-edit",
-  "mdi-archive-edit-outline",
-  "mdi-archive-eye",
-  "mdi-archive-eye-outline",
-  "mdi-archive-lock",
-  "mdi-archive-lock-open",
-  "mdi-archive-lock-open-outline",
-  "mdi-archive-lock-outline",
-  "mdi-archive-marker",
-  "mdi-archive-marker-outline",
-  "mdi-archive-minus",
-  "mdi-archive-minus-outline",
-  "mdi-archive-music",
-  "mdi-archive-music-outline",
-  "mdi-archive-off",
-  "mdi-archive-off-outline",
-  "mdi-archive-outline",
-  "mdi-archive-plus",
-  "mdi-archive-plus-outline",
-  "mdi-archive-refresh",
-  "mdi-archive-refresh-outline",
-  "mdi-archive-remove",
-  "mdi-archive-remove-outline",
-  "mdi-archive-search",
-  "mdi-archive-search-outline",
-  "mdi-archive-settings",
-  "mdi-archive-settings-outline",
-  "mdi-archive-star",
-  "mdi-archive-star-outline",
-  "mdi-archive-sync",
-  "mdi-archive-sync-outline",
-  "mdi-arm-flex",
-  "mdi-arm-flex-outline",
-  "mdi-arrange-bring-forward",
-  "mdi-arrange-bring-to-front",
-  "mdi-arrange-send-backward",
-  "mdi-arrange-send-to-back",
-  "mdi-arrow-all",
-  "mdi-arrow-bottom-left",
-  "mdi-arrow-bottom-left-bold-box",
-  "mdi-arrow-bottom-left-bold-box-outline",
-  "mdi-arrow-bottom-left-bold-outline",
-  "mdi-arrow-bottom-left-thick",
-  "mdi-arrow-bottom-left-thin",
-  "mdi-arrow-bottom-left-thin-circle-outline",
-  "mdi-arrow-bottom-right",
-  "mdi-arrow-bottom-right-bold-box",
-  "mdi-arrow-bottom-right-bold-box-outline",
-  "mdi-arrow-bottom-right-bold-outline",
-  "mdi-arrow-bottom-right-thick",
-  "mdi-arrow-bottom-right-thin",
-  "mdi-arrow-bottom-right-thin-circle-outline",
-  "mdi-arrow-collapse",
-  "mdi-arrow-collapse-all",
-  "mdi-arrow-collapse-down",
-  "mdi-arrow-collapse-horizontal",
-  "mdi-arrow-collapse-left",
-  "mdi-arrow-collapse-right",
-  "mdi-arrow-collapse-up",
-  "mdi-arrow-collapse-vertical",
-  "mdi-arrow-decision",
-  "mdi-arrow-decision-auto",
-  "mdi-arrow-decision-auto-outline",
-  "mdi-arrow-decision-outline",
-  "mdi-arrow-down",
-  "mdi-arrow-down-bold",
-  "mdi-arrow-down-bold-box",
-  "mdi-arrow-down-bold-box-outline",
-  "mdi-arrow-down-bold-circle",
-  "mdi-arrow-down-bold-circle-outline",
-  "mdi-arrow-down-bold-hexagon-outline",
-  "mdi-arrow-down-bold-outline",
-  "mdi-arrow-down-box",
-  "mdi-arrow-down-circle",
-  "mdi-arrow-down-circle-outline",
-  "mdi-arrow-down-drop-circle",
-  "mdi-arrow-down-drop-circle-outline",
-  "mdi-arrow-down-left",
-  "mdi-arrow-down-left-bold",
-  "mdi-arrow-down-right",
-  "mdi-arrow-down-right-bold",
-  "mdi-arrow-down-thick",
-  "mdi-arrow-down-thin",
-  "mdi-arrow-down-thin-circle-outline",
-  "mdi-arrow-expand",
-  "mdi-arrow-expand-all",
-  "mdi-arrow-expand-down",
-  "mdi-arrow-expand-horizontal",
-  "mdi-arrow-expand-left",
-  "mdi-arrow-expand-right",
-  "mdi-arrow-expand-up",
-  "mdi-arrow-expand-vertical",
-  "mdi-arrow-horizontal-lock",
-  "mdi-arrow-left",
-  "mdi-arrow-left-bold",
-  "mdi-arrow-left-bold-box",
-  "mdi-arrow-left-bold-box-outline",
-  "mdi-arrow-left-bold-circle",
-  "mdi-arrow-left-bold-circle-outline",
-  "mdi-arrow-left-bold-hexagon-outline",
-  "mdi-arrow-left-bold-outline",
-  "mdi-arrow-left-bottom",
-  "mdi-arrow-left-bottom-bold",
-  "mdi-arrow-left-box",
-  "mdi-arrow-left-circle",
-  "mdi-arrow-left-circle-outline",
-  "mdi-arrow-left-drop-circle",
-  "mdi-arrow-left-drop-circle-outline",
-  "mdi-arrow-left-right",
-  "mdi-arrow-left-right-bold",
-  "mdi-arrow-left-right-bold-outline",
-  "mdi-arrow-left-thick",
-  "mdi-arrow-left-thin",
-  "mdi-arrow-left-thin-circle-outline",
-  "mdi-arrow-left-top",
-  "mdi-arrow-left-top-bold",
-  "mdi-arrow-oscillating",
-  "mdi-arrow-oscillating-off",
-  "mdi-arrow-projectile",
-  "mdi-arrow-projectile-multiple",
-  "mdi-arrow-right",
-  "mdi-arrow-right-bold",
-  "mdi-arrow-right-bold-box",
-  "mdi-arrow-right-bold-box-outline",
-  "mdi-arrow-right-bold-circle",
-  "mdi-arrow-right-bold-circle-outline",
-  "mdi-arrow-right-bold-hexagon-outline",
-  "mdi-arrow-right-bold-outline",
-  "mdi-arrow-right-bottom",
-  "mdi-arrow-right-bottom-bold",
-  "mdi-arrow-right-box",
-  "mdi-arrow-right-circle",
-  "mdi-arrow-right-circle-outline",
-  "mdi-arrow-right-drop-circle",
-  "mdi-arrow-right-drop-circle-outline",
-  "mdi-arrow-right-thick",
-  "mdi-arrow-right-thin",
-  "mdi-arrow-right-thin-circle-outline",
-  "mdi-arrow-right-top",
-  "mdi-arrow-right-top-bold",
-  "mdi-arrow-split-horizontal",
-  "mdi-arrow-split-vertical",
-  "mdi-arrow-top-left",
-  "mdi-arrow-top-left-bold-box",
-  "mdi-arrow-top-left-bold-box-outline",
-  "mdi-arrow-top-left-bold-outline",
-  "mdi-arrow-top-left-bottom-right",
-  "mdi-arrow-top-left-bottom-right-bold",
-  "mdi-arrow-top-left-thick",
-  "mdi-arrow-top-left-thin",
-  "mdi-arrow-top-left-thin-circle-outline",
-  "mdi-arrow-top-right",
-  "mdi-arrow-top-right-bold-box",
-  "mdi-arrow-top-right-bold-box-outline",
-  "mdi-arrow-top-right-bold-outline",
-  "mdi-arrow-top-right-bottom-left",
-  "mdi-arrow-top-right-bottom-left-bold",
-  "mdi-arrow-top-right-thick",
-  "mdi-arrow-top-right-thin",
-  "mdi-arrow-top-right-thin-circle-outline",
-  "mdi-arrow-u-down-left",
-  "mdi-arrow-u-down-left-bold",
-  "mdi-arrow-u-down-right",
-  "mdi-arrow-u-down-right-bold",
-  "mdi-arrow-u-left-bottom",
-  "mdi-arrow-u-left-bottom-bold",
-  "mdi-arrow-u-left-top",
-  "mdi-arrow-u-left-top-bold",
-  "mdi-arrow-u-right-bottom",
-  "mdi-arrow-u-right-bottom-bold",
-  "mdi-arrow-u-right-top",
-  "mdi-arrow-u-right-top-bold",
-  "mdi-arrow-u-up-left",
-  "mdi-arrow-u-up-left-bold",
-  "mdi-arrow-u-up-right",
-  "mdi-arrow-u-up-right-bold",
-  "mdi-arrow-up",
-  "mdi-arrow-up-bold",
-  "mdi-arrow-up-bold-box",
-  "mdi-arrow-up-bold-box-outline",
-  "mdi-arrow-up-bold-circle",
-  "mdi-arrow-up-bold-circle-outline",
-  "mdi-arrow-up-bold-hexagon-outline",
-  "mdi-arrow-up-bold-outline",
-  "mdi-arrow-up-box",
-  "mdi-arrow-up-circle",
-  "mdi-arrow-up-circle-outline",
-  "mdi-arrow-up-down",
-  "mdi-arrow-up-down-bold",
-  "mdi-arrow-up-down-bold-outline",
-  "mdi-arrow-up-drop-circle",
-  "mdi-arrow-up-drop-circle-outline",
-  "mdi-arrow-up-left",
-  "mdi-arrow-up-left-bold",
-  "mdi-arrow-up-right",
-  "mdi-arrow-up-right-bold",
-  "mdi-arrow-up-thick",
-  "mdi-arrow-up-thin",
-  "mdi-arrow-up-thin-circle-outline",
-  "mdi-arrow-vertical-lock",
-  "mdi-artboard",
-  "mdi-artstation",
-  "mdi-aspect-ratio",
-  "mdi-assistant",
-  "mdi-asterisk",
-  "mdi-asterisk-circle-outline",
-  "mdi-at",
-  "mdi-atlassian",
-  "mdi-atm",
-  "mdi-atom",
-  "mdi-atom-variant",
-  "mdi-attachment",
-  "mdi-attachment-check",
-  "mdi-attachment-lock",
-  "mdi-attachment-minus",
-  "mdi-attachment-off",
-  "mdi-attachment-plus",
-  "mdi-attachment-remove",
-  "mdi-atv",
-  "mdi-audio-input-rca",
-  "mdi-audio-input-stereo-minijack",
-  "mdi-audio-input-xlr",
-  "mdi-audio-video",
-  "mdi-audio-video-off",
-  "mdi-augmented-reality",
-  "mdi-aurora",
-  "mdi-auto-download",
-  "mdi-auto-fix",
-  "mdi-auto-mode",
-  "mdi-auto-upload",
-  "mdi-autorenew",
-  "mdi-autorenew-off",
-  "mdi-av-timer",
-  "mdi-awning",
-  "mdi-awning-outline",
-  "mdi-aws",
-  "mdi-axe",
-  "mdi-axe-battle",
-  "mdi-axis",
-  "mdi-axis-arrow",
-  "mdi-axis-arrow-info",
-  "mdi-axis-arrow-lock",
-  "mdi-axis-lock",
-  "mdi-axis-x-arrow",
-  "mdi-axis-x-arrow-lock",
-  "mdi-axis-x-rotate-clockwise",
-  "mdi-axis-x-rotate-counterclockwise",
-  "mdi-axis-x-y-arrow-lock",
-  "mdi-axis-y-arrow",
-  "mdi-axis-y-arrow-lock",
-  "mdi-axis-y-rotate-clockwise",
-  "mdi-axis-y-rotate-counterclockwise",
-  "mdi-axis-z-arrow",
-  "mdi-axis-z-arrow-lock",
-  "mdi-axis-z-rotate-clockwise",
-  "mdi-axis-z-rotate-counterclockwise",
-  "mdi-babel",
-  "mdi-baby",
-  "mdi-baby-bottle",
-  "mdi-baby-bottle-outline",
-  "mdi-baby-buggy",
-  "mdi-baby-buggy-off",
-  "mdi-baby-carriage",
-  "mdi-baby-carriage-off",
-  "mdi-baby-face",
-  "mdi-baby-face-outline",
-  "mdi-backburger",
-  "mdi-backspace",
-  "mdi-backspace-outline",
-  "mdi-backspace-reverse",
-  "mdi-backspace-reverse-outline",
-  "mdi-backup-restore",
-  "mdi-bacteria",
-  "mdi-bacteria-outline",
-  "mdi-badge-account",
-  "mdi-badge-account-alert",
-  "mdi-badge-account-alert-outline",
-  "mdi-badge-account-horizontal",
-  "mdi-badge-account-horizontal-outline",
-  "mdi-badge-account-outline",
-  "mdi-badminton",
-  "mdi-bag-carry-on",
-  "mdi-bag-carry-on-check",
-  "mdi-bag-carry-on-off",
-  "mdi-bag-checked",
-  "mdi-bag-personal",
-  "mdi-bag-personal-off",
-  "mdi-bag-personal-off-outline",
-  "mdi-bag-personal-outline",
-  "mdi-bag-personal-plus",
-  "mdi-bag-personal-plus-outline",
-  "mdi-bag-personal-tag",
-  "mdi-bag-personal-tag-outline",
-  "mdi-bag-suitcase",
-  "mdi-bag-suitcase-off",
-  "mdi-bag-suitcase-off-outline",
-  "mdi-bag-suitcase-outline",
-  "mdi-baguette",
-  "mdi-balcony",
-  "mdi-balloon",
-  "mdi-ballot",
-  "mdi-ballot-outline",
-  "mdi-ballot-recount",
-  "mdi-ballot-recount-outline",
-  "mdi-bandage",
-  "mdi-bank",
-  "mdi-bank-check",
-  "mdi-bank-circle",
-  "mdi-bank-circle-outline",
-  "mdi-bank-minus",
-  "mdi-bank-off",
-  "mdi-bank-off-outline",
-  "mdi-bank-outline",
-  "mdi-bank-plus",
-  "mdi-bank-remove",
-  "mdi-bank-transfer",
-  "mdi-bank-transfer-in",
-  "mdi-bank-transfer-out",
-  "mdi-barcode",
-  "mdi-barcode-off",
-  "mdi-barcode-scan",
-  "mdi-barley",
-  "mdi-barley-off",
-  "mdi-barn",
-  "mdi-barrel",
-  "mdi-barrel-outline",
-  "mdi-baseball",
-  "mdi-baseball-bat",
-  "mdi-baseball-diamond",
-  "mdi-baseball-diamond-outline",
-  "mdi-baseball-outline",
-  "mdi-bash",
-  "mdi-basket",
-  "mdi-basket-check",
-  "mdi-basket-check-outline",
-  "mdi-basket-fill",
-  "mdi-basket-minus",
-  "mdi-basket-minus-outline",
-  "mdi-basket-off",
-  "mdi-basket-off-outline",
-  "mdi-basket-outline",
-  "mdi-basket-plus",
-  "mdi-basket-plus-outline",
-  "mdi-basket-remove",
-  "mdi-basket-remove-outline",
-  "mdi-basket-unfill",
-  "mdi-basketball",
-  "mdi-basketball-hoop",
-  "mdi-basketball-hoop-outline",
-  "mdi-bat",
-  "mdi-bathtub",
-  "mdi-bathtub-outline",
-  "mdi-battery",
-  "mdi-battery-10",
-  "mdi-battery-10-bluetooth",
-  "mdi-battery-20",
-  "mdi-battery-20-bluetooth",
-  "mdi-battery-30",
-  "mdi-battery-30-bluetooth",
-  "mdi-battery-40",
-  "mdi-battery-40-bluetooth",
-  "mdi-battery-50",
-  "mdi-battery-50-bluetooth",
-  "mdi-battery-60",
-  "mdi-battery-60-bluetooth",
-  "mdi-battery-70",
-  "mdi-battery-70-bluetooth",
-  "mdi-battery-80",
-  "mdi-battery-80-bluetooth",
-  "mdi-battery-90",
-  "mdi-battery-90-bluetooth",
-  "mdi-battery-alert",
-  "mdi-battery-alert-bluetooth",
-  "mdi-battery-alert-variant",
-  "mdi-battery-alert-variant-outline",
-  "mdi-battery-arrow-down",
-  "mdi-battery-arrow-down-outline",
-  "mdi-battery-arrow-up",
-  "mdi-battery-arrow-up-outline",
-  "mdi-battery-bluetooth",
-  "mdi-battery-bluetooth-variant",
-  "mdi-battery-charging",
-  "mdi-battery-charging-10",
-  "mdi-battery-charging-100",
-  "mdi-battery-charging-20",
-  "mdi-battery-charging-30",
-  "mdi-battery-charging-40",
-  "mdi-battery-charging-50",
-  "mdi-battery-charging-60",
-  "mdi-battery-charging-70",
-  "mdi-battery-charging-80",
-  "mdi-battery-charging-90",
-  "mdi-battery-charging-high",
-  "mdi-battery-charging-low",
-  "mdi-battery-charging-medium",
-  "mdi-battery-charging-outline",
-  "mdi-battery-charging-wireless",
-  "mdi-battery-charging-wireless-10",
-  "mdi-battery-charging-wireless-20",
-  "mdi-battery-charging-wireless-30",
-  "mdi-battery-charging-wireless-40",
-  "mdi-battery-charging-wireless-50",
-  "mdi-battery-charging-wireless-60",
-  "mdi-battery-charging-wireless-70",
-  "mdi-battery-charging-wireless-80",
-  "mdi-battery-charging-wireless-90",
-  "mdi-battery-charging-wireless-alert",
-  "mdi-battery-charging-wireless-outline",
-  "mdi-battery-check",
-  "mdi-battery-check-outline",
-  "mdi-battery-clock",
-  "mdi-battery-clock-outline",
-  "mdi-battery-heart",
-  "mdi-battery-heart-outline",
-  "mdi-battery-heart-variant",
-  "mdi-battery-high",
-  "mdi-battery-lock",
-  "mdi-battery-lock-open",
-  "mdi-battery-low",
-  "mdi-battery-medium",
-  "mdi-battery-minus",
-  "mdi-battery-minus-outline",
-  "mdi-battery-minus-variant",
-  "mdi-battery-negative",
-  "mdi-battery-off",
-  "mdi-battery-off-outline",
-  "mdi-battery-outline",
-  "mdi-battery-plus",
-  "mdi-battery-plus-outline",
-  "mdi-battery-plus-variant",
-  "mdi-battery-positive",
-  "mdi-battery-remove",
-  "mdi-battery-remove-outline",
-  "mdi-battery-sync",
-  "mdi-battery-sync-outline",
-  "mdi-battery-unknown",
-  "mdi-battery-unknown-bluetooth",
-  "mdi-beach",
-  "mdi-beaker",
-  "mdi-beaker-alert",
-  "mdi-beaker-alert-outline",
-  "mdi-beaker-check",
-  "mdi-beaker-check-outline",
-  "mdi-beaker-minus",
-  "mdi-beaker-minus-outline",
-  "mdi-beaker-outline",
-  "mdi-beaker-plus",
-  "mdi-beaker-plus-outline",
-  "mdi-beaker-question",
-  "mdi-beaker-question-outline",
-  "mdi-beaker-remove",
-  "mdi-beaker-remove-outline",
-  "mdi-bed",
-  "mdi-bed-clock",
-  "mdi-bed-double",
-  "mdi-bed-double-outline",
-  "mdi-bed-empty",
-  "mdi-bed-king",
-  "mdi-bed-king-outline",
-  "mdi-bed-outline",
-  "mdi-bed-queen",
-  "mdi-bed-queen-outline",
-  "mdi-bed-single",
-  "mdi-bed-single-outline",
-  "mdi-bee",
-  "mdi-bee-flower",
-  "mdi-beehive-off-outline",
-  "mdi-beehive-outline",
-  "mdi-beekeeper",
-  "mdi-beer",
-  "mdi-beer-outline",
-  "mdi-bell",
-  "mdi-bell-alert",
-  "mdi-bell-alert-outline",
-  "mdi-bell-badge",
-  "mdi-bell-badge-outline",
-  "mdi-bell-cancel",
-  "mdi-bell-cancel-outline",
-  "mdi-bell-check",
-  "mdi-bell-check-outline",
-  "mdi-bell-circle",
-  "mdi-bell-circle-outline",
-  "mdi-bell-cog",
-  "mdi-bell-cog-outline",
-  "mdi-bell-minus",
-  "mdi-bell-minus-outline",
-  "mdi-bell-off",
-  "mdi-bell-off-outline",
-  "mdi-bell-outline",
-  "mdi-bell-plus",
-  "mdi-bell-plus-outline",
-  "mdi-bell-remove",
-  "mdi-bell-remove-outline",
-  "mdi-bell-ring",
-  "mdi-bell-ring-outline",
-  "mdi-bell-sleep",
-  "mdi-bell-sleep-outline",
-  "mdi-bench",
-  "mdi-bench-back",
-  "mdi-beta",
-  "mdi-betamax",
-  "mdi-biathlon",
-  "mdi-bicycle",
-  "mdi-bicycle-basket",
-  "mdi-bicycle-cargo",
-  "mdi-bicycle-electric",
-  "mdi-bicycle-penny-farthing",
-  "mdi-bike",
-  "mdi-bike-fast",
-  "mdi-bike-pedal",
-  "mdi-bike-pedal-clipless",
-  "mdi-bike-pedal-mountain",
-  "mdi-billboard",
-  "mdi-billiards",
-  "mdi-billiards-rack",
-  "mdi-binoculars",
-  "mdi-bio",
-  "mdi-biohazard",
-  "mdi-bird",
-  "mdi-bitbucket",
-  "mdi-bitcoin",
-  "mdi-black-mesa",
-  "mdi-blender",
-  "mdi-blender-outline",
-  "mdi-blender-software",
-  "mdi-blinds",
-  "mdi-blinds-horizontal",
-  "mdi-blinds-horizontal-closed",
-  "mdi-blinds-open",
-  "mdi-blinds-vertical",
-  "mdi-blinds-vertical-closed",
-  "mdi-block-helper",
-  "mdi-blood-bag",
-  "mdi-bluetooth",
-  "mdi-bluetooth-audio",
-  "mdi-bluetooth-connect",
-  "mdi-bluetooth-off",
-  "mdi-bluetooth-settings",
-  "mdi-bluetooth-transfer",
-  "mdi-blur",
-  "mdi-blur-linear",
-  "mdi-blur-off",
-  "mdi-blur-radial",
-  "mdi-bolt",
-  "mdi-bomb",
-  "mdi-bomb-off",
-  "mdi-bone",
-  "mdi-bone-off",
-  "mdi-book",
-  "mdi-book-account",
-  "mdi-book-account-outline",
-  "mdi-book-alert",
-  "mdi-book-alert-outline",
-  "mdi-book-alphabet",
-  "mdi-book-arrow-down",
-  "mdi-book-arrow-down-outline",
-  "mdi-book-arrow-left",
-  "mdi-book-arrow-left-outline",
-  "mdi-book-arrow-right",
-  "mdi-book-arrow-right-outline",
-  "mdi-book-arrow-up",
-  "mdi-book-arrow-up-outline",
-  "mdi-book-cancel",
-  "mdi-book-cancel-outline",
-  "mdi-book-check",
-  "mdi-book-check-outline",
-  "mdi-book-clock",
-  "mdi-book-clock-outline",
-  "mdi-book-cog",
-  "mdi-book-cog-outline",
-  "mdi-book-cross",
-  "mdi-book-edit",
-  "mdi-book-edit-outline",
-  "mdi-book-education",
-  "mdi-book-education-outline",
-  "mdi-book-heart",
-  "mdi-book-heart-outline",
-  "mdi-book-information-variant",
-  "mdi-book-lock",
-  "mdi-book-lock-open",
-  "mdi-book-lock-open-outline",
-  "mdi-book-lock-outline",
-  "mdi-book-marker",
-  "mdi-book-marker-outline",
-  "mdi-book-minus",
-  "mdi-book-minus-multiple",
-  "mdi-book-minus-multiple-outline",
-  "mdi-book-minus-outline",
-  "mdi-book-multiple",
-  "mdi-book-multiple-outline",
-  "mdi-book-music",
-  "mdi-book-music-outline",
-  "mdi-book-off",
-  "mdi-book-off-outline",
-  "mdi-book-open",
-  "mdi-book-open-blank-variant",
-  "mdi-book-open-blank-variant-outline",
-  "mdi-book-open-outline",
-  "mdi-book-open-page-variant",
-  "mdi-book-open-page-variant-outline",
-  "mdi-book-open-variant",
-  "mdi-book-open-variant-outline",
-  "mdi-book-outline",
-  "mdi-book-play",
-  "mdi-book-play-outline",
-  "mdi-book-plus",
-  "mdi-book-plus-multiple",
-  "mdi-book-plus-multiple-outline",
-  "mdi-book-plus-outline",
-  "mdi-book-refresh",
-  "mdi-book-refresh-outline",
-  "mdi-book-remove",
-  "mdi-book-remove-multiple",
-  "mdi-book-remove-multiple-outline",
-  "mdi-book-remove-outline",
-  "mdi-book-search",
-  "mdi-book-search-outline",
-  "mdi-book-settings",
-  "mdi-book-settings-outline",
-  "mdi-book-sync",
-  "mdi-book-sync-outline",
-  "mdi-book-variant",
-  "mdi-bookmark",
-  "mdi-bookmark-box",
-  "mdi-bookmark-box-multiple",
-  "mdi-bookmark-box-multiple-outline",
-  "mdi-bookmark-box-outline",
-  "mdi-bookmark-check",
-  "mdi-bookmark-check-outline",
-  "mdi-bookmark-minus",
-  "mdi-bookmark-minus-outline",
-  "mdi-bookmark-multiple",
-  "mdi-bookmark-multiple-outline",
-  "mdi-bookmark-music",
-  "mdi-bookmark-music-outline",
-  "mdi-bookmark-off",
-  "mdi-bookmark-off-outline",
-  "mdi-bookmark-outline",
-  "mdi-bookmark-plus",
-  "mdi-bookmark-plus-outline",
-  "mdi-bookmark-remove",
-  "mdi-bookmark-remove-outline",
-  "mdi-bookshelf",
-  "mdi-boom-gate",
-  "mdi-boom-gate-alert",
-  "mdi-boom-gate-alert-outline",
-  "mdi-boom-gate-arrow-down",
-  "mdi-boom-gate-arrow-down-outline",
-  "mdi-boom-gate-arrow-up",
-  "mdi-boom-gate-arrow-up-outline",
-  "mdi-boom-gate-outline",
-  "mdi-boom-gate-up",
-  "mdi-boom-gate-up-outline",
-  "mdi-boombox",
-  "mdi-boomerang",
-  "mdi-bootstrap",
-  "mdi-border-all",
-  "mdi-border-all-variant",
-  "mdi-border-bottom",
-  "mdi-border-bottom-variant",
-  "mdi-border-color",
-  "mdi-border-horizontal",
-  "mdi-border-inside",
-  "mdi-border-left",
-  "mdi-border-left-variant",
-  "mdi-border-none",
-  "mdi-border-none-variant",
-  "mdi-border-outside",
-  "mdi-border-radius",
-  "mdi-border-right",
-  "mdi-border-right-variant",
-  "mdi-border-style",
-  "mdi-border-top",
-  "mdi-border-top-variant",
-  "mdi-border-vertical",
-  "mdi-bottle-soda",
-  "mdi-bottle-soda-classic",
-  "mdi-bottle-soda-classic-outline",
-  "mdi-bottle-soda-outline",
-  "mdi-bottle-tonic",
-  "mdi-bottle-tonic-outline",
-  "mdi-bottle-tonic-plus",
-  "mdi-bottle-tonic-plus-outline",
-  "mdi-bottle-tonic-skull",
-  "mdi-bottle-tonic-skull-outline",
-  "mdi-bottle-wine",
-  "mdi-bottle-wine-outline",
-  "mdi-bow-arrow",
-  "mdi-bow-tie",
-  "mdi-bowl",
-  "mdi-bowl-mix",
-  "mdi-bowl-mix-outline",
-  "mdi-bowl-outline",
-  "mdi-bowling",
-  "mdi-box",
-  "mdi-box-cutter",
-  "mdi-box-cutter-off",
-  "mdi-box-shadow",
-  "mdi-boxing-glove",
-  "mdi-braille",
-  "mdi-brain",
-  "mdi-bread-slice",
-  "mdi-bread-slice-outline",
-  "mdi-bridge",
-  "mdi-briefcase",
-  "mdi-briefcase-account",
-  "mdi-briefcase-account-outline",
-  "mdi-briefcase-arrow-left-right",
-  "mdi-briefcase-arrow-left-right-outline",
-  "mdi-briefcase-arrow-up-down",
-  "mdi-briefcase-arrow-up-down-outline",
-  "mdi-briefcase-check",
-  "mdi-briefcase-check-outline",
-  "mdi-briefcase-clock",
-  "mdi-briefcase-clock-outline",
-  "mdi-briefcase-download",
-  "mdi-briefcase-download-outline",
-  "mdi-briefcase-edit",
-  "mdi-briefcase-edit-outline",
-  "mdi-briefcase-eye",
-  "mdi-briefcase-eye-outline",
-  "mdi-briefcase-minus",
-  "mdi-briefcase-minus-outline",
-  "mdi-briefcase-off",
-  "mdi-briefcase-off-outline",
-  "mdi-briefcase-outline",
-  "mdi-briefcase-plus",
-  "mdi-briefcase-plus-outline",
-  "mdi-briefcase-remove",
-  "mdi-briefcase-remove-outline",
-  "mdi-briefcase-search",
-  "mdi-briefcase-search-outline",
-  "mdi-briefcase-upload",
-  "mdi-briefcase-upload-outline",
-  "mdi-briefcase-variant",
-  "mdi-briefcase-variant-off",
-  "mdi-briefcase-variant-off-outline",
-  "mdi-briefcase-variant-outline",
-  "mdi-brightness-1",
-  "mdi-brightness-2",
-  "mdi-brightness-3",
-  "mdi-brightness-4",
-  "mdi-brightness-5",
-  "mdi-brightness-6",
-  "mdi-brightness-7",
-  "mdi-brightness-auto",
-  "mdi-brightness-percent",
-  "mdi-broadcast",
-  "mdi-broadcast-off",
-  "mdi-broom",
-  "mdi-brush",
-  "mdi-brush-off",
-  "mdi-brush-outline",
-  "mdi-brush-variant",
-  "mdi-bucket",
-  "mdi-bucket-outline",
-  "mdi-buffet",
-  "mdi-bug",
-  "mdi-bug-check",
-  "mdi-bug-check-outline",
-  "mdi-bug-outline",
-  "mdi-bug-pause",
-  "mdi-bug-pause-outline",
-  "mdi-bug-play",
-  "mdi-bug-play-outline",
-  "mdi-bug-stop",
-  "mdi-bug-stop-outline",
-  "mdi-bugle",
-  "mdi-bulkhead-light",
-  "mdi-bulldozer",
-  "mdi-bullet",
-  "mdi-bulletin-board",
-  "mdi-bullhorn",
-  "mdi-bullhorn-outline",
-  "mdi-bullhorn-variant",
-  "mdi-bullhorn-variant-outline",
-  "mdi-bullseye",
-  "mdi-bullseye-arrow",
-  "mdi-bulma",
-  "mdi-bunk-bed",
-  "mdi-bunk-bed-outline",
-  "mdi-bus",
-  "mdi-bus-alert",
-  "mdi-bus-articulated-end",
-  "mdi-bus-articulated-front",
-  "mdi-bus-clock",
-  "mdi-bus-double-decker",
-  "mdi-bus-electric",
-  "mdi-bus-marker",
-  "mdi-bus-multiple",
-  "mdi-bus-school",
-  "mdi-bus-side",
-  "mdi-bus-sign",
-  "mdi-bus-stop",
-  "mdi-bus-stop-covered",
-  "mdi-bus-stop-uncovered",
-  "mdi-bus-wrench",
-  "mdi-butterfly",
-  "mdi-butterfly-outline",
-  "mdi-button-cursor",
-  "mdi-button-pointer",
-  "mdi-cabin-a-frame",
-  "mdi-cable-data",
-  "mdi-cached",
-  "mdi-cactus",
-  "mdi-cake",
-  "mdi-cake-layered",
-  "mdi-cake-variant",
-  "mdi-cake-variant-outline",
-  "mdi-calculator",
-  "mdi-calculator-variant",
-  "mdi-calculator-variant-outline",
-  "mdi-calendar",
-  "mdi-calendar-account",
-  "mdi-calendar-account-outline",
-  "mdi-calendar-alert",
-  "mdi-calendar-alert-outline",
-  "mdi-calendar-arrow-left",
-  "mdi-calendar-arrow-right",
-  "mdi-calendar-badge",
-  "mdi-calendar-badge-outline",
-  "mdi-calendar-blank",
-  "mdi-calendar-blank-multiple",
-  "mdi-calendar-blank-outline",
-  "mdi-calendar-check",
-  "mdi-calendar-check-outline",
-  "mdi-calendar-clock",
-  "mdi-calendar-clock-outline",
-  "mdi-calendar-collapse-horizontal",
-  "mdi-calendar-collapse-horizontal-outline",
-  "mdi-calendar-cursor",
-  "mdi-calendar-cursor-outline",
-  "mdi-calendar-edit",
-  "mdi-calendar-edit-outline",
-  "mdi-calendar-end",
-  "mdi-calendar-end-outline",
-  "mdi-calendar-expand-horizontal",
-  "mdi-calendar-expand-horizontal-outline",
-  "mdi-calendar-export",
-  "mdi-calendar-export-outline",
-  "mdi-calendar-filter",
-  "mdi-calendar-filter-outline",
-  "mdi-calendar-heart",
-  "mdi-calendar-heart-outline",
-  "mdi-calendar-import",
-  "mdi-calendar-import-outline",
-  "mdi-calendar-lock",
-  "mdi-calendar-lock-open",
-  "mdi-calendar-lock-open-outline",
-  "mdi-calendar-lock-outline",
-  "mdi-calendar-minus",
-  "mdi-calendar-minus-outline",
-  "mdi-calendar-month",
-  "mdi-calendar-month-outline",
-  "mdi-calendar-multiple",
-  "mdi-calendar-multiple-check",
-  "mdi-calendar-multiselect",
-  "mdi-calendar-multiselect-outline",
-  "mdi-calendar-outline",
-  "mdi-calendar-plus",
-  "mdi-calendar-plus-outline",
-  "mdi-calendar-question",
-  "mdi-calendar-question-outline",
-  "mdi-calendar-range",
-  "mdi-calendar-range-outline",
-  "mdi-calendar-refresh",
-  "mdi-calendar-refresh-outline",
-  "mdi-calendar-remove",
-  "mdi-calendar-remove-outline",
-  "mdi-calendar-search",
-  "mdi-calendar-search-outline",
-  "mdi-calendar-star",
-  "mdi-calendar-star-four-points",
-  "mdi-calendar-star-outline",
-  "mdi-calendar-start",
-  "mdi-calendar-start-outline",
-  "mdi-calendar-sync",
-  "mdi-calendar-sync-outline",
-  "mdi-calendar-text",
-  "mdi-calendar-text-outline",
-  "mdi-calendar-today",
-  "mdi-calendar-today-outline",
-  "mdi-calendar-week",
-  "mdi-calendar-week-begin",
-  "mdi-calendar-week-begin-outline",
-  "mdi-calendar-week-outline",
-  "mdi-calendar-weekend",
-  "mdi-calendar-weekend-outline",
-  "mdi-call-made",
-  "mdi-call-merge",
-  "mdi-call-missed",
-  "mdi-call-received",
-  "mdi-call-split",
-  "mdi-camcorder",
-  "mdi-camcorder-off",
-  "mdi-camera",
-  "mdi-camera-account",
-  "mdi-camera-burst",
-  "mdi-camera-control",
-  "mdi-camera-document",
-  "mdi-camera-document-off",
-  "mdi-camera-enhance",
-  "mdi-camera-enhance-outline",
-  "mdi-camera-flip",
-  "mdi-camera-flip-outline",
-  "mdi-camera-front",
-  "mdi-camera-front-variant",
-  "mdi-camera-gopro",
-  "mdi-camera-image",
-  "mdi-camera-iris",
-  "mdi-camera-lock",
-  "mdi-camera-lock-open",
-  "mdi-camera-lock-open-outline",
-  "mdi-camera-lock-outline",
-  "mdi-camera-marker",
-  "mdi-camera-marker-outline",
-  "mdi-camera-metering-center",
-  "mdi-camera-metering-matrix",
-  "mdi-camera-metering-partial",
-  "mdi-camera-metering-spot",
-  "mdi-camera-off",
-  "mdi-camera-off-outline",
-  "mdi-camera-outline",
-  "mdi-camera-party-mode",
-  "mdi-camera-plus",
-  "mdi-camera-plus-outline",
-  "mdi-camera-rear",
-  "mdi-camera-rear-variant",
-  "mdi-camera-retake",
-  "mdi-camera-retake-outline",
-  "mdi-camera-switch",
-  "mdi-camera-switch-outline",
-  "mdi-camera-timer",
-  "mdi-camera-wireless",
-  "mdi-camera-wireless-outline",
-  "mdi-campfire",
-  "mdi-cancel",
-  "mdi-candelabra",
-  "mdi-candelabra-fire",
-  "mdi-candle",
-  "mdi-candy",
-  "mdi-candy-off",
-  "mdi-candy-off-outline",
-  "mdi-candy-outline",
-  "mdi-candycane",
-  "mdi-cannabis",
-  "mdi-cannabis-off",
-  "mdi-caps-lock",
-  "mdi-car",
-  "mdi-car-2-plus",
-  "mdi-car-3-plus",
-  "mdi-car-arrow-left",
-  "mdi-car-arrow-right",
-  "mdi-car-back",
-  "mdi-car-battery",
-  "mdi-car-brake-abs",
-  "mdi-car-brake-alert",
-  "mdi-car-brake-fluid-level",
-  "mdi-car-brake-hold",
-  "mdi-car-brake-low-pressure",
-  "mdi-car-brake-parking",
-  "mdi-car-brake-retarder",
-  "mdi-car-brake-temperature",
-  "mdi-car-brake-worn-linings",
-  "mdi-car-child-seat",
-  "mdi-car-clock",
-  "mdi-car-clutch",
-  "mdi-car-cog",
-  "mdi-car-connected",
-  "mdi-car-convertible",
-  "mdi-car-coolant-level",
-  "mdi-car-cruise-control",
-  "mdi-car-defrost-front",
-  "mdi-car-defrost-rear",
-  "mdi-car-door",
-  "mdi-car-door-lock",
-  "mdi-car-door-lock-open",
-  "mdi-car-electric",
-  "mdi-car-electric-outline",
-  "mdi-car-emergency",
-  "mdi-car-esp",
-  "mdi-car-estate",
-  "mdi-car-hatchback",
-  "mdi-car-info",
-  "mdi-car-key",
-  "mdi-car-lifted-pickup",
-  "mdi-car-light-alert",
-  "mdi-car-light-dimmed",
-  "mdi-car-light-fog",
-  "mdi-car-light-high",
-  "mdi-car-limousine",
-  "mdi-car-multiple",
-  "mdi-car-off",
-  "mdi-car-outline",
-  "mdi-car-parking-lights",
-  "mdi-car-pickup",
-  "mdi-car-search",
-  "mdi-car-search-outline",
-  "mdi-car-seat",
-  "mdi-car-seat-cooler",
-  "mdi-car-seat-heater",
-  "mdi-car-select",
-  "mdi-car-settings",
-  "mdi-car-shift-pattern",
-  "mdi-car-side",
-  "mdi-car-speed-limiter",
-  "mdi-car-sports",
-  "mdi-car-tire-alert",
-  "mdi-car-traction-control",
-  "mdi-car-turbocharger",
-  "mdi-car-wash",
-  "mdi-car-windshield",
-  "mdi-car-windshield-outline",
-  "mdi-car-wireless",
-  "mdi-car-wrench",
-  "mdi-carabiner",
-  "mdi-caravan",
-  "mdi-card",
-  "mdi-card-account-details",
-  "mdi-card-account-details-outline",
-  "mdi-card-account-details-star",
-  "mdi-card-account-details-star-outline",
-  "mdi-card-account-mail",
-  "mdi-card-account-mail-outline",
-  "mdi-card-account-phone",
-  "mdi-card-account-phone-outline",
-  "mdi-card-bulleted",
-  "mdi-card-bulleted-off",
-  "mdi-card-bulleted-off-outline",
-  "mdi-card-bulleted-outline",
-  "mdi-card-bulleted-settings",
-  "mdi-card-bulleted-settings-outline",
-  "mdi-card-minus",
-  "mdi-card-minus-outline",
-  "mdi-card-multiple",
-  "mdi-card-multiple-outline",
-  "mdi-card-off",
-  "mdi-card-off-outline",
-  "mdi-card-outline",
-  "mdi-card-plus",
-  "mdi-card-plus-outline",
-  "mdi-card-remove",
-  "mdi-card-remove-outline",
-  "mdi-card-search",
-  "mdi-card-search-outline",
-  "mdi-card-text",
-  "mdi-card-text-outline",
-  "mdi-cards",
-  "mdi-cards-club",
-  "mdi-cards-club-outline",
-  "mdi-cards-diamond",
-  "mdi-cards-diamond-outline",
-  "mdi-cards-heart",
-  "mdi-cards-heart-outline",
-  "mdi-cards-outline",
-  "mdi-cards-playing",
-  "mdi-cards-playing-club",
-  "mdi-cards-playing-club-multiple",
-  "mdi-cards-playing-club-multiple-outline",
-  "mdi-cards-playing-club-outline",
-  "mdi-cards-playing-diamond",
-  "mdi-cards-playing-diamond-multiple",
-  "mdi-cards-playing-diamond-multiple-outline",
-  "mdi-cards-playing-diamond-outline",
-  "mdi-cards-playing-heart",
-  "mdi-cards-playing-heart-multiple",
-  "mdi-cards-playing-heart-multiple-outline",
-  "mdi-cards-playing-heart-outline",
-  "mdi-cards-playing-outline",
-  "mdi-cards-playing-spade",
-  "mdi-cards-playing-spade-multiple",
-  "mdi-cards-playing-spade-multiple-outline",
-  "mdi-cards-playing-spade-outline",
-  "mdi-cards-spade",
-  "mdi-cards-spade-outline",
-  "mdi-cards-variant",
-  "mdi-carrot",
-  "mdi-cart",
-  "mdi-cart-arrow-down",
-  "mdi-cart-arrow-right",
-  "mdi-cart-arrow-up",
-  "mdi-cart-check",
-  "mdi-cart-heart",
-  "mdi-cart-minus",
-  "mdi-cart-off",
-  "mdi-cart-outline",
-  "mdi-cart-percent",
-  "mdi-cart-plus",
-  "mdi-cart-remove",
-  "mdi-cart-variant",
-  "mdi-case-sensitive-alt",
-  "mdi-cash",
-  "mdi-cash-100",
-  "mdi-cash-check",
-  "mdi-cash-clock",
-  "mdi-cash-edit",
-  "mdi-cash-fast",
-  "mdi-cash-lock",
-  "mdi-cash-lock-open",
-  "mdi-cash-marker",
-  "mdi-cash-minus",
-  "mdi-cash-multiple",
-  "mdi-cash-off",
-  "mdi-cash-plus",
-  "mdi-cash-refund",
-  "mdi-cash-register",
-  "mdi-cash-remove",
-  "mdi-cash-sync",
-  "mdi-cassette",
-  "mdi-cast",
-  "mdi-cast-audio",
-  "mdi-cast-audio-variant",
-  "mdi-cast-connected",
-  "mdi-cast-education",
-  "mdi-cast-off",
-  "mdi-cast-variant",
-  "mdi-castle",
-  "mdi-cat",
-  "mdi-cctv",
-  "mdi-cctv-off",
-  "mdi-ceiling-fan",
-  "mdi-ceiling-fan-light",
-  "mdi-ceiling-light",
-  "mdi-ceiling-light-multiple",
-  "mdi-ceiling-light-multiple-outline",
-  "mdi-ceiling-light-outline",
-  "mdi-cellphone",
-  "mdi-cellphone-arrow-down",
-  "mdi-cellphone-arrow-down-variant",
-  "mdi-cellphone-basic",
-  "mdi-cellphone-charging",
-  "mdi-cellphone-check",
-  "mdi-cellphone-cog",
-  "mdi-cellphone-dock",
-  "mdi-cellphone-information",
-  "mdi-cellphone-key",
-  "mdi-cellphone-link",
-  "mdi-cellphone-link-off",
-  "mdi-cellphone-lock",
-  "mdi-cellphone-marker",
-  "mdi-cellphone-message",
-  "mdi-cellphone-message-off",
-  "mdi-cellphone-nfc",
-  "mdi-cellphone-nfc-off",
-  "mdi-cellphone-off",
-  "mdi-cellphone-play",
-  "mdi-cellphone-remove",
-  "mdi-cellphone-screenshot",
-  "mdi-cellphone-settings",
-  "mdi-cellphone-sound",
-  "mdi-cellphone-text",
-  "mdi-cellphone-wireless",
-  "mdi-centos",
-  "mdi-certificate",
-  "mdi-certificate-outline",
-  "mdi-chair-rolling",
-  "mdi-chair-school",
-  "mdi-chandelier",
-  "mdi-charity",
-  "mdi-charity-search",
-  "mdi-chart-arc",
-  "mdi-chart-areaspline",
-  "mdi-chart-areaspline-variant",
-  "mdi-chart-bar",
-  "mdi-chart-bar-stacked",
-  "mdi-chart-bell-curve",
-  "mdi-chart-bell-curve-cumulative",
-  "mdi-chart-box",
-  "mdi-chart-box-multiple",
-  "mdi-chart-box-multiple-outline",
-  "mdi-chart-box-outline",
-  "mdi-chart-box-plus-outline",
-  "mdi-chart-bubble",
-  "mdi-chart-donut",
-  "mdi-chart-donut-variant",
-  "mdi-chart-gantt",
-  "mdi-chart-histogram",
-  "mdi-chart-line",
-  "mdi-chart-line-stacked",
-  "mdi-chart-line-variant",
-  "mdi-chart-multiline",
-  "mdi-chart-multiple",
-  "mdi-chart-pie",
-  "mdi-chart-pie-outline",
-  "mdi-chart-ppf",
-  "mdi-chart-sankey",
-  "mdi-chart-sankey-variant",
-  "mdi-chart-scatter-plot",
-  "mdi-chart-scatter-plot-hexbin",
-  "mdi-chart-timeline",
-  "mdi-chart-timeline-variant",
-  "mdi-chart-timeline-variant-shimmer",
-  "mdi-chart-tree",
-  "mdi-chart-waterfall",
-  "mdi-chat",
-  "mdi-chat-alert",
-  "mdi-chat-alert-outline",
-  "mdi-chat-minus",
-  "mdi-chat-minus-outline",
-  "mdi-chat-outline",
-  "mdi-chat-plus",
-  "mdi-chat-plus-outline",
-  "mdi-chat-processing",
-  "mdi-chat-processing-outline",
-  "mdi-chat-question",
-  "mdi-chat-question-outline",
-  "mdi-chat-remove",
-  "mdi-chat-remove-outline",
-  "mdi-chat-sleep",
-  "mdi-chat-sleep-outline",
-  "mdi-check",
-  "mdi-check-all",
-  "mdi-check-bold",
-  "mdi-check-circle",
-  "mdi-check-circle-outline",
-  "mdi-check-decagram",
-  "mdi-check-decagram-outline",
-  "mdi-check-network",
-  "mdi-check-network-outline",
-  "mdi-check-outline",
-  "mdi-check-underline",
-  "mdi-check-underline-circle",
-  "mdi-check-underline-circle-outline",
-  "mdi-checkbook",
-  "mdi-checkbook-arrow-left",
-  "mdi-checkbook-arrow-right",
-  "mdi-checkbox-blank",
-  "mdi-checkbox-blank-badge",
-  "mdi-checkbox-blank-badge-outline",
-  "mdi-checkbox-blank-circle",
-  "mdi-checkbox-blank-circle-outline",
-  "mdi-checkbox-blank-off",
-  "mdi-checkbox-blank-off-outline",
-  "mdi-checkbox-blank-outline",
-  "mdi-checkbox-intermediate",
-  "mdi-checkbox-intermediate-variant",
-  "mdi-checkbox-marked",
-  "mdi-checkbox-marked-circle",
-  "mdi-checkbox-marked-circle-auto-outline",
-  "mdi-checkbox-marked-circle-minus-outline",
-  "mdi-checkbox-marked-circle-outline",
-  "mdi-checkbox-marked-circle-plus-outline",
-  "mdi-checkbox-marked-outline",
-  "mdi-checkbox-multiple-blank",
-  "mdi-checkbox-multiple-blank-circle",
-  "mdi-checkbox-multiple-blank-circle-outline",
-  "mdi-checkbox-multiple-blank-outline",
-  "mdi-checkbox-multiple-marked",
-  "mdi-checkbox-multiple-marked-circle",
-  "mdi-checkbox-multiple-marked-circle-outline",
-  "mdi-checkbox-multiple-marked-outline",
-  "mdi-checkbox-multiple-outline",
-  "mdi-checkbox-outline",
-  "mdi-checkerboard",
-  "mdi-checkerboard-minus",
-  "mdi-checkerboard-plus",
-  "mdi-checkerboard-remove",
-  "mdi-cheese",
-  "mdi-cheese-off",
-  "mdi-chef-hat",
-  "mdi-chemical-weapon",
-  "mdi-chess-bishop",
-  "mdi-chess-king",
-  "mdi-chess-knight",
-  "mdi-chess-pawn",
-  "mdi-chess-queen",
-  "mdi-chess-rook",
-  "mdi-chevron-double-down",
-  "mdi-chevron-double-left",
-  "mdi-chevron-double-right",
-  "mdi-chevron-double-up",
-  "mdi-chevron-down",
-  "mdi-chevron-down-box",
-  "mdi-chevron-down-box-outline",
-  "mdi-chevron-down-circle",
-  "mdi-chevron-down-circle-outline",
-  "mdi-chevron-left",
-  "mdi-chevron-left-box",
-  "mdi-chevron-left-box-outline",
-  "mdi-chevron-left-circle",
-  "mdi-chevron-left-circle-outline",
-  "mdi-chevron-right",
-  "mdi-chevron-right-box",
-  "mdi-chevron-right-box-outline",
-  "mdi-chevron-right-circle",
-  "mdi-chevron-right-circle-outline",
-  "mdi-chevron-triple-down",
-  "mdi-chevron-triple-left",
-  "mdi-chevron-triple-right",
-  "mdi-chevron-triple-up",
-  "mdi-chevron-up",
-  "mdi-chevron-up-box",
-  "mdi-chevron-up-box-outline",
-  "mdi-chevron-up-circle",
-  "mdi-chevron-up-circle-outline",
-  "mdi-chili-alert",
-  "mdi-chili-alert-outline",
-  "mdi-chili-hot",
-  "mdi-chili-hot-outline",
-  "mdi-chili-medium",
-  "mdi-chili-medium-outline",
-  "mdi-chili-mild",
-  "mdi-chili-mild-outline",
-  "mdi-chili-off",
-  "mdi-chili-off-outline",
-  "mdi-chip",
-  "mdi-church",
-  "mdi-church-outline",
-  "mdi-cigar",
-  "mdi-cigar-off",
-  "mdi-circle",
-  "mdi-circle-box",
-  "mdi-circle-box-outline",
-  "mdi-circle-double",
-  "mdi-circle-edit-outline",
-  "mdi-circle-expand",
-  "mdi-circle-half",
-  "mdi-circle-half-full",
-  "mdi-circle-medium",
-  "mdi-circle-multiple",
-  "mdi-circle-multiple-outline",
-  "mdi-circle-off-outline",
-  "mdi-circle-opacity",
-  "mdi-circle-outline",
-  "mdi-circle-slice-1",
-  "mdi-circle-slice-2",
-  "mdi-circle-slice-3",
-  "mdi-circle-slice-4",
-  "mdi-circle-slice-5",
-  "mdi-circle-slice-6",
-  "mdi-circle-slice-7",
-  "mdi-circle-slice-8",
-  "mdi-circle-small",
-  "mdi-circular-saw",
-  "mdi-city",
-  "mdi-city-switch",
-  "mdi-city-variant",
-  "mdi-city-variant-outline",
-  "mdi-clipboard",
-  "mdi-clipboard-account",
-  "mdi-clipboard-account-outline",
-  "mdi-clipboard-alert",
-  "mdi-clipboard-alert-outline",
-  "mdi-clipboard-arrow-down",
-  "mdi-clipboard-arrow-down-outline",
-  "mdi-clipboard-arrow-left",
-  "mdi-clipboard-arrow-left-outline",
-  "mdi-clipboard-arrow-right",
-  "mdi-clipboard-arrow-right-outline",
-  "mdi-clipboard-arrow-up",
-  "mdi-clipboard-arrow-up-outline",
-  "mdi-clipboard-check",
-  "mdi-clipboard-check-multiple",
-  "mdi-clipboard-check-multiple-outline",
-  "mdi-clipboard-check-outline",
-  "mdi-clipboard-clock",
-  "mdi-clipboard-clock-outline",
-  "mdi-clipboard-edit",
-  "mdi-clipboard-edit-outline",
-  "mdi-clipboard-file",
-  "mdi-clipboard-file-outline",
-  "mdi-clipboard-flow",
-  "mdi-clipboard-flow-outline",
-  "mdi-clipboard-list",
-  "mdi-clipboard-list-outline",
-  "mdi-clipboard-minus",
-  "mdi-clipboard-minus-outline",
-  "mdi-clipboard-multiple",
-  "mdi-clipboard-multiple-outline",
-  "mdi-clipboard-off",
-  "mdi-clipboard-off-outline",
-  "mdi-clipboard-outline",
-  "mdi-clipboard-play",
-  "mdi-clipboard-play-multiple",
-  "mdi-clipboard-play-multiple-outline",
-  "mdi-clipboard-play-outline",
-  "mdi-clipboard-plus",
-  "mdi-clipboard-plus-outline",
-  "mdi-clipboard-pulse",
-  "mdi-clipboard-pulse-outline",
-  "mdi-clipboard-remove",
-  "mdi-clipboard-remove-outline",
-  "mdi-clipboard-search",
-  "mdi-clipboard-search-outline",
-  "mdi-clipboard-text",
-  "mdi-clipboard-text-clock",
-  "mdi-clipboard-text-clock-outline",
-  "mdi-clipboard-text-multiple",
-  "mdi-clipboard-text-multiple-outline",
-  "mdi-clipboard-text-off",
-  "mdi-clipboard-text-off-outline",
-  "mdi-clipboard-text-outline",
-  "mdi-clipboard-text-play",
-  "mdi-clipboard-text-play-outline",
-  "mdi-clipboard-text-search",
-  "mdi-clipboard-text-search-outline",
-  "mdi-clippy",
-  "mdi-clock",
-  "mdi-clock-alert",
-  "mdi-clock-alert-outline",
-  "mdi-clock-check",
-  "mdi-clock-check-outline",
-  "mdi-clock-digital",
-  "mdi-clock-edit",
-  "mdi-clock-edit-outline",
-  "mdi-clock-end",
-  "mdi-clock-fast",
-  "mdi-clock-in",
-  "mdi-clock-minus",
-  "mdi-clock-minus-outline",
-  "mdi-clock-out",
-  "mdi-clock-outline",
-  "mdi-clock-plus",
-  "mdi-clock-plus-outline",
-  "mdi-clock-remove",
-  "mdi-clock-remove-outline",
-  "mdi-clock-star-four-points",
-  "mdi-clock-star-four-points-outline",
-  "mdi-clock-start",
-  "mdi-clock-time-eight",
-  "mdi-clock-time-eight-outline",
-  "mdi-clock-time-eleven",
-  "mdi-clock-time-eleven-outline",
-  "mdi-clock-time-five",
-  "mdi-clock-time-five-outline",
-  "mdi-clock-time-four",
-  "mdi-clock-time-four-outline",
-  "mdi-clock-time-nine",
-  "mdi-clock-time-nine-outline",
-  "mdi-clock-time-one",
-  "mdi-clock-time-one-outline",
-  "mdi-clock-time-seven",
-  "mdi-clock-time-seven-outline",
-  "mdi-clock-time-six",
-  "mdi-clock-time-six-outline",
-  "mdi-clock-time-ten",
-  "mdi-clock-time-ten-outline",
-  "mdi-clock-time-three",
-  "mdi-clock-time-three-outline",
-  "mdi-clock-time-twelve",
-  "mdi-clock-time-twelve-outline",
-  "mdi-clock-time-two",
-  "mdi-clock-time-two-outline",
-  "mdi-close",
-  "mdi-close-box",
-  "mdi-close-box-multiple",
-  "mdi-close-box-multiple-outline",
-  "mdi-close-box-outline",
-  "mdi-close-circle",
-  "mdi-close-circle-multiple",
-  "mdi-close-circle-multiple-outline",
-  "mdi-close-circle-outline",
-  "mdi-close-network",
-  "mdi-close-network-outline",
-  "mdi-close-octagon",
-  "mdi-close-octagon-outline",
-  "mdi-close-outline",
-  "mdi-close-thick",
-  "mdi-closed-caption",
-  "mdi-closed-caption-outline",
-  "mdi-cloud",
-  "mdi-cloud-alert",
-  "mdi-cloud-alert-outline",
-  "mdi-cloud-arrow-down",
-  "mdi-cloud-arrow-down-outline",
-  "mdi-cloud-arrow-left",
-  "mdi-cloud-arrow-left-outline",
-  "mdi-cloud-arrow-right",
-  "mdi-cloud-arrow-right-outline",
-  "mdi-cloud-arrow-up",
-  "mdi-cloud-arrow-up-outline",
-  "mdi-cloud-braces",
-  "mdi-cloud-cancel",
-  "mdi-cloud-cancel-outline",
-  "mdi-cloud-check",
-  "mdi-cloud-check-outline",
-  "mdi-cloud-check-variant",
-  "mdi-cloud-check-variant-outline",
-  "mdi-cloud-circle",
-  "mdi-cloud-circle-outline",
-  "mdi-cloud-clock",
-  "mdi-cloud-clock-outline",
-  "mdi-cloud-cog",
-  "mdi-cloud-cog-outline",
-  "mdi-cloud-download",
-  "mdi-cloud-download-outline",
-  "mdi-cloud-key",
-  "mdi-cloud-key-outline",
-  "mdi-cloud-lock",
-  "mdi-cloud-lock-open",
-  "mdi-cloud-lock-open-outline",
-  "mdi-cloud-lock-outline",
-  "mdi-cloud-minus",
-  "mdi-cloud-minus-outline",
-  "mdi-cloud-off",
-  "mdi-cloud-off-outline",
-  "mdi-cloud-outline",
-  "mdi-cloud-percent",
-  "mdi-cloud-percent-outline",
-  "mdi-cloud-plus",
-  "mdi-cloud-plus-outline",
-  "mdi-cloud-print",
-  "mdi-cloud-print-outline",
-  "mdi-cloud-question",
-  "mdi-cloud-question-outline",
-  "mdi-cloud-refresh",
-  "mdi-cloud-refresh-outline",
-  "mdi-cloud-refresh-variant",
-  "mdi-cloud-refresh-variant-outline",
-  "mdi-cloud-remove",
-  "mdi-cloud-remove-outline",
-  "mdi-cloud-search",
-  "mdi-cloud-search-outline",
-  "mdi-cloud-sync",
-  "mdi-cloud-sync-outline",
-  "mdi-cloud-tags",
-  "mdi-cloud-upload",
-  "mdi-cloud-upload-outline",
-  "mdi-clouds",
-  "mdi-clover",
-  "mdi-clover-outline",
-  "mdi-coach-lamp",
-  "mdi-coach-lamp-variant",
-  "mdi-coat-rack",
-  "mdi-code-array",
-  "mdi-code-block-braces",
-  "mdi-code-block-brackets",
-  "mdi-code-block-parentheses",
-  "mdi-code-block-tags",
-  "mdi-code-braces",
-  "mdi-code-braces-box",
-  "mdi-code-brackets",
-  "mdi-code-equal",
-  "mdi-code-greater-than",
-  "mdi-code-greater-than-or-equal",
-  "mdi-code-json",
-  "mdi-code-less-than",
-  "mdi-code-less-than-or-equal",
-  "mdi-code-not-equal",
-  "mdi-code-not-equal-variant",
-  "mdi-code-parentheses",
-  "mdi-code-parentheses-box",
-  "mdi-code-string",
-  "mdi-code-tags",
-  "mdi-code-tags-check",
-  "mdi-codepen",
-  "mdi-coffee",
-  "mdi-coffee-maker",
-  "mdi-coffee-maker-check",
-  "mdi-coffee-maker-check-outline",
-  "mdi-coffee-maker-outline",
-  "mdi-coffee-off",
-  "mdi-coffee-off-outline",
-  "mdi-coffee-outline",
-  "mdi-coffee-to-go",
-  "mdi-coffee-to-go-outline",
-  "mdi-coffin",
-  "mdi-cog",
-  "mdi-cog-box",
-  "mdi-cog-clockwise",
-  "mdi-cog-counterclockwise",
-  "mdi-cog-off",
-  "mdi-cog-off-outline",
-  "mdi-cog-outline",
-  "mdi-cog-pause",
-  "mdi-cog-pause-outline",
-  "mdi-cog-play",
-  "mdi-cog-play-outline",
-  "mdi-cog-refresh",
-  "mdi-cog-refresh-outline",
-  "mdi-cog-stop",
-  "mdi-cog-stop-outline",
-  "mdi-cog-sync",
-  "mdi-cog-sync-outline",
-  "mdi-cog-transfer",
-  "mdi-cog-transfer-outline",
-  "mdi-cogs",
-  "mdi-collage",
-  "mdi-collapse-all",
-  "mdi-collapse-all-outline",
-  "mdi-color-helper",
-  "mdi-comma",
-  "mdi-comma-box",
-  "mdi-comma-box-outline",
-  "mdi-comma-circle",
-  "mdi-comma-circle-outline",
-  "mdi-comment",
-  "mdi-comment-account",
-  "mdi-comment-account-outline",
-  "mdi-comment-alert",
-  "mdi-comment-alert-outline",
-  "mdi-comment-arrow-left",
-  "mdi-comment-arrow-left-outline",
-  "mdi-comment-arrow-right",
-  "mdi-comment-arrow-right-outline",
-  "mdi-comment-bookmark",
-  "mdi-comment-bookmark-outline",
-  "mdi-comment-check",
-  "mdi-comment-check-outline",
-  "mdi-comment-edit",
-  "mdi-comment-edit-outline",
-  "mdi-comment-eye",
-  "mdi-comment-eye-outline",
-  "mdi-comment-flash",
-  "mdi-comment-flash-outline",
-  "mdi-comment-minus",
-  "mdi-comment-minus-outline",
-  "mdi-comment-multiple",
-  "mdi-comment-multiple-outline",
-  "mdi-comment-off",
-  "mdi-comment-off-outline",
-  "mdi-comment-outline",
-  "mdi-comment-plus",
-  "mdi-comment-plus-outline",
-  "mdi-comment-processing",
-  "mdi-comment-processing-outline",
-  "mdi-comment-question",
-  "mdi-comment-question-outline",
-  "mdi-comment-quote",
-  "mdi-comment-quote-outline",
-  "mdi-comment-remove",
-  "mdi-comment-remove-outline",
-  "mdi-comment-search",
-  "mdi-comment-search-outline",
-  "mdi-comment-text",
-  "mdi-comment-text-multiple",
-  "mdi-comment-text-multiple-outline",
-  "mdi-comment-text-outline",
-  "mdi-compare",
-  "mdi-compare-horizontal",
-  "mdi-compare-remove",
-  "mdi-compare-vertical",
-  "mdi-compass",
-  "mdi-compass-off",
-  "mdi-compass-off-outline",
-  "mdi-compass-outline",
-  "mdi-compass-rose",
-  "mdi-compost",
-  "mdi-cone",
-  "mdi-cone-off",
-  "mdi-connection",
-  "mdi-console",
-  "mdi-console-line",
-  "mdi-console-network",
-  "mdi-console-network-outline",
-  "mdi-consolidate",
-  "mdi-contactless-payment",
-  "mdi-contactless-payment-circle",
-  "mdi-contactless-payment-circle-outline",
-  "mdi-contacts",
-  "mdi-contacts-outline",
-  "mdi-contain",
-  "mdi-contain-end",
-  "mdi-contain-start",
-  "mdi-content-copy",
-  "mdi-content-cut",
-  "mdi-content-duplicate",
-  "mdi-content-paste",
-  "mdi-content-save",
-  "mdi-content-save-alert",
-  "mdi-content-save-alert-outline",
-  "mdi-content-save-all",
-  "mdi-content-save-all-outline",
-  "mdi-content-save-check",
-  "mdi-content-save-check-outline",
-  "mdi-content-save-cog",
-  "mdi-content-save-cog-outline",
-  "mdi-content-save-edit",
-  "mdi-content-save-edit-outline",
-  "mdi-content-save-minus",
-  "mdi-content-save-minus-outline",
-  "mdi-content-save-move",
-  "mdi-content-save-move-outline",
-  "mdi-content-save-off",
-  "mdi-content-save-off-outline",
-  "mdi-content-save-outline",
-  "mdi-content-save-plus",
-  "mdi-content-save-plus-outline",
-  "mdi-content-save-settings",
-  "mdi-content-save-settings-outline",
-  "mdi-contrast",
-  "mdi-contrast-box",
-  "mdi-contrast-circle",
-  "mdi-controller",
-  "mdi-controller-classic",
-  "mdi-controller-classic-outline",
-  "mdi-controller-off",
-  "mdi-cookie",
-  "mdi-cookie-alert",
-  "mdi-cookie-alert-outline",
-  "mdi-cookie-check",
-  "mdi-cookie-check-outline",
-  "mdi-cookie-clock",
-  "mdi-cookie-clock-outline",
-  "mdi-cookie-cog",
-  "mdi-cookie-cog-outline",
-  "mdi-cookie-edit",
-  "mdi-cookie-edit-outline",
-  "mdi-cookie-lock",
-  "mdi-cookie-lock-outline",
-  "mdi-cookie-minus",
-  "mdi-cookie-minus-outline",
-  "mdi-cookie-off",
-  "mdi-cookie-off-outline",
-  "mdi-cookie-outline",
-  "mdi-cookie-plus",
-  "mdi-cookie-plus-outline",
-  "mdi-cookie-refresh",
-  "mdi-cookie-refresh-outline",
-  "mdi-cookie-remove",
-  "mdi-cookie-remove-outline",
-  "mdi-cookie-settings",
-  "mdi-cookie-settings-outline",
-  "mdi-coolant-temperature",
-  "mdi-copyleft",
-  "mdi-copyright",
-  "mdi-cordova",
-  "mdi-corn",
-  "mdi-corn-off",
-  "mdi-cosine-wave",
-  "mdi-counter",
-  "mdi-countertop",
-  "mdi-countertop-outline",
-  "mdi-cow",
-  "mdi-cow-off",
-  "mdi-cpu-32-bit",
-  "mdi-cpu-64-bit",
-  "mdi-cradle",
-  "mdi-cradle-outline",
-  "mdi-crane",
-  "mdi-creation",
-  "mdi-creation-outline",
-  "mdi-creative-commons",
-  "mdi-credit-card",
-  "mdi-credit-card-check",
-  "mdi-credit-card-check-outline",
-  "mdi-credit-card-chip",
-  "mdi-credit-card-chip-outline",
-  "mdi-credit-card-clock",
-  "mdi-credit-card-clock-outline",
-  "mdi-credit-card-edit",
-  "mdi-credit-card-edit-outline",
-  "mdi-credit-card-fast",
-  "mdi-credit-card-fast-outline",
-  "mdi-credit-card-lock",
-  "mdi-credit-card-lock-outline",
-  "mdi-credit-card-marker",
-  "mdi-credit-card-marker-outline",
-  "mdi-credit-card-minus",
-  "mdi-credit-card-minus-outline",
-  "mdi-credit-card-multiple",
-  "mdi-credit-card-multiple-outline",
-  "mdi-credit-card-off",
-  "mdi-credit-card-off-outline",
-  "mdi-credit-card-outline",
-  "mdi-credit-card-plus",
-  "mdi-credit-card-plus-outline",
-  "mdi-credit-card-refresh",
-  "mdi-credit-card-refresh-outline",
-  "mdi-credit-card-refund",
-  "mdi-credit-card-refund-outline",
-  "mdi-credit-card-remove",
-  "mdi-credit-card-remove-outline",
-  "mdi-credit-card-scan",
-  "mdi-credit-card-scan-outline",
-  "mdi-credit-card-search",
-  "mdi-credit-card-search-outline",
-  "mdi-credit-card-settings",
-  "mdi-credit-card-settings-outline",
-  "mdi-credit-card-sync",
-  "mdi-credit-card-sync-outline",
-  "mdi-credit-card-wireless",
-  "mdi-credit-card-wireless-off",
-  "mdi-credit-card-wireless-off-outline",
-  "mdi-credit-card-wireless-outline",
-  "mdi-cricket",
-  "mdi-crop",
-  "mdi-crop-free",
-  "mdi-crop-landscape",
-  "mdi-crop-portrait",
-  "mdi-crop-rotate",
-  "mdi-crop-square",
-  "mdi-cross",
-  "mdi-cross-bolnisi",
-  "mdi-cross-celtic",
-  "mdi-cross-outline",
-  "mdi-crosshairs",
-  "mdi-crosshairs-gps",
-  "mdi-crosshairs-off",
-  "mdi-crosshairs-question",
-  "mdi-crowd",
-  "mdi-crown",
-  "mdi-crown-circle",
-  "mdi-crown-circle-outline",
-  "mdi-crown-outline",
-  "mdi-cryengine",
-  "mdi-crystal-ball",
-  "mdi-cube",
-  "mdi-cube-off",
-  "mdi-cube-off-outline",
-  "mdi-cube-outline",
-  "mdi-cube-scan",
-  "mdi-cube-send",
-  "mdi-cube-unfolded",
-  "mdi-cup",
-  "mdi-cup-off",
-  "mdi-cup-off-outline",
-  "mdi-cup-outline",
-  "mdi-cup-water",
-  "mdi-cupboard",
-  "mdi-cupboard-outline",
-  "mdi-cupcake",
-  "mdi-curling",
-  "mdi-currency-bdt",
-  "mdi-currency-brl",
-  "mdi-currency-btc",
-  "mdi-currency-cny",
-  "mdi-currency-eth",
-  "mdi-currency-eur",
-  "mdi-currency-eur-off",
-  "mdi-currency-fra",
-  "mdi-currency-gbp",
-  "mdi-currency-ils",
-  "mdi-currency-inr",
-  "mdi-currency-jpy",
-  "mdi-currency-krw",
-  "mdi-currency-kzt",
-  "mdi-currency-mnt",
-  "mdi-currency-ngn",
-  "mdi-currency-php",
-  "mdi-currency-rial",
-  "mdi-currency-rub",
-  "mdi-currency-rupee",
-  "mdi-currency-sign",
-  "mdi-currency-thb",
-  "mdi-currency-try",
-  "mdi-currency-twd",
-  "mdi-currency-uah",
-  "mdi-currency-usd",
-  "mdi-currency-usd-off",
-  "mdi-current-ac",
-  "mdi-current-dc",
-  "mdi-cursor-default",
-  "mdi-cursor-default-click",
-  "mdi-cursor-default-click-outline",
-  "mdi-cursor-default-gesture",
-  "mdi-cursor-default-gesture-outline",
-  "mdi-cursor-default-outline",
-  "mdi-cursor-move",
-  "mdi-cursor-pointer",
-  "mdi-cursor-text",
-  "mdi-curtains",
-  "mdi-curtains-closed",
-  "mdi-cylinder",
-  "mdi-cylinder-off",
-  "mdi-dance-ballroom",
-  "mdi-dance-pole",
-  "mdi-data-matrix",
-  "mdi-data-matrix-edit",
-  "mdi-data-matrix-minus",
-  "mdi-data-matrix-plus",
-  "mdi-data-matrix-remove",
-  "mdi-data-matrix-scan",
-  "mdi-database",
-  "mdi-database-alert",
-  "mdi-database-alert-outline",
-  "mdi-database-arrow-down",
-  "mdi-database-arrow-down-outline",
-  "mdi-database-arrow-left",
-  "mdi-database-arrow-left-outline",
-  "mdi-database-arrow-right",
-  "mdi-database-arrow-right-outline",
-  "mdi-database-arrow-up",
-  "mdi-database-arrow-up-outline",
-  "mdi-database-check",
-  "mdi-database-check-outline",
-  "mdi-database-clock",
-  "mdi-database-clock-outline",
-  "mdi-database-cog",
-  "mdi-database-cog-outline",
-  "mdi-database-edit",
-  "mdi-database-edit-outline",
-  "mdi-database-export",
-  "mdi-database-export-outline",
-  "mdi-database-eye",
-  "mdi-database-eye-off",
-  "mdi-database-eye-off-outline",
-  "mdi-database-eye-outline",
-  "mdi-database-import",
-  "mdi-database-import-outline",
-  "mdi-database-lock",
-  "mdi-database-lock-outline",
-  "mdi-database-marker",
-  "mdi-database-marker-outline",
-  "mdi-database-minus",
-  "mdi-database-minus-outline",
-  "mdi-database-off",
-  "mdi-database-off-outline",
-  "mdi-database-outline",
-  "mdi-database-plus",
-  "mdi-database-plus-outline",
-  "mdi-database-refresh",
-  "mdi-database-refresh-outline",
-  "mdi-database-remove",
-  "mdi-database-remove-outline",
-  "mdi-database-search",
-  "mdi-database-search-outline",
-  "mdi-database-settings",
-  "mdi-database-settings-outline",
-  "mdi-database-sync",
-  "mdi-database-sync-outline",
-  "mdi-death-star",
-  "mdi-death-star-variant",
-  "mdi-deathly-hallows",
-  "mdi-debian",
-  "mdi-debug-step-into",
-  "mdi-debug-step-out",
-  "mdi-debug-step-over",
-  "mdi-decagram",
-  "mdi-decagram-outline",
-  "mdi-decimal",
-  "mdi-decimal-comma",
-  "mdi-decimal-comma-decrease",
-  "mdi-decimal-comma-increase",
-  "mdi-decimal-decrease",
-  "mdi-decimal-increase",
-  "mdi-delete",
-  "mdi-delete-alert",
-  "mdi-delete-alert-outline",
-  "mdi-delete-circle",
-  "mdi-delete-circle-outline",
-  "mdi-delete-clock",
-  "mdi-delete-clock-outline",
-  "mdi-delete-empty",
-  "mdi-delete-empty-outline",
-  "mdi-delete-forever",
-  "mdi-delete-forever-outline",
-  "mdi-delete-off",
-  "mdi-delete-off-outline",
-  "mdi-delete-outline",
-  "mdi-delete-restore",
-  "mdi-delete-sweep",
-  "mdi-delete-sweep-outline",
-  "mdi-delete-variant",
-  "mdi-delta",
-  "mdi-desk",
-  "mdi-desk-lamp",
-  "mdi-desk-lamp-off",
-  "mdi-desk-lamp-on",
-  "mdi-deskphone",
-  "mdi-desktop-classic",
-  "mdi-desktop-tower",
-  "mdi-desktop-tower-monitor",
-  "mdi-details",
-  "mdi-dev-to",
-  "mdi-developer-board",
-  "mdi-deviantart",
-  "mdi-devices",
-  "mdi-dharmachakra",
-  "mdi-diabetes",
-  "mdi-dialpad",
-  "mdi-diameter",
-  "mdi-diameter-outline",
-  "mdi-diameter-variant",
-  "mdi-diamond",
-  "mdi-diamond-outline",
-  "mdi-diamond-stone",
-  "mdi-diaper-outline",
-  "mdi-dice-1",
-  "mdi-dice-1-outline",
-  "mdi-dice-2",
-  "mdi-dice-2-outline",
-  "mdi-dice-3",
-  "mdi-dice-3-outline",
-  "mdi-dice-4",
-  "mdi-dice-4-outline",
-  "mdi-dice-5",
-  "mdi-dice-5-outline",
-  "mdi-dice-6",
-  "mdi-dice-6-outline",
-  "mdi-dice-d10",
-  "mdi-dice-d10-outline",
-  "mdi-dice-d12",
-  "mdi-dice-d12-outline",
-  "mdi-dice-d20",
-  "mdi-dice-d20-outline",
-  "mdi-dice-d4",
-  "mdi-dice-d4-outline",
-  "mdi-dice-d6",
-  "mdi-dice-d6-outline",
-  "mdi-dice-d8",
-  "mdi-dice-d8-outline",
-  "mdi-dice-multiple",
-  "mdi-dice-multiple-outline",
-  "mdi-digital-ocean",
-  "mdi-dip-switch",
-  "mdi-directions",
-  "mdi-directions-fork",
-  "mdi-disc",
-  "mdi-disc-alert",
-  "mdi-disc-player",
-  "mdi-dishwasher",
-  "mdi-dishwasher-alert",
-  "mdi-dishwasher-off",
-  "mdi-disqus",
-  "mdi-distribute-horizontal-center",
-  "mdi-distribute-horizontal-left",
-  "mdi-distribute-horizontal-right",
-  "mdi-distribute-vertical-bottom",
-  "mdi-distribute-vertical-center",
-  "mdi-distribute-vertical-top",
-  "mdi-diversify",
-  "mdi-diving",
-  "mdi-diving-flippers",
-  "mdi-diving-helmet",
-  "mdi-diving-scuba",
-  "mdi-diving-scuba-flag",
-  "mdi-diving-scuba-mask",
-  "mdi-diving-scuba-tank",
-  "mdi-diving-scuba-tank-multiple",
-  "mdi-diving-snorkel",
-  "mdi-division",
-  "mdi-division-box",
-  "mdi-dlna",
-  "mdi-dna",
-  "mdi-dns",
-  "mdi-dns-outline",
-  "mdi-dock-bottom",
-  "mdi-dock-left",
-  "mdi-dock-right",
-  "mdi-dock-top",
-  "mdi-dock-window",
-  "mdi-docker",
-  "mdi-doctor",
-  "mdi-dog",
-  "mdi-dog-service",
-  "mdi-dog-side",
-  "mdi-dog-side-off",
-  "mdi-dolby",
-  "mdi-dolly",
-  "mdi-dolphin",
-  "mdi-domain",
-  "mdi-domain-off",
-  "mdi-domain-plus",
-  "mdi-domain-remove",
-  "mdi-domain-switch",
-  "mdi-dome-light",
-  "mdi-domino-mask",
-  "mdi-donkey",
-  "mdi-door",
-  "mdi-door-closed",
-  "mdi-door-closed-cancel",
-  "mdi-door-closed-lock",
-  "mdi-door-open",
-  "mdi-door-sliding",
-  "mdi-door-sliding-lock",
-  "mdi-door-sliding-open",
-  "mdi-doorbell",
-  "mdi-doorbell-video",
-  "mdi-dot-net",
-  "mdi-dots-circle",
-  "mdi-dots-grid",
-  "mdi-dots-hexagon",
-  "mdi-dots-horizontal",
-  "mdi-dots-horizontal-circle",
-  "mdi-dots-horizontal-circle-outline",
-  "mdi-dots-square",
-  "mdi-dots-triangle",
-  "mdi-dots-vertical",
-  "mdi-dots-vertical-circle",
-  "mdi-dots-vertical-circle-outline",
-  "mdi-download",
-  "mdi-download-box",
-  "mdi-download-box-outline",
-  "mdi-download-circle",
-  "mdi-download-circle-outline",
-  "mdi-download-lock",
-  "mdi-download-lock-outline",
-  "mdi-download-multiple",
-  "mdi-download-multiple-outline",
-  "mdi-download-network",
-  "mdi-download-network-outline",
-  "mdi-download-off",
-  "mdi-download-off-outline",
-  "mdi-download-outline",
-  "mdi-drag",
-  "mdi-drag-horizontal",
-  "mdi-drag-horizontal-variant",
-  "mdi-drag-variant",
-  "mdi-drag-vertical",
-  "mdi-drag-vertical-variant",
-  "mdi-drama-masks",
-  "mdi-draw",
-  "mdi-draw-pen",
-  "mdi-drawing",
-  "mdi-drawing-box",
-  "mdi-dresser",
-  "mdi-dresser-outline",
-  "mdi-drone",
-  "mdi-dropbox",
-  "mdi-drupal",
-  "mdi-duck",
-  "mdi-dumbbell",
-  "mdi-dump-truck",
-  "mdi-ear-hearing",
-  "mdi-ear-hearing-loop",
-  "mdi-ear-hearing-off",
-  "mdi-earbuds",
-  "mdi-earbuds-off",
-  "mdi-earbuds-off-outline",
-  "mdi-earbuds-outline",
-  "mdi-earth",
-  "mdi-earth-arrow-down",
-  "mdi-earth-arrow-left",
-  "mdi-earth-arrow-right",
-  "mdi-earth-arrow-up",
-  "mdi-earth-box",
-  "mdi-earth-box-minus",
-  "mdi-earth-box-off",
-  "mdi-earth-box-plus",
-  "mdi-earth-box-remove",
-  "mdi-earth-minus",
-  "mdi-earth-off",
-  "mdi-earth-plus",
-  "mdi-earth-remove",
-  "mdi-egg",
-  "mdi-egg-easter",
-  "mdi-egg-fried",
-  "mdi-egg-off",
-  "mdi-egg-off-outline",
-  "mdi-egg-outline",
-  "mdi-eiffel-tower",
-  "mdi-eight-track",
-  "mdi-eject",
-  "mdi-eject-circle",
-  "mdi-eject-circle-outline",
-  "mdi-eject-outline",
-  "mdi-electric-switch",
-  "mdi-electric-switch-closed",
-  "mdi-electron-framework",
-  "mdi-elephant",
-  "mdi-elevation-decline",
-  "mdi-elevation-rise",
-  "mdi-elevator",
-  "mdi-elevator-down",
-  "mdi-elevator-passenger",
-  "mdi-elevator-passenger-off",
-  "mdi-elevator-passenger-off-outline",
-  "mdi-elevator-passenger-outline",
-  "mdi-elevator-up",
-  "mdi-ellipse",
-  "mdi-ellipse-outline",
-  "mdi-email",
-  "mdi-email-alert",
-  "mdi-email-alert-outline",
-  "mdi-email-arrow-left",
-  "mdi-email-arrow-left-outline",
-  "mdi-email-arrow-right",
-  "mdi-email-arrow-right-outline",
-  "mdi-email-box",
-  "mdi-email-check",
-  "mdi-email-check-outline",
-  "mdi-email-edit",
-  "mdi-email-edit-outline",
-  "mdi-email-fast",
-  "mdi-email-fast-outline",
-  "mdi-email-heart-outline",
-  "mdi-email-lock",
-  "mdi-email-lock-outline",
-  "mdi-email-mark-as-unread",
-  "mdi-email-minus",
-  "mdi-email-minus-outline",
-  "mdi-email-multiple",
-  "mdi-email-multiple-outline",
-  "mdi-email-newsletter",
-  "mdi-email-off",
-  "mdi-email-off-outline",
-  "mdi-email-open",
-  "mdi-email-open-heart-outline",
-  "mdi-email-open-multiple",
-  "mdi-email-open-multiple-outline",
-  "mdi-email-open-outline",
-  "mdi-email-outline",
-  "mdi-email-plus",
-  "mdi-email-plus-outline",
-  "mdi-email-remove",
-  "mdi-email-remove-outline",
-  "mdi-email-seal",
-  "mdi-email-seal-outline",
-  "mdi-email-search",
-  "mdi-email-search-outline",
-  "mdi-email-sync",
-  "mdi-email-sync-outline",
-  "mdi-email-variant",
-  "mdi-ember",
-  "mdi-emby",
-  "mdi-emoticon",
-  "mdi-emoticon-angry",
-  "mdi-emoticon-angry-outline",
-  "mdi-emoticon-confused",
-  "mdi-emoticon-confused-outline",
-  "mdi-emoticon-cool",
-  "mdi-emoticon-cool-outline",
-  "mdi-emoticon-cry",
-  "mdi-emoticon-cry-outline",
-  "mdi-emoticon-dead",
-  "mdi-emoticon-dead-outline",
-  "mdi-emoticon-devil",
-  "mdi-emoticon-devil-outline",
-  "mdi-emoticon-excited",
-  "mdi-emoticon-excited-outline",
-  "mdi-emoticon-frown",
-  "mdi-emoticon-frown-outline",
-  "mdi-emoticon-happy",
-  "mdi-emoticon-happy-outline",
-  "mdi-emoticon-kiss",
-  "mdi-emoticon-kiss-outline",
-  "mdi-emoticon-lol",
-  "mdi-emoticon-lol-outline",
-  "mdi-emoticon-minus",
-  "mdi-emoticon-minus-outline",
-  "mdi-emoticon-neutral",
-  "mdi-emoticon-neutral-outline",
-  "mdi-emoticon-outline",
-  "mdi-emoticon-plus",
-  "mdi-emoticon-plus-outline",
-  "mdi-emoticon-poop",
-  "mdi-emoticon-poop-outline",
-  "mdi-emoticon-remove",
-  "mdi-emoticon-remove-outline",
-  "mdi-emoticon-sad",
-  "mdi-emoticon-sad-outline",
-  "mdi-emoticon-sick",
-  "mdi-emoticon-sick-outline",
-  "mdi-emoticon-tongue",
-  "mdi-emoticon-tongue-outline",
-  "mdi-emoticon-wink",
-  "mdi-emoticon-wink-outline",
-  "mdi-engine",
-  "mdi-engine-off",
-  "mdi-engine-off-outline",
-  "mdi-engine-outline",
-  "mdi-epsilon",
-  "mdi-equal",
-  "mdi-equal-box",
-  "mdi-equalizer",
-  "mdi-equalizer-outline",
-  "mdi-eraser",
-  "mdi-eraser-variant",
-  "mdi-escalator",
-  "mdi-escalator-box",
-  "mdi-escalator-down",
-  "mdi-escalator-up",
-  "mdi-eslint",
-  "mdi-et",
-  "mdi-ethereum",
-  "mdi-ethernet",
-  "mdi-ethernet-cable",
-  "mdi-ethernet-cable-off",
-  "mdi-ethernet-off",
-  "mdi-ev-plug-ccs1",
-  "mdi-ev-plug-ccs2",
-  "mdi-ev-plug-chademo",
-  "mdi-ev-plug-tesla",
-  "mdi-ev-plug-type1",
-  "mdi-ev-plug-type2",
-  "mdi-ev-station",
-  "mdi-evernote",
-  "mdi-excavator",
-  "mdi-exclamation",
-  "mdi-exclamation-thick",
-  "mdi-exit-run",
-  "mdi-exit-to-app",
-  "mdi-expand-all",
-  "mdi-expand-all-outline",
-  "mdi-expansion-card",
-  "mdi-expansion-card-variant",
-  "mdi-exponent",
-  "mdi-exponent-box",
-  "mdi-export",
-  "mdi-export-variant",
-  "mdi-eye",
-  "mdi-eye-arrow-left",
-  "mdi-eye-arrow-left-outline",
-  "mdi-eye-arrow-right",
-  "mdi-eye-arrow-right-outline",
-  "mdi-eye-check",
-  "mdi-eye-check-outline",
-  "mdi-eye-circle",
-  "mdi-eye-circle-outline",
-  "mdi-eye-closed",
-  "mdi-eye-lock",
-  "mdi-eye-lock-open",
-  "mdi-eye-lock-open-outline",
-  "mdi-eye-lock-outline",
-  "mdi-eye-minus",
-  "mdi-eye-minus-outline",
-  "mdi-eye-off",
-  "mdi-eye-off-outline",
-  "mdi-eye-outline",
-  "mdi-eye-plus",
-  "mdi-eye-plus-outline",
-  "mdi-eye-refresh",
-  "mdi-eye-refresh-outline",
-  "mdi-eye-remove",
-  "mdi-eye-remove-outline",
-  "mdi-eye-settings",
-  "mdi-eye-settings-outline",
-  "mdi-eyedropper",
-  "mdi-eyedropper-minus",
-  "mdi-eyedropper-off",
-  "mdi-eyedropper-plus",
-  "mdi-eyedropper-remove",
-  "mdi-eyedropper-variant",
-  "mdi-face-agent",
-  "mdi-face-man",
-  "mdi-face-man-outline",
-  "mdi-face-man-profile",
-  "mdi-face-man-shimmer",
-  "mdi-face-man-shimmer-outline",
-  "mdi-face-mask",
-  "mdi-face-mask-outline",
-  "mdi-face-recognition",
-  "mdi-face-woman",
-  "mdi-face-woman-outline",
-  "mdi-face-woman-profile",
-  "mdi-face-woman-shimmer",
-  "mdi-face-woman-shimmer-outline",
-  "mdi-facebook",
-  "mdi-facebook-gaming",
-  "mdi-facebook-messenger",
-  "mdi-facebook-workplace",
-  "mdi-factory",
-  "mdi-family-tree",
-  "mdi-fan",
-  "mdi-fan-alert",
-  "mdi-fan-auto",
-  "mdi-fan-chevron-down",
-  "mdi-fan-chevron-up",
-  "mdi-fan-clock",
-  "mdi-fan-minus",
-  "mdi-fan-off",
-  "mdi-fan-plus",
-  "mdi-fan-remove",
-  "mdi-fan-speed-1",
-  "mdi-fan-speed-2",
-  "mdi-fan-speed-3",
-  "mdi-fast-forward",
-  "mdi-fast-forward-10",
-  "mdi-fast-forward-15",
-  "mdi-fast-forward-30",
-  "mdi-fast-forward-45",
-  "mdi-fast-forward-5",
-  "mdi-fast-forward-60",
-  "mdi-fast-forward-outline",
-  "mdi-faucet",
-  "mdi-faucet-variant",
-  "mdi-fax",
-  "mdi-feather",
-  "mdi-feature-search",
-  "mdi-feature-search-outline",
-  "mdi-fedora",
-  "mdi-fence",
-  "mdi-fence-electric",
-  "mdi-fencing",
-  "mdi-ferris-wheel",
-  "mdi-ferry",
-  "mdi-file",
-  "mdi-file-account",
-  "mdi-file-account-outline",
-  "mdi-file-alert",
-  "mdi-file-alert-outline",
-  "mdi-file-arrow-left-right",
-  "mdi-file-arrow-left-right-outline",
-  "mdi-file-arrow-up-down",
-  "mdi-file-arrow-up-down-outline",
-  "mdi-file-cabinet",
-  "mdi-file-cad",
-  "mdi-file-cad-box",
-  "mdi-file-cancel",
-  "mdi-file-cancel-outline",
-  "mdi-file-certificate",
-  "mdi-file-certificate-outline",
-  "mdi-file-chart",
-  "mdi-file-chart-check",
-  "mdi-file-chart-check-outline",
-  "mdi-file-chart-outline",
-  "mdi-file-check",
-  "mdi-file-check-outline",
-  "mdi-file-clock",
-  "mdi-file-clock-outline",
-  "mdi-file-cloud",
-  "mdi-file-cloud-outline",
-  "mdi-file-code",
-  "mdi-file-code-outline",
-  "mdi-file-cog",
-  "mdi-file-cog-outline",
-  "mdi-file-compare",
-  "mdi-file-delimited",
-  "mdi-file-delimited-outline",
-  "mdi-file-document",
-  "mdi-file-document-alert",
-  "mdi-file-document-alert-outline",
-  "mdi-file-document-arrow-right",
-  "mdi-file-document-arrow-right-outline",
-  "mdi-file-document-check",
-  "mdi-file-document-check-outline",
-  "mdi-file-document-edit",
-  "mdi-file-document-edit-outline",
-  "mdi-file-document-minus",
-  "mdi-file-document-minus-outline",
-  "mdi-file-document-multiple",
-  "mdi-file-document-multiple-outline",
-  "mdi-file-document-outline",
-  "mdi-file-document-plus",
-  "mdi-file-document-plus-outline",
-  "mdi-file-document-refresh",
-  "mdi-file-document-refresh-outline",
-  "mdi-file-document-remove",
-  "mdi-file-document-remove-outline",
-  "mdi-file-download",
-  "mdi-file-download-outline",
-  "mdi-file-edit",
-  "mdi-file-edit-outline",
-  "mdi-file-excel",
-  "mdi-file-excel-box",
-  "mdi-file-excel-box-outline",
-  "mdi-file-excel-outline",
-  "mdi-file-export",
-  "mdi-file-export-outline",
-  "mdi-file-eye",
-  "mdi-file-eye-outline",
-  "mdi-file-find",
-  "mdi-file-find-outline",
-  "mdi-file-gif-box",
-  "mdi-file-hidden",
-  "mdi-file-image",
-  "mdi-file-image-marker",
-  "mdi-file-image-marker-outline",
-  "mdi-file-image-minus",
-  "mdi-file-image-minus-outline",
-  "mdi-file-image-outline",
-  "mdi-file-image-plus",
-  "mdi-file-image-plus-outline",
-  "mdi-file-image-remove",
-  "mdi-file-image-remove-outline",
-  "mdi-file-import",
-  "mdi-file-import-outline",
-  "mdi-file-jpg-box",
-  "mdi-file-key",
-  "mdi-file-key-outline",
-  "mdi-file-link",
-  "mdi-file-link-outline",
-  "mdi-file-lock",
-  "mdi-file-lock-open",
-  "mdi-file-lock-open-outline",
-  "mdi-file-lock-outline",
-  "mdi-file-marker",
-  "mdi-file-marker-outline",
-  "mdi-file-minus",
-  "mdi-file-minus-outline",
-  "mdi-file-move",
-  "mdi-file-move-outline",
-  "mdi-file-multiple",
-  "mdi-file-multiple-outline",
-  "mdi-file-music",
-  "mdi-file-music-outline",
-  "mdi-file-outline",
-  "mdi-file-pdf-box",
-  "mdi-file-percent",
-  "mdi-file-percent-outline",
-  "mdi-file-phone",
-  "mdi-file-phone-outline",
-  "mdi-file-plus",
-  "mdi-file-plus-outline",
-  "mdi-file-png-box",
-  "mdi-file-powerpoint",
-  "mdi-file-powerpoint-box",
-  "mdi-file-powerpoint-box-outline",
-  "mdi-file-powerpoint-outline",
-  "mdi-file-presentation-box",
-  "mdi-file-question",
-  "mdi-file-question-outline",
-  "mdi-file-refresh",
-  "mdi-file-refresh-outline",
-  "mdi-file-remove",
-  "mdi-file-remove-outline",
-  "mdi-file-replace",
-  "mdi-file-replace-outline",
-  "mdi-file-restore",
-  "mdi-file-restore-outline",
-  "mdi-file-rotate-left",
-  "mdi-file-rotate-left-outline",
-  "mdi-file-rotate-right",
-  "mdi-file-rotate-right-outline",
-  "mdi-file-search",
-  "mdi-file-search-outline",
-  "mdi-file-send",
-  "mdi-file-send-outline",
-  "mdi-file-settings",
-  "mdi-file-settings-outline",
-  "mdi-file-sign",
-  "mdi-file-star",
-  "mdi-file-star-four-points",
-  "mdi-file-star-four-points-outline",
-  "mdi-file-star-outline",
-  "mdi-file-swap",
-  "mdi-file-swap-outline",
-  "mdi-file-sync",
-  "mdi-file-sync-outline",
-  "mdi-file-table",
-  "mdi-file-table-box",
-  "mdi-file-table-box-multiple",
-  "mdi-file-table-box-multiple-outline",
-  "mdi-file-table-box-outline",
-  "mdi-file-table-outline",
-  "mdi-file-tree",
-  "mdi-file-tree-outline",
-  "mdi-file-undo",
-  "mdi-file-undo-outline",
-  "mdi-file-upload",
-  "mdi-file-upload-outline",
-  "mdi-file-video",
-  "mdi-file-video-outline",
-  "mdi-file-word",
-  "mdi-file-word-box",
-  "mdi-file-word-box-outline",
-  "mdi-file-word-outline",
-  "mdi-file-xml-box",
-  "mdi-film",
-  "mdi-filmstrip",
-  "mdi-filmstrip-box",
-  "mdi-filmstrip-box-multiple",
-  "mdi-filmstrip-off",
-  "mdi-filter",
-  "mdi-filter-check",
-  "mdi-filter-check-outline",
-  "mdi-filter-cog",
-  "mdi-filter-cog-outline",
-  "mdi-filter-menu",
-  "mdi-filter-menu-outline",
-  "mdi-filter-minus",
-  "mdi-filter-minus-outline",
-  "mdi-filter-multiple",
-  "mdi-filter-multiple-outline",
-  "mdi-filter-off",
-  "mdi-filter-off-outline",
-  "mdi-filter-outline",
-  "mdi-filter-plus",
-  "mdi-filter-plus-outline",
-  "mdi-filter-remove",
-  "mdi-filter-remove-outline",
-  "mdi-filter-settings",
-  "mdi-filter-settings-outline",
-  "mdi-filter-variant",
-  "mdi-filter-variant-minus",
-  "mdi-filter-variant-plus",
-  "mdi-filter-variant-remove",
-  "mdi-finance",
-  "mdi-find-replace",
-  "mdi-fingerprint",
-  "mdi-fingerprint-off",
-  "mdi-fire",
-  "mdi-fire-alert",
-  "mdi-fire-circle",
-  "mdi-fire-extinguisher",
-  "mdi-fire-hydrant",
-  "mdi-fire-hydrant-alert",
-  "mdi-fire-hydrant-off",
-  "mdi-fire-off",
-  "mdi-fire-station",
-  "mdi-fire-truck",
-  "mdi-firebase",
-  "mdi-firefox",
-  "mdi-fireplace",
-  "mdi-fireplace-off",
-  "mdi-firewire",
-  "mdi-firework",
-  "mdi-firework-off",
-  "mdi-fish",
-  "mdi-fish-off",
-  "mdi-fishbowl",
-  "mdi-fishbowl-outline",
-  "mdi-fit-to-page",
-  "mdi-fit-to-page-outline",
-  "mdi-fit-to-screen",
-  "mdi-fit-to-screen-outline",
-  "mdi-flag",
-  "mdi-flag-checkered",
-  "mdi-flag-minus",
-  "mdi-flag-minus-outline",
-  "mdi-flag-off",
-  "mdi-flag-off-outline",
-  "mdi-flag-outline",
-  "mdi-flag-plus",
-  "mdi-flag-plus-outline",
-  "mdi-flag-remove",
-  "mdi-flag-remove-outline",
-  "mdi-flag-triangle",
-  "mdi-flag-variant",
-  "mdi-flag-variant-minus",
-  "mdi-flag-variant-minus-outline",
-  "mdi-flag-variant-off",
-  "mdi-flag-variant-off-outline",
-  "mdi-flag-variant-outline",
-  "mdi-flag-variant-plus",
-  "mdi-flag-variant-plus-outline",
-  "mdi-flag-variant-remove",
-  "mdi-flag-variant-remove-outline",
-  "mdi-flare",
-  "mdi-flash",
-  "mdi-flash-alert",
-  "mdi-flash-alert-outline",
-  "mdi-flash-auto",
-  "mdi-flash-off",
-  "mdi-flash-off-outline",
-  "mdi-flash-outline",
-  "mdi-flash-red-eye",
-  "mdi-flash-triangle",
-  "mdi-flash-triangle-outline",
-  "mdi-flashlight",
-  "mdi-flashlight-off",
-  "mdi-flask",
-  "mdi-flask-empty",
-  "mdi-flask-empty-minus",
-  "mdi-flask-empty-minus-outline",
-  "mdi-flask-empty-off",
-  "mdi-flask-empty-off-outline",
-  "mdi-flask-empty-outline",
-  "mdi-flask-empty-plus",
-  "mdi-flask-empty-plus-outline",
-  "mdi-flask-empty-remove",
-  "mdi-flask-empty-remove-outline",
-  "mdi-flask-minus",
-  "mdi-flask-minus-outline",
-  "mdi-flask-off",
-  "mdi-flask-off-outline",
-  "mdi-flask-outline",
-  "mdi-flask-plus",
-  "mdi-flask-plus-outline",
-  "mdi-flask-remove",
-  "mdi-flask-remove-outline",
-  "mdi-flask-round-bottom",
-  "mdi-flask-round-bottom-empty",
-  "mdi-flask-round-bottom-empty-outline",
-  "mdi-flask-round-bottom-outline",
-  "mdi-fleur-de-lis",
-  "mdi-flip-horizontal",
-  "mdi-flip-to-back",
-  "mdi-flip-to-front",
-  "mdi-flip-vertical",
-  "mdi-floor-lamp",
-  "mdi-floor-lamp-dual",
-  "mdi-floor-lamp-dual-outline",
-  "mdi-floor-lamp-outline",
-  "mdi-floor-lamp-torchiere",
-  "mdi-floor-lamp-torchiere-outline",
-  "mdi-floor-lamp-torchiere-variant",
-  "mdi-floor-lamp-torchiere-variant-outline",
-  "mdi-floor-plan",
-  "mdi-floppy",
-  "mdi-floppy-variant",
-  "mdi-flower",
-  "mdi-flower-outline",
-  "mdi-flower-pollen",
-  "mdi-flower-pollen-outline",
-  "mdi-flower-poppy",
-  "mdi-flower-tulip",
-  "mdi-flower-tulip-outline",
-  "mdi-focus-auto",
-  "mdi-focus-field",
-  "mdi-focus-field-horizontal",
-  "mdi-focus-field-vertical",
-  "mdi-folder",
-  "mdi-folder-account",
-  "mdi-folder-account-outline",
-  "mdi-folder-alert",
-  "mdi-folder-alert-outline",
-  "mdi-folder-arrow-down",
-  "mdi-folder-arrow-down-outline",
-  "mdi-folder-arrow-left",
-  "mdi-folder-arrow-left-outline",
-  "mdi-folder-arrow-left-right",
-  "mdi-folder-arrow-left-right-outline",
-  "mdi-folder-arrow-right",
-  "mdi-folder-arrow-right-outline",
-  "mdi-folder-arrow-up",
-  "mdi-folder-arrow-up-down",
-  "mdi-folder-arrow-up-down-outline",
-  "mdi-folder-arrow-up-outline",
-  "mdi-folder-cancel",
-  "mdi-folder-cancel-outline",
-  "mdi-folder-check",
-  "mdi-folder-check-outline",
-  "mdi-folder-clock",
-  "mdi-folder-clock-outline",
-  "mdi-folder-cog",
-  "mdi-folder-cog-outline",
-  "mdi-folder-download",
-  "mdi-folder-download-outline",
-  "mdi-folder-edit",
-  "mdi-folder-edit-outline",
-  "mdi-folder-eye",
-  "mdi-folder-eye-outline",
-  "mdi-folder-file",
-  "mdi-folder-file-outline",
-  "mdi-folder-google-drive",
-  "mdi-folder-heart",
-  "mdi-folder-heart-outline",
-  "mdi-folder-hidden",
-  "mdi-folder-home",
-  "mdi-folder-home-outline",
-  "mdi-folder-image",
-  "mdi-folder-information",
-  "mdi-folder-information-outline",
-  "mdi-folder-key",
-  "mdi-folder-key-network",
-  "mdi-folder-key-network-outline",
-  "mdi-folder-key-outline",
-  "mdi-folder-lock",
-  "mdi-folder-lock-open",
-  "mdi-folder-lock-open-outline",
-  "mdi-folder-lock-outline",
-  "mdi-folder-marker",
-  "mdi-folder-marker-outline",
-  "mdi-folder-minus",
-  "mdi-folder-minus-outline",
-  "mdi-folder-move",
-  "mdi-folder-move-outline",
-  "mdi-folder-multiple",
-  "mdi-folder-multiple-image",
-  "mdi-folder-multiple-outline",
-  "mdi-folder-multiple-plus",
-  "mdi-folder-multiple-plus-outline",
-  "mdi-folder-music",
-  "mdi-folder-music-outline",
-  "mdi-folder-network",
-  "mdi-folder-network-outline",
-  "mdi-folder-off",
-  "mdi-folder-off-outline",
-  "mdi-folder-open",
-  "mdi-folder-open-outline",
-  "mdi-folder-outline",
-  "mdi-folder-play",
-  "mdi-folder-play-outline",
-  "mdi-folder-plus",
-  "mdi-folder-plus-outline",
-  "mdi-folder-pound",
-  "mdi-folder-pound-outline",
-  "mdi-folder-question",
-  "mdi-folder-question-outline",
-  "mdi-folder-refresh",
-  "mdi-folder-refresh-outline",
-  "mdi-folder-remove",
-  "mdi-folder-remove-outline",
-  "mdi-folder-search",
-  "mdi-folder-search-outline",
-  "mdi-folder-settings",
-  "mdi-folder-settings-outline",
-  "mdi-folder-star",
-  "mdi-folder-star-multiple",
-  "mdi-folder-star-multiple-outline",
-  "mdi-folder-star-outline",
-  "mdi-folder-swap",
-  "mdi-folder-swap-outline",
-  "mdi-folder-sync",
-  "mdi-folder-sync-outline",
-  "mdi-folder-table",
-  "mdi-folder-table-outline",
-  "mdi-folder-text",
-  "mdi-folder-text-outline",
-  "mdi-folder-upload",
-  "mdi-folder-upload-outline",
-  "mdi-folder-wrench",
-  "mdi-folder-wrench-outline",
-  "mdi-folder-zip",
-  "mdi-folder-zip-outline",
-  "mdi-font-awesome",
-  "mdi-food",
-  "mdi-food-apple",
-  "mdi-food-apple-outline",
-  "mdi-food-croissant",
-  "mdi-food-drumstick",
-  "mdi-food-drumstick-off",
-  "mdi-food-drumstick-off-outline",
-  "mdi-food-drumstick-outline",
-  "mdi-food-fork-drink",
-  "mdi-food-halal",
-  "mdi-food-hot-dog",
-  "mdi-food-kosher",
-  "mdi-food-off",
-  "mdi-food-off-outline",
-  "mdi-food-outline",
-  "mdi-food-steak",
-  "mdi-food-steak-off",
-  "mdi-food-takeout-box",
-  "mdi-food-takeout-box-outline",
-  "mdi-food-turkey",
-  "mdi-food-variant",
-  "mdi-food-variant-off",
-  "mdi-foot-print",
-  "mdi-football",
-  "mdi-football-australian",
-  "mdi-football-helmet",
-  "mdi-forest",
-  "mdi-forest-outline",
-  "mdi-forklift",
-  "mdi-form-dropdown",
-  "mdi-form-select",
-  "mdi-form-textarea",
-  "mdi-form-textbox",
-  "mdi-form-textbox-lock",
-  "mdi-form-textbox-password",
-  "mdi-format-align-bottom",
-  "mdi-format-align-center",
-  "mdi-format-align-justify",
-  "mdi-format-align-left",
-  "mdi-format-align-middle",
-  "mdi-format-align-right",
-  "mdi-format-align-top",
-  "mdi-format-annotation-minus",
-  "mdi-format-annotation-plus",
-  "mdi-format-bold",
-  "mdi-format-clear",
-  "mdi-format-color-fill",
-  "mdi-format-color-highlight",
-  "mdi-format-color-marker-cancel",
-  "mdi-format-color-text",
-  "mdi-format-columns",
-  "mdi-format-float-center",
-  "mdi-format-float-left",
-  "mdi-format-float-none",
-  "mdi-format-float-right",
-  "mdi-format-font",
-  "mdi-format-font-size-decrease",
-  "mdi-format-font-size-increase",
-  "mdi-format-header-1",
-  "mdi-format-header-2",
-  "mdi-format-header-3",
-  "mdi-format-header-4",
-  "mdi-format-header-5",
-  "mdi-format-header-6",
-  "mdi-format-header-decrease",
-  "mdi-format-header-equal",
-  "mdi-format-header-increase",
-  "mdi-format-header-pound",
-  "mdi-format-horizontal-align-center",
-  "mdi-format-horizontal-align-left",
-  "mdi-format-horizontal-align-right",
-  "mdi-format-indent-decrease",
-  "mdi-format-indent-increase",
-  "mdi-format-italic",
-  "mdi-format-letter-case",
-  "mdi-format-letter-case-lower",
-  "mdi-format-letter-case-upper",
-  "mdi-format-letter-ends-with",
-  "mdi-format-letter-matches",
-  "mdi-format-letter-spacing",
-  "mdi-format-letter-spacing-variant",
-  "mdi-format-letter-starts-with",
-  "mdi-format-line-height",
-  "mdi-format-line-spacing",
-  "mdi-format-line-style",
-  "mdi-format-line-weight",
-  "mdi-format-list-bulleted",
-  "mdi-format-list-bulleted-square",
-  "mdi-format-list-bulleted-triangle",
-  "mdi-format-list-bulleted-type",
-  "mdi-format-list-checkbox",
-  "mdi-format-list-checks",
-  "mdi-format-list-group",
-  "mdi-format-list-group-plus",
-  "mdi-format-list-numbered",
-  "mdi-format-list-numbered-rtl",
-  "mdi-format-list-text",
-  "mdi-format-overline",
-  "mdi-format-page-break",
-  "mdi-format-page-split",
-  "mdi-format-paint",
-  "mdi-format-paragraph",
-  "mdi-format-paragraph-spacing",
-  "mdi-format-pilcrow",
-  "mdi-format-pilcrow-arrow-left",
-  "mdi-format-pilcrow-arrow-right",
-  "mdi-format-quote-close",
-  "mdi-format-quote-close-outline",
-  "mdi-format-quote-open",
-  "mdi-format-quote-open-outline",
-  "mdi-format-rotate-90",
-  "mdi-format-section",
-  "mdi-format-size",
-  "mdi-format-strikethrough",
-  "mdi-format-strikethrough-variant",
-  "mdi-format-subscript",
-  "mdi-format-superscript",
-  "mdi-format-text",
-  "mdi-format-text-rotation-angle-down",
-  "mdi-format-text-rotation-angle-up",
-  "mdi-format-text-rotation-down",
-  "mdi-format-text-rotation-down-vertical",
-  "mdi-format-text-rotation-none",
-  "mdi-format-text-rotation-up",
-  "mdi-format-text-rotation-vertical",
-  "mdi-format-text-variant",
-  "mdi-format-text-variant-outline",
-  "mdi-format-text-wrapping-clip",
-  "mdi-format-text-wrapping-overflow",
-  "mdi-format-text-wrapping-wrap",
-  "mdi-format-textbox",
-  "mdi-format-title",
-  "mdi-format-underline",
-  "mdi-format-underline-wavy",
-  "mdi-format-vertical-align-bottom",
-  "mdi-format-vertical-align-center",
-  "mdi-format-vertical-align-top",
-  "mdi-format-wrap-inline",
-  "mdi-format-wrap-square",
-  "mdi-format-wrap-tight",
-  "mdi-format-wrap-top-bottom",
-  "mdi-forum",
-  "mdi-forum-minus",
-  "mdi-forum-minus-outline",
-  "mdi-forum-outline",
-  "mdi-forum-plus",
-  "mdi-forum-plus-outline",
-  "mdi-forum-remove",
-  "mdi-forum-remove-outline",
-  "mdi-forward",
-  "mdi-forwardburger",
-  "mdi-fountain",
-  "mdi-fountain-pen",
-  "mdi-fountain-pen-tip",
-  "mdi-fraction-one-half",
-  "mdi-freebsd",
-  "mdi-french-fries",
-  "mdi-frequently-asked-questions",
-  "mdi-fridge",
-  "mdi-fridge-alert",
-  "mdi-fridge-alert-outline",
-  "mdi-fridge-bottom",
-  "mdi-fridge-industrial",
-  "mdi-fridge-industrial-alert",
-  "mdi-fridge-industrial-alert-outline",
-  "mdi-fridge-industrial-off",
-  "mdi-fridge-industrial-off-outline",
-  "mdi-fridge-industrial-outline",
-  "mdi-fridge-off",
-  "mdi-fridge-off-outline",
-  "mdi-fridge-outline",
-  "mdi-fridge-top",
-  "mdi-fridge-variant",
-  "mdi-fridge-variant-alert",
-  "mdi-fridge-variant-alert-outline",
-  "mdi-fridge-variant-off",
-  "mdi-fridge-variant-off-outline",
-  "mdi-fridge-variant-outline",
-  "mdi-fruit-cherries",
-  "mdi-fruit-cherries-off",
-  "mdi-fruit-citrus",
-  "mdi-fruit-citrus-off",
-  "mdi-fruit-grapes",
-  "mdi-fruit-grapes-outline",
-  "mdi-fruit-pear",
-  "mdi-fruit-pineapple",
-  "mdi-fruit-watermelon",
-  "mdi-fuel",
-  "mdi-fuel-cell",
-  "mdi-fullscreen",
-  "mdi-fullscreen-exit",
-  "mdi-function",
-  "mdi-function-variant",
-  "mdi-furigana-horizontal",
-  "mdi-furigana-vertical",
-  "mdi-fuse",
-  "mdi-fuse-alert",
-  "mdi-fuse-blade",
-  "mdi-fuse-off",
-  "mdi-gamepad",
-  "mdi-gamepad-circle",
-  "mdi-gamepad-circle-down",
-  "mdi-gamepad-circle-left",
-  "mdi-gamepad-circle-outline",
-  "mdi-gamepad-circle-right",
-  "mdi-gamepad-circle-up",
-  "mdi-gamepad-down",
-  "mdi-gamepad-left",
-  "mdi-gamepad-outline",
-  "mdi-gamepad-right",
-  "mdi-gamepad-round",
-  "mdi-gamepad-round-down",
-  "mdi-gamepad-round-left",
-  "mdi-gamepad-round-outline",
-  "mdi-gamepad-round-right",
-  "mdi-gamepad-round-up",
-  "mdi-gamepad-square",
-  "mdi-gamepad-square-outline",
-  "mdi-gamepad-up",
-  "mdi-gamepad-variant",
-  "mdi-gamepad-variant-outline",
-  "mdi-gamma",
-  "mdi-gantry-crane",
-  "mdi-garage",
-  "mdi-garage-alert",
-  "mdi-garage-alert-variant",
-  "mdi-garage-lock",
-  "mdi-garage-open",
-  "mdi-garage-open-variant",
-  "mdi-garage-variant",
-  "mdi-garage-variant-lock",
-  "mdi-gas-burner",
-  "mdi-gas-cylinder",
-  "mdi-gas-station",
-  "mdi-gas-station-in-use",
-  "mdi-gas-station-in-use-outline",
-  "mdi-gas-station-off",
-  "mdi-gas-station-off-outline",
-  "mdi-gas-station-outline",
-  "mdi-gate",
-  "mdi-gate-alert",
-  "mdi-gate-and",
-  "mdi-gate-arrow-left",
-  "mdi-gate-arrow-right",
-  "mdi-gate-buffer",
-  "mdi-gate-nand",
-  "mdi-gate-nor",
-  "mdi-gate-not",
-  "mdi-gate-open",
-  "mdi-gate-or",
-  "mdi-gate-xnor",
-  "mdi-gate-xor",
-  "mdi-gatsby",
-  "mdi-gauge",
-  "mdi-gauge-empty",
-  "mdi-gauge-full",
-  "mdi-gauge-low",
-  "mdi-gavel",
-  "mdi-gender-female",
-  "mdi-gender-male",
-  "mdi-gender-male-female",
-  "mdi-gender-male-female-variant",
-  "mdi-gender-non-binary",
-  "mdi-gender-transgender",
-  "mdi-generator-mobile",
-  "mdi-generator-portable",
-  "mdi-generator-stationary",
-  "mdi-gentoo",
-  "mdi-gesture",
-  "mdi-gesture-double-tap",
-  "mdi-gesture-pinch",
-  "mdi-gesture-spread",
-  "mdi-gesture-swipe",
-  "mdi-gesture-swipe-down",
-  "mdi-gesture-swipe-horizontal",
-  "mdi-gesture-swipe-left",
-  "mdi-gesture-swipe-right",
-  "mdi-gesture-swipe-up",
-  "mdi-gesture-swipe-vertical",
-  "mdi-gesture-tap",
-  "mdi-gesture-tap-box",
-  "mdi-gesture-tap-button",
-  "mdi-gesture-tap-hold",
-  "mdi-gesture-two-double-tap",
-  "mdi-gesture-two-tap",
-  "mdi-ghost",
-  "mdi-ghost-off",
-  "mdi-ghost-off-outline",
-  "mdi-ghost-outline",
-  "mdi-gift",
-  "mdi-gift-off",
-  "mdi-gift-off-outline",
-  "mdi-gift-open",
-  "mdi-gift-open-outline",
-  "mdi-gift-outline",
-  "mdi-git",
-  "mdi-github",
-  "mdi-gitlab",
-  "mdi-glass-cocktail",
-  "mdi-glass-cocktail-off",
-  "mdi-glass-flute",
-  "mdi-glass-fragile",
-  "mdi-glass-mug",
-  "mdi-glass-mug-off",
-  "mdi-glass-mug-variant",
-  "mdi-glass-mug-variant-off",
-  "mdi-glass-pint-outline",
-  "mdi-glass-stange",
-  "mdi-glass-tulip",
-  "mdi-glass-wine",
-  "mdi-glasses",
-  "mdi-globe-light",
-  "mdi-globe-light-outline",
-  "mdi-globe-model",
-  "mdi-gmail",
-  "mdi-gnome",
-  "mdi-go-kart",
-  "mdi-go-kart-track",
-  "mdi-gog",
-  "mdi-gold",
-  "mdi-golf",
-  "mdi-golf-cart",
-  "mdi-golf-tee",
-  "mdi-gondola",
-  "mdi-goodreads",
-  "mdi-google",
-  "mdi-google-ads",
-  "mdi-google-analytics",
-  "mdi-google-assistant",
-  "mdi-google-cardboard",
-  "mdi-google-chrome",
-  "mdi-google-circles",
-  "mdi-google-circles-communities",
-  "mdi-google-circles-extended",
-  "mdi-google-circles-group",
-  "mdi-google-classroom",
-  "mdi-google-cloud",
-  "mdi-google-downasaur",
-  "mdi-google-drive",
-  "mdi-google-earth",
-  "mdi-google-fit",
-  "mdi-google-glass",
-  "mdi-google-hangouts",
-  "mdi-google-keep",
-  "mdi-google-lens",
-  "mdi-google-maps",
-  "mdi-google-my-business",
-  "mdi-google-nearby",
-  "mdi-google-play",
-  "mdi-google-plus",
-  "mdi-google-podcast",
-  "mdi-google-spreadsheet",
-  "mdi-google-street-view",
-  "mdi-google-translate",
-  "mdi-gradient-horizontal",
-  "mdi-gradient-vertical",
-  "mdi-grain",
-  "mdi-graph",
-  "mdi-graph-outline",
-  "mdi-graphql",
-  "mdi-grass",
-  "mdi-grave-stone",
-  "mdi-grease-pencil",
-  "mdi-greater-than",
-  "mdi-greater-than-or-equal",
-  "mdi-greenhouse",
-  "mdi-grid",
-  "mdi-grid-large",
-  "mdi-grid-off",
-  "mdi-grill",
-  "mdi-grill-outline",
-  "mdi-group",
-  "mdi-guitar-acoustic",
-  "mdi-guitar-electric",
-  "mdi-guitar-pick",
-  "mdi-guitar-pick-outline",
-  "mdi-guy-fawkes-mask",
-  "mdi-gymnastics",
-  "mdi-hail",
-  "mdi-hair-dryer",
-  "mdi-hair-dryer-outline",
-  "mdi-halloween",
-  "mdi-hamburger",
-  "mdi-hamburger-check",
-  "mdi-hamburger-minus",
-  "mdi-hamburger-off",
-  "mdi-hamburger-plus",
-  "mdi-hamburger-remove",
-  "mdi-hammer",
-  "mdi-hammer-screwdriver",
-  "mdi-hammer-sickle",
-  "mdi-hammer-wrench",
-  "mdi-hand-back-left",
-  "mdi-hand-back-left-off",
-  "mdi-hand-back-left-off-outline",
-  "mdi-hand-back-left-outline",
-  "mdi-hand-back-right",
-  "mdi-hand-back-right-off",
-  "mdi-hand-back-right-off-outline",
-  "mdi-hand-back-right-outline",
-  "mdi-hand-clap",
-  "mdi-hand-clap-off",
-  "mdi-hand-coin",
-  "mdi-hand-coin-outline",
-  "mdi-hand-cycle",
-  "mdi-hand-extended",
-  "mdi-hand-extended-outline",
-  "mdi-hand-front-left",
-  "mdi-hand-front-left-outline",
-  "mdi-hand-front-right",
-  "mdi-hand-front-right-outline",
-  "mdi-hand-heart",
-  "mdi-hand-heart-outline",
-  "mdi-hand-okay",
-  "mdi-hand-peace",
-  "mdi-hand-peace-variant",
-  "mdi-hand-pointing-down",
-  "mdi-hand-pointing-left",
-  "mdi-hand-pointing-right",
-  "mdi-hand-pointing-up",
-  "mdi-hand-saw",
-  "mdi-hand-wash",
-  "mdi-hand-wash-outline",
-  "mdi-hand-water",
-  "mdi-hand-wave",
-  "mdi-hand-wave-outline",
-  "mdi-handball",
-  "mdi-handcuffs",
-  "mdi-hands-pray",
-  "mdi-handshake",
-  "mdi-handshake-outline",
-  "mdi-hanger",
-  "mdi-hard-hat",
-  "mdi-harddisk",
-  "mdi-harddisk-plus",
-  "mdi-harddisk-remove",
-  "mdi-hat-fedora",
-  "mdi-hazard-lights",
-  "mdi-hdmi-port",
-  "mdi-hdr",
-  "mdi-hdr-off",
-  "mdi-head",
-  "mdi-head-alert",
-  "mdi-head-alert-outline",
-  "mdi-head-check",
-  "mdi-head-check-outline",
-  "mdi-head-cog",
-  "mdi-head-cog-outline",
-  "mdi-head-dots-horizontal",
-  "mdi-head-dots-horizontal-outline",
-  "mdi-head-flash",
-  "mdi-head-flash-outline",
-  "mdi-head-heart",
-  "mdi-head-heart-outline",
-  "mdi-head-lightbulb",
-  "mdi-head-lightbulb-outline",
-  "mdi-head-minus",
-  "mdi-head-minus-outline",
-  "mdi-head-outline",
-  "mdi-head-plus",
-  "mdi-head-plus-outline",
-  "mdi-head-question",
-  "mdi-head-question-outline",
-  "mdi-head-remove",
-  "mdi-head-remove-outline",
-  "mdi-head-snowflake",
-  "mdi-head-snowflake-outline",
-  "mdi-head-sync",
-  "mdi-head-sync-outline",
-  "mdi-headphones",
-  "mdi-headphones-bluetooth",
-  "mdi-headphones-box",
-  "mdi-headphones-off",
-  "mdi-headphones-settings",
-  "mdi-headset",
-  "mdi-headset-dock",
-  "mdi-headset-off",
-  "mdi-heart",
-  "mdi-heart-box",
-  "mdi-heart-box-outline",
-  "mdi-heart-broken",
-  "mdi-heart-broken-outline",
-  "mdi-heart-circle",
-  "mdi-heart-circle-outline",
-  "mdi-heart-cog",
-  "mdi-heart-cog-outline",
-  "mdi-heart-flash",
-  "mdi-heart-half",
-  "mdi-heart-half-full",
-  "mdi-heart-half-outline",
-  "mdi-heart-minus",
-  "mdi-heart-minus-outline",
-  "mdi-heart-multiple",
-  "mdi-heart-multiple-outline",
-  "mdi-heart-off",
-  "mdi-heart-off-outline",
-  "mdi-heart-outline",
-  "mdi-heart-plus",
-  "mdi-heart-plus-outline",
-  "mdi-heart-pulse",
-  "mdi-heart-remove",
-  "mdi-heart-remove-outline",
-  "mdi-heart-search",
-  "mdi-heart-settings",
-  "mdi-heart-settings-outline",
-  "mdi-heat-pump",
-  "mdi-heat-pump-outline",
-  "mdi-heat-wave",
-  "mdi-heating-coil",
-  "mdi-helicopter",
-  "mdi-help",
-  "mdi-help-box",
-  "mdi-help-box-multiple",
-  "mdi-help-box-multiple-outline",
-  "mdi-help-box-outline",
-  "mdi-help-circle",
-  "mdi-help-circle-outline",
-  "mdi-help-network",
-  "mdi-help-network-outline",
-  "mdi-help-rhombus",
-  "mdi-help-rhombus-outline",
-  "mdi-hexadecimal",
-  "mdi-hexagon",
-  "mdi-hexagon-multiple",
-  "mdi-hexagon-multiple-outline",
-  "mdi-hexagon-outline",
-  "mdi-hexagon-slice-1",
-  "mdi-hexagon-slice-2",
-  "mdi-hexagon-slice-3",
-  "mdi-hexagon-slice-4",
-  "mdi-hexagon-slice-5",
-  "mdi-hexagon-slice-6",
-  "mdi-hexagram",
-  "mdi-hexagram-outline",
-  "mdi-high-definition",
-  "mdi-high-definition-box",
-  "mdi-highway",
-  "mdi-hiking",
-  "mdi-history",
-  "mdi-hockey-puck",
-  "mdi-hockey-sticks",
-  "mdi-hololens",
-  "mdi-home",
-  "mdi-home-account",
-  "mdi-home-alert",
-  "mdi-home-alert-outline",
-  "mdi-home-analytics",
-  "mdi-home-assistant",
-  "mdi-home-automation",
-  "mdi-home-battery",
-  "mdi-home-battery-outline",
-  "mdi-home-circle",
-  "mdi-home-circle-outline",
-  "mdi-home-city",
-  "mdi-home-city-outline",
-  "mdi-home-clock",
-  "mdi-home-clock-outline",
-  "mdi-home-edit",
-  "mdi-home-edit-outline",
-  "mdi-home-export-outline",
-  "mdi-home-flood",
-  "mdi-home-floor-0",
-  "mdi-home-floor-1",
-  "mdi-home-floor-2",
-  "mdi-home-floor-3",
-  "mdi-home-floor-a",
-  "mdi-home-floor-b",
-  "mdi-home-floor-g",
-  "mdi-home-floor-l",
-  "mdi-home-floor-negative-1",
-  "mdi-home-group",
-  "mdi-home-group-minus",
-  "mdi-home-group-plus",
-  "mdi-home-group-remove",
-  "mdi-home-heart",
-  "mdi-home-import-outline",
-  "mdi-home-lightbulb",
-  "mdi-home-lightbulb-outline",
-  "mdi-home-lightning-bolt",
-  "mdi-home-lightning-bolt-outline",
-  "mdi-home-lock",
-  "mdi-home-lock-open",
-  "mdi-home-map-marker",
-  "mdi-home-minus",
-  "mdi-home-minus-outline",
-  "mdi-home-modern",
-  "mdi-home-off",
-  "mdi-home-off-outline",
-  "mdi-home-outline",
-  "mdi-home-percent",
-  "mdi-home-percent-outline",
-  "mdi-home-plus",
-  "mdi-home-plus-outline",
-  "mdi-home-remove",
-  "mdi-home-remove-outline",
-  "mdi-home-roof",
-  "mdi-home-search",
-  "mdi-home-search-outline",
-  "mdi-home-silo",
-  "mdi-home-silo-outline",
-  "mdi-home-sound-in",
-  "mdi-home-sound-in-outline",
-  "mdi-home-sound-out",
-  "mdi-home-sound-out-outline",
-  "mdi-home-switch",
-  "mdi-home-switch-outline",
-  "mdi-home-thermometer",
-  "mdi-home-thermometer-outline",
-  "mdi-home-variant",
-  "mdi-home-variant-outline",
-  "mdi-hook",
-  "mdi-hook-off",
-  "mdi-hoop-house",
-  "mdi-hops",
-  "mdi-horizontal-rotate-clockwise",
-  "mdi-horizontal-rotate-counterclockwise",
-  "mdi-horse",
-  "mdi-horse-human",
-  "mdi-horse-variant",
-  "mdi-horse-variant-fast",
-  "mdi-horseshoe",
-  "mdi-hospital",
-  "mdi-hospital-box",
-  "mdi-hospital-box-outline",
-  "mdi-hospital-building",
-  "mdi-hospital-marker",
-  "mdi-hot-tub",
-  "mdi-hours-12",
-  "mdi-hours-24",
-  "mdi-hub",
-  "mdi-hub-outline",
-  "mdi-hubspot",
-  "mdi-hulu",
-  "mdi-human",
-  "mdi-human-baby-changing-table",
-  "mdi-human-cane",
-  "mdi-human-capacity-decrease",
-  "mdi-human-capacity-increase",
-  "mdi-human-child",
-  "mdi-human-dolly",
-  "mdi-human-edit",
-  "mdi-human-female",
-  "mdi-human-female-boy",
-  "mdi-human-female-dance",
-  "mdi-human-female-female",
-  "mdi-human-female-female-child",
-  "mdi-human-female-girl",
-  "mdi-human-greeting",
-  "mdi-human-greeting-proximity",
-  "mdi-human-greeting-variant",
-  "mdi-human-handsdown",
-  "mdi-human-handsup",
-  "mdi-human-male",
-  "mdi-human-male-board",
-  "mdi-human-male-board-poll",
-  "mdi-human-male-boy",
-  "mdi-human-male-child",
-  "mdi-human-male-female",
-  "mdi-human-male-female-child",
-  "mdi-human-male-girl",
-  "mdi-human-male-height",
-  "mdi-human-male-height-variant",
-  "mdi-human-male-male",
-  "mdi-human-male-male-child",
-  "mdi-human-non-binary",
-  "mdi-human-pregnant",
-  "mdi-human-queue",
-  "mdi-human-scooter",
-  "mdi-human-walker",
-  "mdi-human-wheelchair",
-  "mdi-human-white-cane",
-  "mdi-humble-bundle",
-  "mdi-hvac",
-  "mdi-hvac-off",
-  "mdi-hydraulic-oil-level",
-  "mdi-hydraulic-oil-temperature",
-  "mdi-hydro-power",
-  "mdi-hydrogen-station",
-  "mdi-ice-cream",
-  "mdi-ice-cream-off",
-  "mdi-ice-pop",
-  "mdi-id-card",
-  "mdi-identifier",
-  "mdi-ideogram-cjk",
-  "mdi-ideogram-cjk-variant",
-  "mdi-image",
-  "mdi-image-album",
-  "mdi-image-area",
-  "mdi-image-area-close",
-  "mdi-image-auto-adjust",
-  "mdi-image-broken",
-  "mdi-image-broken-variant",
-  "mdi-image-check",
-  "mdi-image-check-outline",
-  "mdi-image-edit",
-  "mdi-image-edit-outline",
-  "mdi-image-filter-black-white",
-  "mdi-image-filter-center-focus",
-  "mdi-image-filter-center-focus-strong",
-  "mdi-image-filter-center-focus-strong-outline",
-  "mdi-image-filter-center-focus-weak",
-  "mdi-image-filter-drama",
-  "mdi-image-filter-drama-outline",
-  "mdi-image-filter-frames",
-  "mdi-image-filter-hdr",
-  "mdi-image-filter-hdr-outline",
-  "mdi-image-filter-none",
-  "mdi-image-filter-tilt-shift",
-  "mdi-image-filter-vintage",
-  "mdi-image-frame",
-  "mdi-image-lock",
-  "mdi-image-lock-outline",
-  "mdi-image-marker",
-  "mdi-image-marker-outline",
-  "mdi-image-minus",
-  "mdi-image-minus-outline",
-  "mdi-image-move",
-  "mdi-image-multiple",
-  "mdi-image-multiple-outline",
-  "mdi-image-off",
-  "mdi-image-off-outline",
-  "mdi-image-outline",
-  "mdi-image-plus",
-  "mdi-image-plus-outline",
-  "mdi-image-refresh",
-  "mdi-image-refresh-outline",
-  "mdi-image-remove",
-  "mdi-image-remove-outline",
-  "mdi-image-search",
-  "mdi-image-search-outline",
-  "mdi-image-size-select-actual",
-  "mdi-image-size-select-large",
-  "mdi-image-size-select-small",
-  "mdi-image-sync",
-  "mdi-image-sync-outline",
-  "mdi-image-text",
-  "mdi-import",
-  "mdi-inbox",
-  "mdi-inbox-arrow-down",
-  "mdi-inbox-arrow-down-outline",
-  "mdi-inbox-arrow-up",
-  "mdi-inbox-arrow-up-outline",
-  "mdi-inbox-full",
-  "mdi-inbox-full-outline",
-  "mdi-inbox-multiple",
-  "mdi-inbox-multiple-outline",
-  "mdi-inbox-outline",
-  "mdi-inbox-remove",
-  "mdi-inbox-remove-outline",
-  "mdi-incognito",
-  "mdi-incognito-circle",
-  "mdi-incognito-circle-off",
-  "mdi-incognito-off",
-  "mdi-induction",
-  "mdi-infinity",
-  "mdi-information",
-  "mdi-information-box",
-  "mdi-information-box-outline",
-  "mdi-information-off",
-  "mdi-information-off-outline",
-  "mdi-information-outline",
-  "mdi-information-slab-box",
-  "mdi-information-slab-box-outline",
-  "mdi-information-slab-circle",
-  "mdi-information-slab-circle-outline",
-  "mdi-information-slab-symbol",
-  "mdi-information-symbol",
-  "mdi-information-variant",
-  "mdi-information-variant-box",
-  "mdi-information-variant-box-outline",
-  "mdi-information-variant-circle",
-  "mdi-information-variant-circle-outline",
-  "mdi-instagram",
-  "mdi-instrument-triangle",
-  "mdi-integrated-circuit-chip",
-  "mdi-invert-colors",
-  "mdi-invert-colors-off",
-  "mdi-invoice",
-  "mdi-invoice-arrow-left",
-  "mdi-invoice-arrow-left-outline",
-  "mdi-invoice-arrow-right",
-  "mdi-invoice-arrow-right-outline",
-  "mdi-invoice-check",
-  "mdi-invoice-check-outline",
-  "mdi-invoice-clock",
-  "mdi-invoice-clock-outline",
-  "mdi-invoice-edit",
-  "mdi-invoice-edit-outline",
-  "mdi-invoice-export-outline",
-  "mdi-invoice-fast",
-  "mdi-invoice-fast-outline",
-  "mdi-invoice-import",
-  "mdi-invoice-import-outline",
-  "mdi-invoice-list",
-  "mdi-invoice-list-outline",
-  "mdi-invoice-minus",
-  "mdi-invoice-minus-outline",
-  "mdi-invoice-multiple",
-  "mdi-invoice-multiple-outline",
-  "mdi-invoice-outline",
-  "mdi-invoice-plus",
-  "mdi-invoice-plus-outline",
-  "mdi-invoice-remove",
-  "mdi-invoice-remove-outline",
-  "mdi-invoice-send",
-  "mdi-invoice-send-outline",
-  "mdi-invoice-text",
-  "mdi-invoice-text-arrow-left",
-  "mdi-invoice-text-arrow-left-outline",
-  "mdi-invoice-text-arrow-right",
-  "mdi-invoice-text-arrow-right-outline",
-  "mdi-invoice-text-check",
-  "mdi-invoice-text-check-outline",
-  "mdi-invoice-text-clock",
-  "mdi-invoice-text-clock-outline",
-  "mdi-invoice-text-edit",
-  "mdi-invoice-text-edit-outline",
-  "mdi-invoice-text-fast",
-  "mdi-invoice-text-fast-outline",
-  "mdi-invoice-text-minus",
-  "mdi-invoice-text-minus-outline",
-  "mdi-invoice-text-multiple",
-  "mdi-invoice-text-multiple-outline",
-  "mdi-invoice-text-outline",
-  "mdi-invoice-text-plus",
-  "mdi-invoice-text-plus-outline",
-  "mdi-invoice-text-remove",
-  "mdi-invoice-text-remove-outline",
-  "mdi-invoice-text-send",
-  "mdi-invoice-text-send-outline",
-  "mdi-iobroker",
-  "mdi-ip",
-  "mdi-ip-network",
-  "mdi-ip-network-outline",
-  "mdi-ip-outline",
-  "mdi-ipod",
-  "mdi-iron",
-  "mdi-iron-board",
-  "mdi-iron-outline",
-  "mdi-island",
-  "mdi-island-variant",
-  "mdi-iv-bag",
-  "mdi-jabber",
-  "mdi-jeepney",
-  "mdi-jellyfish",
-  "mdi-jellyfish-outline",
-  "mdi-jira",
-  "mdi-jquery",
-  "mdi-jsfiddle",
-  "mdi-jump-rope",
-  "mdi-kabaddi",
-  "mdi-kangaroo",
-  "mdi-karate",
-  "mdi-kayaking",
-  "mdi-keg",
-  "mdi-kettle",
-  "mdi-kettle-alert",
-  "mdi-kettle-alert-outline",
-  "mdi-kettle-off",
-  "mdi-kettle-off-outline",
-  "mdi-kettle-outline",
-  "mdi-kettle-pour-over",
-  "mdi-kettle-steam",
-  "mdi-kettle-steam-outline",
-  "mdi-kettlebell",
-  "mdi-key",
-  "mdi-key-alert",
-  "mdi-key-alert-outline",
-  "mdi-key-arrow-right",
-  "mdi-key-chain",
-  "mdi-key-chain-variant",
-  "mdi-key-change",
-  "mdi-key-link",
-  "mdi-key-minus",
-  "mdi-key-outline",
-  "mdi-key-plus",
-  "mdi-key-remove",
-  "mdi-key-star",
-  "mdi-key-variant",
-  "mdi-key-wireless",
-  "mdi-keyboard",
-  "mdi-keyboard-backspace",
-  "mdi-keyboard-caps",
-  "mdi-keyboard-close",
-  "mdi-keyboard-close-outline",
-  "mdi-keyboard-esc",
-  "mdi-keyboard-f1",
-  "mdi-keyboard-f10",
-  "mdi-keyboard-f11",
-  "mdi-keyboard-f12",
-  "mdi-keyboard-f2",
-  "mdi-keyboard-f3",
-  "mdi-keyboard-f4",
-  "mdi-keyboard-f5",
-  "mdi-keyboard-f6",
-  "mdi-keyboard-f7",
-  "mdi-keyboard-f8",
-  "mdi-keyboard-f9",
-  "mdi-keyboard-off",
-  "mdi-keyboard-off-outline",
-  "mdi-keyboard-outline",
-  "mdi-keyboard-return",
-  "mdi-keyboard-settings",
-  "mdi-keyboard-settings-outline",
-  "mdi-keyboard-space",
-  "mdi-keyboard-tab",
-  "mdi-keyboard-tab-reverse",
-  "mdi-keyboard-variant",
-  "mdi-khanda",
-  "mdi-kickstarter",
-  "mdi-kite",
-  "mdi-kite-outline",
-  "mdi-kitesurfing",
-  "mdi-klingon",
-  "mdi-knife",
-  "mdi-knife-military",
-  "mdi-knob",
-  "mdi-koala",
-  "mdi-kodi",
-  "mdi-kubernetes",
-  "mdi-label",
-  "mdi-label-multiple",
-  "mdi-label-multiple-outline",
-  "mdi-label-off",
-  "mdi-label-off-outline",
-  "mdi-label-outline",
-  "mdi-label-percent",
-  "mdi-label-percent-outline",
-  "mdi-label-variant",
-  "mdi-label-variant-outline",
-  "mdi-ladder",
-  "mdi-ladybug",
-  "mdi-lambda",
-  "mdi-lamp",
-  "mdi-lamp-outline",
-  "mdi-lamps",
-  "mdi-lamps-outline",
-  "mdi-lan",
-  "mdi-lan-check",
-  "mdi-lan-connect",
-  "mdi-lan-disconnect",
-  "mdi-lan-pending",
-  "mdi-land-fields",
-  "mdi-land-plots",
-  "mdi-land-plots-circle",
-  "mdi-land-plots-circle-variant",
-  "mdi-land-plots-marker",
-  "mdi-land-rows-horizontal",
-  "mdi-land-rows-vertical",
-  "mdi-landslide",
-  "mdi-landslide-outline",
-  "mdi-language-c",
-  "mdi-language-cpp",
-  "mdi-language-csharp",
-  "mdi-language-css3",
-  "mdi-language-fortran",
-  "mdi-language-go",
-  "mdi-language-haskell",
-  "mdi-language-html5",
-  "mdi-language-java",
-  "mdi-language-javascript",
-  "mdi-language-kotlin",
-  "mdi-language-lua",
-  "mdi-language-markdown",
-  "mdi-language-markdown-outline",
-  "mdi-language-php",
-  "mdi-language-python",
-  "mdi-language-r",
-  "mdi-language-ruby",
-  "mdi-language-ruby-on-rails",
-  "mdi-language-rust",
-  "mdi-language-swift",
-  "mdi-language-typescript",
-  "mdi-language-xaml",
-  "mdi-laptop",
-  "mdi-laptop-account",
-  "mdi-laptop-off",
-  "mdi-laravel",
-  "mdi-laser-pointer",
-  "mdi-lasso",
-  "mdi-lastpass",
-  "mdi-latitude",
-  "mdi-launch",
-  "mdi-lava-lamp",
-  "mdi-layers",
-  "mdi-layers-edit",
-  "mdi-layers-minus",
-  "mdi-layers-off",
-  "mdi-layers-off-outline",
-  "mdi-layers-outline",
-  "mdi-layers-plus",
-  "mdi-layers-remove",
-  "mdi-layers-search",
-  "mdi-layers-search-outline",
-  "mdi-layers-triple",
-  "mdi-layers-triple-outline",
-  "mdi-lead-pencil",
-  "mdi-leaf",
-  "mdi-leaf-circle",
-  "mdi-leaf-circle-outline",
-  "mdi-leaf-maple",
-  "mdi-leaf-maple-off",
-  "mdi-leaf-off",
-  "mdi-leak",
-  "mdi-leak-off",
-  "mdi-lectern",
-  "mdi-led-off",
-  "mdi-led-on",
-  "mdi-led-outline",
-  "mdi-led-strip",
-  "mdi-led-strip-variant",
-  "mdi-led-strip-variant-off",
-  "mdi-led-variant-off",
-  "mdi-led-variant-on",
-  "mdi-led-variant-outline",
-  "mdi-leek",
-  "mdi-less-than",
-  "mdi-less-than-or-equal",
-  "mdi-library",
-  "mdi-library-outline",
-  "mdi-library-shelves",
-  "mdi-license",
-  "mdi-lifebuoy",
-  "mdi-light-flood-down",
-  "mdi-light-flood-up",
-  "mdi-light-recessed",
-  "mdi-light-switch",
-  "mdi-light-switch-off",
-  "mdi-lightbulb",
-  "mdi-lightbulb-alert",
-  "mdi-lightbulb-alert-outline",
-  "mdi-lightbulb-auto",
-  "mdi-lightbulb-auto-outline",
-  "mdi-lightbulb-cfl",
-  "mdi-lightbulb-cfl-off",
-  "mdi-lightbulb-cfl-spiral",
-  "mdi-lightbulb-cfl-spiral-off",
-  "mdi-lightbulb-fluorescent-tube",
-  "mdi-lightbulb-fluorescent-tube-outline",
-  "mdi-lightbulb-group",
-  "mdi-lightbulb-group-off",
-  "mdi-lightbulb-group-off-outline",
-  "mdi-lightbulb-group-outline",
-  "mdi-lightbulb-multiple",
-  "mdi-lightbulb-multiple-off",
-  "mdi-lightbulb-multiple-off-outline",
-  "mdi-lightbulb-multiple-outline",
-  "mdi-lightbulb-night",
-  "mdi-lightbulb-night-outline",
-  "mdi-lightbulb-off",
-  "mdi-lightbulb-off-outline",
-  "mdi-lightbulb-on",
-  "mdi-lightbulb-on-10",
-  "mdi-lightbulb-on-20",
-  "mdi-lightbulb-on-30",
-  "mdi-lightbulb-on-40",
-  "mdi-lightbulb-on-50",
-  "mdi-lightbulb-on-60",
-  "mdi-lightbulb-on-70",
-  "mdi-lightbulb-on-80",
-  "mdi-lightbulb-on-90",
-  "mdi-lightbulb-on-outline",
-  "mdi-lightbulb-outline",
-  "mdi-lightbulb-question",
-  "mdi-lightbulb-question-outline",
-  "mdi-lightbulb-spot",
-  "mdi-lightbulb-spot-off",
-  "mdi-lightbulb-variant",
-  "mdi-lightbulb-variant-outline",
-  "mdi-lighthouse",
-  "mdi-lighthouse-on",
-  "mdi-lightning-bolt",
-  "mdi-lightning-bolt-circle",
-  "mdi-lightning-bolt-outline",
-  "mdi-line-scan",
-  "mdi-lingerie",
-  "mdi-link",
-  "mdi-link-box",
-  "mdi-link-box-outline",
-  "mdi-link-box-variant",
-  "mdi-link-box-variant-outline",
-  "mdi-link-circle",
-  "mdi-link-circle-outline",
-  "mdi-link-edit",
-  "mdi-link-lock",
-  "mdi-link-off",
-  "mdi-link-plus",
-  "mdi-link-variant",
-  "mdi-link-variant-minus",
-  "mdi-link-variant-off",
-  "mdi-link-variant-plus",
-  "mdi-link-variant-remove",
-  "mdi-linkedin",
-  "mdi-linux",
-  "mdi-linux-mint",
-  "mdi-lipstick",
-  "mdi-liquid-spot",
-  "mdi-liquor",
-  "mdi-list-box",
-  "mdi-list-box-outline",
-  "mdi-list-status",
-  "mdi-litecoin",
-  "mdi-loading",
-  "mdi-location-enter",
-  "mdi-location-exit",
-  "mdi-lock",
-  "mdi-lock-alert",
-  "mdi-lock-alert-outline",
-  "mdi-lock-check",
-  "mdi-lock-check-outline",
-  "mdi-lock-clock",
-  "mdi-lock-minus",
-  "mdi-lock-minus-outline",
-  "mdi-lock-off",
-  "mdi-lock-off-outline",
-  "mdi-lock-open",
-  "mdi-lock-open-alert",
-  "mdi-lock-open-alert-outline",
-  "mdi-lock-open-check",
-  "mdi-lock-open-check-outline",
-  "mdi-lock-open-minus",
-  "mdi-lock-open-minus-outline",
-  "mdi-lock-open-outline",
-  "mdi-lock-open-plus",
-  "mdi-lock-open-plus-outline",
-  "mdi-lock-open-remove",
-  "mdi-lock-open-remove-outline",
-  "mdi-lock-open-variant",
-  "mdi-lock-open-variant-outline",
-  "mdi-lock-outline",
-  "mdi-lock-pattern",
-  "mdi-lock-percent",
-  "mdi-lock-percent-open",
-  "mdi-lock-percent-open-outline",
-  "mdi-lock-percent-open-variant",
-  "mdi-lock-percent-open-variant-outline",
-  "mdi-lock-percent-outline",
-  "mdi-lock-plus",
-  "mdi-lock-plus-outline",
-  "mdi-lock-question",
-  "mdi-lock-remove",
-  "mdi-lock-remove-outline",
-  "mdi-lock-reset",
-  "mdi-lock-smart",
-  "mdi-locker",
-  "mdi-locker-multiple",
-  "mdi-login",
-  "mdi-login-variant",
-  "mdi-logout",
-  "mdi-logout-variant",
-  "mdi-longitude",
-  "mdi-looks",
-  "mdi-lotion",
-  "mdi-lotion-outline",
-  "mdi-lotion-plus",
-  "mdi-lotion-plus-outline",
-  "mdi-loupe",
-  "mdi-lumx",
-  "mdi-lungs",
-  "mdi-mace",
-  "mdi-magazine-pistol",
-  "mdi-magazine-rifle",
-  "mdi-magic-staff",
-  "mdi-magnet",
-  "mdi-magnet-on",
-  "mdi-magnify",
-  "mdi-magnify-close",
-  "mdi-magnify-expand",
-  "mdi-magnify-minus",
-  "mdi-magnify-minus-cursor",
-  "mdi-magnify-minus-outline",
-  "mdi-magnify-plus",
-  "mdi-magnify-plus-cursor",
-  "mdi-magnify-plus-outline",
-  "mdi-magnify-remove-cursor",
-  "mdi-magnify-remove-outline",
-  "mdi-magnify-scan",
-  "mdi-mail",
-  "mdi-mailbox",
-  "mdi-mailbox-open",
-  "mdi-mailbox-open-outline",
-  "mdi-mailbox-open-up",
-  "mdi-mailbox-open-up-outline",
-  "mdi-mailbox-outline",
-  "mdi-mailbox-up",
-  "mdi-mailbox-up-outline",
-  "mdi-manjaro",
-  "mdi-map",
-  "mdi-map-check",
-  "mdi-map-check-outline",
-  "mdi-map-clock",
-  "mdi-map-clock-outline",
-  "mdi-map-legend",
-  "mdi-map-marker",
-  "mdi-map-marker-account",
-  "mdi-map-marker-account-outline",
-  "mdi-map-marker-alert",
-  "mdi-map-marker-alert-outline",
-  "mdi-map-marker-check",
-  "mdi-map-marker-check-outline",
-  "mdi-map-marker-circle",
-  "mdi-map-marker-distance",
-  "mdi-map-marker-down",
-  "mdi-map-marker-left",
-  "mdi-map-marker-left-outline",
-  "mdi-map-marker-minus",
-  "mdi-map-marker-minus-outline",
-  "mdi-map-marker-multiple",
-  "mdi-map-marker-multiple-outline",
-  "mdi-map-marker-off",
-  "mdi-map-marker-off-outline",
-  "mdi-map-marker-outline",
-  "mdi-map-marker-path",
-  "mdi-map-marker-plus",
-  "mdi-map-marker-plus-outline",
-  "mdi-map-marker-question",
-  "mdi-map-marker-question-outline",
-  "mdi-map-marker-radius",
-  "mdi-map-marker-radius-outline",
-  "mdi-map-marker-remove",
-  "mdi-map-marker-remove-outline",
-  "mdi-map-marker-remove-variant",
-  "mdi-map-marker-right",
-  "mdi-map-marker-right-outline",
-  "mdi-map-marker-star",
-  "mdi-map-marker-star-outline",
-  "mdi-map-marker-up",
-  "mdi-map-minus",
-  "mdi-map-outline",
-  "mdi-map-plus",
-  "mdi-map-search",
-  "mdi-map-search-outline",
-  "mdi-mapbox",
-  "mdi-margin",
-  "mdi-marker",
-  "mdi-marker-cancel",
-  "mdi-marker-check",
-  "mdi-mastodon",
-  "mdi-material-design",
-  "mdi-material-ui",
-  "mdi-math-compass",
-  "mdi-math-cos",
-  "mdi-math-integral",
-  "mdi-math-integral-box",
-  "mdi-math-log",
-  "mdi-math-norm",
-  "mdi-math-norm-box",
-  "mdi-math-sin",
-  "mdi-math-tan",
-  "mdi-matrix",
-  "mdi-medal",
-  "mdi-medal-outline",
-  "mdi-medical-bag",
-  "mdi-medical-cotton-swab",
-  "mdi-medication",
-  "mdi-medication-outline",
-  "mdi-meditation",
-  "mdi-memory",
-  "mdi-memory-arrow-down",
-  "mdi-menorah",
-  "mdi-menorah-fire",
-  "mdi-menu",
-  "mdi-menu-close",
-  "mdi-menu-down",
-  "mdi-menu-down-outline",
-  "mdi-menu-left",
-  "mdi-menu-left-outline",
-  "mdi-menu-open",
-  "mdi-menu-right",
-  "mdi-menu-right-outline",
-  "mdi-menu-swap",
-  "mdi-menu-swap-outline",
-  "mdi-menu-up",
-  "mdi-menu-up-outline",
-  "mdi-merge",
-  "mdi-message",
-  "mdi-message-alert",
-  "mdi-message-alert-outline",
-  "mdi-message-arrow-left",
-  "mdi-message-arrow-left-outline",
-  "mdi-message-arrow-right",
-  "mdi-message-arrow-right-outline",
-  "mdi-message-badge",
-  "mdi-message-badge-outline",
-  "mdi-message-bookmark",
-  "mdi-message-bookmark-outline",
-  "mdi-message-bulleted",
-  "mdi-message-bulleted-off",
-  "mdi-message-check",
-  "mdi-message-check-outline",
-  "mdi-message-cog",
-  "mdi-message-cog-outline",
-  "mdi-message-draw",
-  "mdi-message-fast",
-  "mdi-message-fast-outline",
-  "mdi-message-flash",
-  "mdi-message-flash-outline",
-  "mdi-message-image",
-  "mdi-message-image-outline",
-  "mdi-message-lock",
-  "mdi-message-lock-outline",
-  "mdi-message-minus",
-  "mdi-message-minus-outline",
-  "mdi-message-off",
-  "mdi-message-off-outline",
-  "mdi-message-outline",
-  "mdi-message-plus",
-  "mdi-message-plus-outline",
-  "mdi-message-processing",
-  "mdi-message-processing-outline",
-  "mdi-message-question",
-  "mdi-message-question-outline",
-  "mdi-message-reply",
-  "mdi-message-reply-outline",
-  "mdi-message-reply-text",
-  "mdi-message-reply-text-outline",
-  "mdi-message-settings",
-  "mdi-message-settings-outline",
-  "mdi-message-star",
-  "mdi-message-star-outline",
-  "mdi-message-text",
-  "mdi-message-text-clock",
-  "mdi-message-text-clock-outline",
-  "mdi-message-text-fast",
-  "mdi-message-text-fast-outline",
-  "mdi-message-text-lock",
-  "mdi-message-text-lock-outline",
-  "mdi-message-text-outline",
-  "mdi-message-video",
-  "mdi-meteor",
-  "mdi-meter-electric",
-  "mdi-meter-electric-outline",
-  "mdi-meter-gas",
-  "mdi-meter-gas-outline",
-  "mdi-metronome",
-  "mdi-metronome-tick",
-  "mdi-micro-sd",
-  "mdi-microphone",
-  "mdi-microphone-message",
-  "mdi-microphone-message-off",
-  "mdi-microphone-minus",
-  "mdi-microphone-off",
-  "mdi-microphone-outline",
-  "mdi-microphone-plus",
-  "mdi-microphone-question",
-  "mdi-microphone-question-outline",
-  "mdi-microphone-settings",
-  "mdi-microphone-variant",
-  "mdi-microphone-variant-off",
-  "mdi-microscope",
-  "mdi-microsoft",
-  "mdi-microsoft-access",
-  "mdi-microsoft-azure",
-  "mdi-microsoft-azure-devops",
-  "mdi-microsoft-bing",
-  "mdi-microsoft-dynamics-365",
-  "mdi-microsoft-edge",
-  "mdi-microsoft-excel",
-  "mdi-microsoft-internet-explorer",
-  "mdi-microsoft-office",
-  "mdi-microsoft-onedrive",
-  "mdi-microsoft-onenote",
-  "mdi-microsoft-outlook",
-  "mdi-microsoft-powerpoint",
-  "mdi-microsoft-sharepoint",
-  "mdi-microsoft-teams",
-  "mdi-microsoft-visual-studio",
-  "mdi-microsoft-visual-studio-code",
-  "mdi-microsoft-windows",
-  "mdi-microsoft-windows-classic",
-  "mdi-microsoft-word",
-  "mdi-microsoft-xbox",
-  "mdi-microsoft-xbox-controller",
-  "mdi-microsoft-xbox-controller-battery-alert",
-  "mdi-microsoft-xbox-controller-battery-charging",
-  "mdi-microsoft-xbox-controller-battery-empty",
-  "mdi-microsoft-xbox-controller-battery-full",
-  "mdi-microsoft-xbox-controller-battery-low",
-  "mdi-microsoft-xbox-controller-battery-medium",
-  "mdi-microsoft-xbox-controller-battery-unknown",
-  "mdi-microsoft-xbox-controller-menu",
-  "mdi-microsoft-xbox-controller-off",
-  "mdi-microsoft-xbox-controller-view",
-  "mdi-microwave",
-  "mdi-microwave-off",
-  "mdi-middleware",
-  "mdi-middleware-outline",
-  "mdi-midi",
-  "mdi-midi-port",
-  "mdi-mine",
-  "mdi-minecraft",
-  "mdi-mini-sd",
-  "mdi-minidisc",
-  "mdi-minus",
-  "mdi-minus-box",
-  "mdi-minus-box-multiple",
-  "mdi-minus-box-multiple-outline",
-  "mdi-minus-box-outline",
-  "mdi-minus-circle",
-  "mdi-minus-circle-multiple",
-  "mdi-minus-circle-multiple-outline",
-  "mdi-minus-circle-off",
-  "mdi-minus-circle-off-outline",
-  "mdi-minus-circle-outline",
-  "mdi-minus-network",
-  "mdi-minus-network-outline",
-  "mdi-minus-thick",
-  "mdi-mirror",
-  "mdi-mirror-rectangle",
-  "mdi-mirror-variant",
-  "mdi-mixed-martial-arts",
-  "mdi-mixed-reality",
-  "mdi-molecule",
-  "mdi-molecule-co",
-  "mdi-molecule-co2",
-  "mdi-monitor",
-  "mdi-monitor-account",
-  "mdi-monitor-arrow-down",
-  "mdi-monitor-arrow-down-variant",
-  "mdi-monitor-cellphone",
-  "mdi-monitor-cellphone-star",
-  "mdi-monitor-dashboard",
-  "mdi-monitor-edit",
-  "mdi-monitor-eye",
-  "mdi-monitor-lock",
-  "mdi-monitor-multiple",
-  "mdi-monitor-off",
-  "mdi-monitor-screenshot",
-  "mdi-monitor-share",
-  "mdi-monitor-shimmer",
-  "mdi-monitor-small",
-  "mdi-monitor-speaker",
-  "mdi-monitor-speaker-off",
-  "mdi-monitor-star",
-  "mdi-monitor-vertical",
-  "mdi-moon-first-quarter",
-  "mdi-moon-full",
-  "mdi-moon-last-quarter",
-  "mdi-moon-new",
-  "mdi-moon-waning-crescent",
-  "mdi-moon-waning-gibbous",
-  "mdi-moon-waxing-crescent",
-  "mdi-moon-waxing-gibbous",
-  "mdi-moped",
-  "mdi-moped-electric",
-  "mdi-moped-electric-outline",
-  "mdi-moped-outline",
-  "mdi-more",
-  "mdi-mortar-pestle",
-  "mdi-mortar-pestle-plus",
-  "mdi-mosque",
-  "mdi-mosque-outline",
-  "mdi-mother-heart",
-  "mdi-mother-nurse",
-  "mdi-motion",
-  "mdi-motion-outline",
-  "mdi-motion-pause",
-  "mdi-motion-pause-outline",
-  "mdi-motion-play",
-  "mdi-motion-play-outline",
-  "mdi-motion-sensor",
-  "mdi-motion-sensor-off",
-  "mdi-motorbike",
-  "mdi-motorbike-electric",
-  "mdi-motorbike-off",
-  "mdi-mouse",
-  "mdi-mouse-bluetooth",
-  "mdi-mouse-left-click",
-  "mdi-mouse-left-click-outline",
-  "mdi-mouse-move-down",
-  "mdi-mouse-move-up",
-  "mdi-mouse-move-vertical",
-  "mdi-mouse-off",
-  "mdi-mouse-outline",
-  "mdi-mouse-right-click",
-  "mdi-mouse-right-click-outline",
-  "mdi-mouse-scroll-wheel",
-  "mdi-mouse-variant",
-  "mdi-mouse-variant-off",
-  "mdi-move-resize",
-  "mdi-move-resize-variant",
-  "mdi-movie",
-  "mdi-movie-check",
-  "mdi-movie-check-outline",
-  "mdi-movie-cog",
-  "mdi-movie-cog-outline",
-  "mdi-movie-edit",
-  "mdi-movie-edit-outline",
-  "mdi-movie-filter",
-  "mdi-movie-filter-outline",
-  "mdi-movie-minus",
-  "mdi-movie-minus-outline",
-  "mdi-movie-off",
-  "mdi-movie-off-outline",
-  "mdi-movie-open",
-  "mdi-movie-open-check",
-  "mdi-movie-open-check-outline",
-  "mdi-movie-open-cog",
-  "mdi-movie-open-cog-outline",
-  "mdi-movie-open-edit",
-  "mdi-movie-open-edit-outline",
-  "mdi-movie-open-minus",
-  "mdi-movie-open-minus-outline",
-  "mdi-movie-open-off",
-  "mdi-movie-open-off-outline",
-  "mdi-movie-open-outline",
-  "mdi-movie-open-play",
-  "mdi-movie-open-play-outline",
-  "mdi-movie-open-plus",
-  "mdi-movie-open-plus-outline",
-  "mdi-movie-open-remove",
-  "mdi-movie-open-remove-outline",
-  "mdi-movie-open-settings",
-  "mdi-movie-open-settings-outline",
-  "mdi-movie-open-star",
-  "mdi-movie-open-star-outline",
-  "mdi-movie-outline",
-  "mdi-movie-play",
-  "mdi-movie-play-outline",
-  "mdi-movie-plus",
-  "mdi-movie-plus-outline",
-  "mdi-movie-remove",
-  "mdi-movie-remove-outline",
-  "mdi-movie-roll",
-  "mdi-movie-search",
-  "mdi-movie-search-outline",
-  "mdi-movie-settings",
-  "mdi-movie-settings-outline",
-  "mdi-movie-star",
-  "mdi-movie-star-outline",
-  "mdi-mower",
-  "mdi-mower-bag",
-  "mdi-mower-bag-on",
-  "mdi-mower-on",
-  "mdi-muffin",
-  "mdi-multicast",
-  "mdi-multimedia",
-  "mdi-multiplication",
-  "mdi-multiplication-box",
-  "mdi-mushroom",
-  "mdi-mushroom-off",
-  "mdi-mushroom-off-outline",
-  "mdi-mushroom-outline",
-  "mdi-music",
-  "mdi-music-accidental-double-flat",
-  "mdi-music-accidental-double-sharp",
-  "mdi-music-accidental-flat",
-  "mdi-music-accidental-natural",
-  "mdi-music-accidental-sharp",
-  "mdi-music-box",
-  "mdi-music-box-multiple",
-  "mdi-music-box-multiple-outline",
-  "mdi-music-box-outline",
-  "mdi-music-circle",
-  "mdi-music-circle-outline",
-  "mdi-music-clef-alto",
-  "mdi-music-clef-bass",
-  "mdi-music-clef-treble",
-  "mdi-music-note",
-  "mdi-music-note-bluetooth",
-  "mdi-music-note-bluetooth-off",
-  "mdi-music-note-eighth",
-  "mdi-music-note-eighth-dotted",
-  "mdi-music-note-half",
-  "mdi-music-note-half-dotted",
-  "mdi-music-note-minus",
-  "mdi-music-note-off",
-  "mdi-music-note-off-outline",
-  "mdi-music-note-outline",
-  "mdi-music-note-plus",
-  "mdi-music-note-quarter",
-  "mdi-music-note-quarter-dotted",
-  "mdi-music-note-sixteenth",
-  "mdi-music-note-sixteenth-dotted",
-  "mdi-music-note-whole",
-  "mdi-music-note-whole-dotted",
-  "mdi-music-off",
-  "mdi-music-rest-eighth",
-  "mdi-music-rest-half",
-  "mdi-music-rest-quarter",
-  "mdi-music-rest-sixteenth",
-  "mdi-music-rest-whole",
-  "mdi-mustache",
-  "mdi-nail",
-  "mdi-nas",
-  "mdi-nativescript",
-  "mdi-nature",
-  "mdi-nature-outline",
-  "mdi-nature-people",
-  "mdi-nature-people-outline",
-  "mdi-navigation",
-  "mdi-navigation-outline",
-  "mdi-navigation-variant",
-  "mdi-navigation-variant-outline",
-  "mdi-near-me",
-  "mdi-necklace",
-  "mdi-needle",
-  "mdi-needle-off",
-  "mdi-netflix",
-  "mdi-network",
-  "mdi-network-off",
-  "mdi-network-off-outline",
-  "mdi-network-outline",
-  "mdi-network-pos",
-  "mdi-network-strength-1",
-  "mdi-network-strength-1-alert",
-  "mdi-network-strength-2",
-  "mdi-network-strength-2-alert",
-  "mdi-network-strength-3",
-  "mdi-network-strength-3-alert",
-  "mdi-network-strength-4",
-  "mdi-network-strength-4-alert",
-  "mdi-network-strength-4-cog",
-  "mdi-network-strength-off",
-  "mdi-network-strength-off-outline",
-  "mdi-network-strength-outline",
-  "mdi-new-box",
-  "mdi-newspaper",
-  "mdi-newspaper-check",
-  "mdi-newspaper-minus",
-  "mdi-newspaper-plus",
-  "mdi-newspaper-remove",
-  "mdi-newspaper-variant",
-  "mdi-newspaper-variant-multiple",
-  "mdi-newspaper-variant-multiple-outline",
-  "mdi-newspaper-variant-outline",
-  "mdi-nfc",
-  "mdi-nfc-search-variant",
-  "mdi-nfc-tap",
-  "mdi-nfc-variant",
-  "mdi-nfc-variant-off",
-  "mdi-ninja",
-  "mdi-nintendo-game-boy",
-  "mdi-nintendo-switch",
-  "mdi-nintendo-wii",
-  "mdi-nintendo-wiiu",
-  "mdi-nix",
-  "mdi-nodejs",
-  "mdi-noodles",
-  "mdi-not-equal",
-  "mdi-not-equal-variant",
-  "mdi-note",
-  "mdi-note-alert",
-  "mdi-note-alert-outline",
-  "mdi-note-check",
-  "mdi-note-check-outline",
-  "mdi-note-edit",
-  "mdi-note-edit-outline",
-  "mdi-note-minus",
-  "mdi-note-minus-outline",
-  "mdi-note-multiple",
-  "mdi-note-multiple-outline",
-  "mdi-note-off",
-  "mdi-note-off-outline",
-  "mdi-note-outline",
-  "mdi-note-plus",
-  "mdi-note-plus-outline",
-  "mdi-note-remove",
-  "mdi-note-remove-outline",
-  "mdi-note-search",
-  "mdi-note-search-outline",
-  "mdi-note-text",
-  "mdi-note-text-outline",
-  "mdi-notebook",
-  "mdi-notebook-check",
-  "mdi-notebook-check-outline",
-  "mdi-notebook-edit",
-  "mdi-notebook-edit-outline",
-  "mdi-notebook-heart",
-  "mdi-notebook-heart-outline",
-  "mdi-notebook-minus",
-  "mdi-notebook-minus-outline",
-  "mdi-notebook-multiple",
-  "mdi-notebook-outline",
-  "mdi-notebook-plus",
-  "mdi-notebook-plus-outline",
-  "mdi-notebook-remove",
-  "mdi-notebook-remove-outline",
-  "mdi-notification-clear-all",
-  "mdi-npm",
-  "mdi-nuke",
-  "mdi-null",
-  "mdi-numeric",
-  "mdi-numeric-0",
-  "mdi-numeric-0-box",
-  "mdi-numeric-0-box-multiple",
-  "mdi-numeric-0-box-multiple-outline",
-  "mdi-numeric-0-box-outline",
-  "mdi-numeric-0-circle",
-  "mdi-numeric-0-circle-outline",
-  "mdi-numeric-1",
-  "mdi-numeric-1-box",
-  "mdi-numeric-1-box-multiple",
-  "mdi-numeric-1-box-multiple-outline",
-  "mdi-numeric-1-box-outline",
-  "mdi-numeric-1-circle",
-  "mdi-numeric-1-circle-outline",
-  "mdi-numeric-10",
-  "mdi-numeric-10-box",
-  "mdi-numeric-10-box-multiple",
-  "mdi-numeric-10-box-multiple-outline",
-  "mdi-numeric-10-box-outline",
-  "mdi-numeric-10-circle",
-  "mdi-numeric-10-circle-outline",
-  "mdi-numeric-2",
-  "mdi-numeric-2-box",
-  "mdi-numeric-2-box-multiple",
-  "mdi-numeric-2-box-multiple-outline",
-  "mdi-numeric-2-box-outline",
-  "mdi-numeric-2-circle",
-  "mdi-numeric-2-circle-outline",
-  "mdi-numeric-3",
-  "mdi-numeric-3-box",
-  "mdi-numeric-3-box-multiple",
-  "mdi-numeric-3-box-multiple-outline",
-  "mdi-numeric-3-box-outline",
-  "mdi-numeric-3-circle",
-  "mdi-numeric-3-circle-outline",
-  "mdi-numeric-4",
-  "mdi-numeric-4-box",
-  "mdi-numeric-4-box-multiple",
-  "mdi-numeric-4-box-multiple-outline",
-  "mdi-numeric-4-box-outline",
-  "mdi-numeric-4-circle",
-  "mdi-numeric-4-circle-outline",
-  "mdi-numeric-5",
-  "mdi-numeric-5-box",
-  "mdi-numeric-5-box-multiple",
-  "mdi-numeric-5-box-multiple-outline",
-  "mdi-numeric-5-box-outline",
-  "mdi-numeric-5-circle",
-  "mdi-numeric-5-circle-outline",
-  "mdi-numeric-6",
-  "mdi-numeric-6-box",
-  "mdi-numeric-6-box-multiple",
-  "mdi-numeric-6-box-multiple-outline",
-  "mdi-numeric-6-box-outline",
-  "mdi-numeric-6-circle",
-  "mdi-numeric-6-circle-outline",
-  "mdi-numeric-7",
-  "mdi-numeric-7-box",
-  "mdi-numeric-7-box-multiple",
-  "mdi-numeric-7-box-multiple-outline",
-  "mdi-numeric-7-box-outline",
-  "mdi-numeric-7-circle",
-  "mdi-numeric-7-circle-outline",
-  "mdi-numeric-8",
-  "mdi-numeric-8-box",
-  "mdi-numeric-8-box-multiple",
-  "mdi-numeric-8-box-multiple-outline",
-  "mdi-numeric-8-box-outline",
-  "mdi-numeric-8-circle",
-  "mdi-numeric-8-circle-outline",
-  "mdi-numeric-9",
-  "mdi-numeric-9-box",
-  "mdi-numeric-9-box-multiple",
-  "mdi-numeric-9-box-multiple-outline",
-  "mdi-numeric-9-box-outline",
-  "mdi-numeric-9-circle",
-  "mdi-numeric-9-circle-outline",
-  "mdi-numeric-9-plus",
-  "mdi-numeric-9-plus-box",
-  "mdi-numeric-9-plus-box-multiple",
-  "mdi-numeric-9-plus-box-multiple-outline",
-  "mdi-numeric-9-plus-box-outline",
-  "mdi-numeric-9-plus-circle",
-  "mdi-numeric-9-plus-circle-outline",
-  "mdi-numeric-negative-1",
-  "mdi-numeric-off",
-  "mdi-numeric-positive-1",
-  "mdi-nut",
-  "mdi-nutrition",
-  "mdi-nuxt",
-  "mdi-oar",
-  "mdi-ocarina",
-  "mdi-oci",
-  "mdi-ocr",
-  "mdi-octagon",
-  "mdi-octagon-outline",
-  "mdi-octagram",
-  "mdi-octagram-edit",
-  "mdi-octagram-edit-outline",
-  "mdi-octagram-minus",
-  "mdi-octagram-minus-outline",
-  "mdi-octagram-outline",
-  "mdi-octagram-plus",
-  "mdi-octagram-plus-outline",
-  "mdi-octahedron",
-  "mdi-octahedron-off",
-  "mdi-odnoklassniki",
-  "mdi-offer",
-  "mdi-office-building",
-  "mdi-office-building-cog",
-  "mdi-office-building-cog-outline",
-  "mdi-office-building-marker",
-  "mdi-office-building-marker-outline",
-  "mdi-office-building-minus",
-  "mdi-office-building-minus-outline",
-  "mdi-office-building-outline",
-  "mdi-office-building-plus",
-  "mdi-office-building-plus-outline",
-  "mdi-office-building-remove",
-  "mdi-office-building-remove-outline",
-  "mdi-oil",
-  "mdi-oil-lamp",
-  "mdi-oil-level",
-  "mdi-oil-temperature",
-  "mdi-om",
-  "mdi-omega",
-  "mdi-one-up",
-  "mdi-onepassword",
-  "mdi-opacity",
-  "mdi-open-in-app",
-  "mdi-open-in-new",
-  "mdi-open-source-initiative",
-  "mdi-openid",
-  "mdi-opera",
-  "mdi-orbit",
-  "mdi-orbit-variant",
-  "mdi-order-alphabetical-ascending",
-  "mdi-order-alphabetical-descending",
-  "mdi-order-bool-ascending",
-  "mdi-order-bool-ascending-variant",
-  "mdi-order-bool-descending",
-  "mdi-order-bool-descending-variant",
-  "mdi-order-numeric-ascending",
-  "mdi-order-numeric-descending",
-  "mdi-origin",
-  "mdi-ornament",
-  "mdi-ornament-variant",
-  "mdi-outdoor-lamp",
-  "mdi-overscan",
-  "mdi-owl",
-  "mdi-pac-man",
-  "mdi-package",
-  "mdi-package-check",
-  "mdi-package-down",
-  "mdi-package-up",
-  "mdi-package-variant",
-  "mdi-package-variant-closed",
-  "mdi-package-variant-closed-check",
-  "mdi-package-variant-closed-minus",
-  "mdi-package-variant-closed-plus",
-  "mdi-package-variant-closed-remove",
-  "mdi-package-variant-minus",
-  "mdi-package-variant-plus",
-  "mdi-package-variant-remove",
-  "mdi-page-first",
-  "mdi-page-last",
-  "mdi-page-layout-body",
-  "mdi-page-layout-footer",
-  "mdi-page-layout-header",
-  "mdi-page-layout-header-footer",
-  "mdi-page-layout-sidebar-left",
-  "mdi-page-layout-sidebar-right",
-  "mdi-page-next",
-  "mdi-page-next-outline",
-  "mdi-page-previous",
-  "mdi-page-previous-outline",
-  "mdi-pail",
-  "mdi-pail-minus",
-  "mdi-pail-minus-outline",
-  "mdi-pail-off",
-  "mdi-pail-off-outline",
-  "mdi-pail-outline",
-  "mdi-pail-plus",
-  "mdi-pail-plus-outline",
-  "mdi-pail-remove",
-  "mdi-pail-remove-outline",
-  "mdi-palette",
-  "mdi-palette-advanced",
-  "mdi-palette-outline",
-  "mdi-palette-swatch",
-  "mdi-palette-swatch-outline",
-  "mdi-palette-swatch-variant",
-  "mdi-palm-tree",
-  "mdi-pan",
-  "mdi-pan-bottom-left",
-  "mdi-pan-bottom-right",
-  "mdi-pan-down",
-  "mdi-pan-horizontal",
-  "mdi-pan-left",
-  "mdi-pan-right",
-  "mdi-pan-top-left",
-  "mdi-pan-top-right",
-  "mdi-pan-up",
-  "mdi-pan-vertical",
-  "mdi-panda",
-  "mdi-pandora",
-  "mdi-panorama",
-  "mdi-panorama-fisheye",
-  "mdi-panorama-horizontal",
-  "mdi-panorama-horizontal-outline",
-  "mdi-panorama-outline",
-  "mdi-panorama-sphere",
-  "mdi-panorama-sphere-outline",
-  "mdi-panorama-variant",
-  "mdi-panorama-variant-outline",
-  "mdi-panorama-vertical",
-  "mdi-panorama-vertical-outline",
-  "mdi-panorama-wide-angle",
-  "mdi-panorama-wide-angle-outline",
-  "mdi-paper-cut-vertical",
-  "mdi-paper-roll",
-  "mdi-paper-roll-outline",
-  "mdi-paperclip",
-  "mdi-paperclip-check",
-  "mdi-paperclip-lock",
-  "mdi-paperclip-minus",
-  "mdi-paperclip-off",
-  "mdi-paperclip-plus",
-  "mdi-paperclip-remove",
-  "mdi-parachute",
-  "mdi-parachute-outline",
-  "mdi-paragliding",
-  "mdi-parking",
-  "mdi-party-popper",
-  "mdi-passport",
-  "mdi-passport-alert",
-  "mdi-passport-biometric",
-  "mdi-passport-cancel",
-  "mdi-passport-check",
-  "mdi-passport-minus",
-  "mdi-passport-plus",
-  "mdi-passport-remove",
-  "mdi-pasta",
-  "mdi-patio-heater",
-  "mdi-patreon",
-  "mdi-pause",
-  "mdi-pause-box",
-  "mdi-pause-box-outline",
-  "mdi-pause-circle",
-  "mdi-pause-circle-outline",
-  "mdi-pause-octagon",
-  "mdi-pause-octagon-outline",
-  "mdi-paw",
-  "mdi-paw-off",
-  "mdi-paw-off-outline",
-  "mdi-paw-outline",
-  "mdi-peace",
-  "mdi-peanut",
-  "mdi-peanut-off",
-  "mdi-peanut-off-outline",
-  "mdi-peanut-outline",
-  "mdi-pen",
-  "mdi-pen-lock",
-  "mdi-pen-minus",
-  "mdi-pen-off",
-  "mdi-pen-plus",
-  "mdi-pen-remove",
-  "mdi-pencil",
-  "mdi-pencil-box",
-  "mdi-pencil-box-multiple",
-  "mdi-pencil-box-multiple-outline",
-  "mdi-pencil-box-outline",
-  "mdi-pencil-circle",
-  "mdi-pencil-circle-outline",
-  "mdi-pencil-lock",
-  "mdi-pencil-lock-outline",
-  "mdi-pencil-minus",
-  "mdi-pencil-minus-outline",
-  "mdi-pencil-off",
-  "mdi-pencil-off-outline",
-  "mdi-pencil-outline",
-  "mdi-pencil-plus",
-  "mdi-pencil-plus-outline",
-  "mdi-pencil-remove",
-  "mdi-pencil-remove-outline",
-  "mdi-pencil-ruler",
-  "mdi-pencil-ruler-outline",
-  "mdi-penguin",
-  "mdi-pentagon",
-  "mdi-pentagon-outline",
-  "mdi-pentagram",
-  "mdi-percent",
-  "mdi-percent-box",
-  "mdi-percent-box-outline",
-  "mdi-percent-circle",
-  "mdi-percent-circle-outline",
-  "mdi-percent-outline",
-  "mdi-periodic-table",
-  "mdi-perspective-less",
-  "mdi-perspective-more",
-  "mdi-ph",
-  "mdi-phone",
-  "mdi-phone-alert",
-  "mdi-phone-alert-outline",
-  "mdi-phone-bluetooth",
-  "mdi-phone-bluetooth-outline",
-  "mdi-phone-cancel",
-  "mdi-phone-cancel-outline",
-  "mdi-phone-check",
-  "mdi-phone-check-outline",
-  "mdi-phone-classic",
-  "mdi-phone-classic-off",
-  "mdi-phone-clock",
-  "mdi-phone-dial",
-  "mdi-phone-dial-outline",
-  "mdi-phone-forward",
-  "mdi-phone-forward-outline",
-  "mdi-phone-hangup",
-  "mdi-phone-hangup-outline",
-  "mdi-phone-in-talk",
-  "mdi-phone-in-talk-outline",
-  "mdi-phone-incoming",
-  "mdi-phone-incoming-outgoing",
-  "mdi-phone-incoming-outgoing-outline",
-  "mdi-phone-incoming-outline",
-  "mdi-phone-lock",
-  "mdi-phone-lock-outline",
-  "mdi-phone-log",
-  "mdi-phone-log-outline",
-  "mdi-phone-message",
-  "mdi-phone-message-outline",
-  "mdi-phone-minus",
-  "mdi-phone-minus-outline",
-  "mdi-phone-missed",
-  "mdi-phone-missed-outline",
-  "mdi-phone-off",
-  "mdi-phone-off-outline",
-  "mdi-phone-outgoing",
-  "mdi-phone-outgoing-outline",
-  "mdi-phone-outline",
-  "mdi-phone-paused",
-  "mdi-phone-paused-outline",
-  "mdi-phone-plus",
-  "mdi-phone-plus-outline",
-  "mdi-phone-refresh",
-  "mdi-phone-refresh-outline",
-  "mdi-phone-remove",
-  "mdi-phone-remove-outline",
-  "mdi-phone-return",
-  "mdi-phone-return-outline",
-  "mdi-phone-ring",
-  "mdi-phone-ring-outline",
-  "mdi-phone-rotate-landscape",
-  "mdi-phone-rotate-portrait",
-  "mdi-phone-settings",
-  "mdi-phone-settings-outline",
-  "mdi-phone-sync",
-  "mdi-phone-sync-outline",
-  "mdi-phone-voip",
-  "mdi-pi",
-  "mdi-pi-box",
-  "mdi-pi-hole",
-  "mdi-piano",
-  "mdi-piano-off",
-  "mdi-pickaxe",
-  "mdi-picture-in-picture-bottom-right",
-  "mdi-picture-in-picture-bottom-right-outline",
-  "mdi-picture-in-picture-top-right",
-  "mdi-picture-in-picture-top-right-outline",
-  "mdi-pier",
-  "mdi-pier-crane",
-  "mdi-pig",
-  "mdi-pig-variant",
-  "mdi-pig-variant-outline",
-  "mdi-piggy-bank",
-  "mdi-piggy-bank-outline",
-  "mdi-pill",
-  "mdi-pill-multiple",
-  "mdi-pill-off",
-  "mdi-pillar",
-  "mdi-pin",
-  "mdi-pin-off",
-  "mdi-pin-off-outline",
-  "mdi-pin-outline",
-  "mdi-pine-tree",
-  "mdi-pine-tree-box",
-  "mdi-pine-tree-fire",
-  "mdi-pine-tree-variant",
-  "mdi-pine-tree-variant-outline",
-  "mdi-pinterest",
-  "mdi-pinwheel",
-  "mdi-pinwheel-outline",
-  "mdi-pipe",
-  "mdi-pipe-disconnected",
-  "mdi-pipe-leak",
-  "mdi-pipe-valve",
-  "mdi-pipe-wrench",
-  "mdi-pirate",
-  "mdi-pistol",
-  "mdi-piston",
-  "mdi-pitchfork",
-  "mdi-pizza",
-  "mdi-plane-car",
-  "mdi-plane-train",
-  "mdi-play",
-  "mdi-play-box",
-  "mdi-play-box-edit-outline",
-  "mdi-play-box-lock",
-  "mdi-play-box-lock-open",
-  "mdi-play-box-lock-open-outline",
-  "mdi-play-box-lock-outline",
-  "mdi-play-box-multiple",
-  "mdi-play-box-multiple-outline",
-  "mdi-play-box-outline",
-  "mdi-play-circle",
-  "mdi-play-circle-outline",
-  "mdi-play-network",
-  "mdi-play-network-outline",
-  "mdi-play-outline",
-  "mdi-play-pause",
-  "mdi-play-protected-content",
-  "mdi-play-speed",
-  "mdi-playlist-check",
-  "mdi-playlist-edit",
-  "mdi-playlist-minus",
-  "mdi-playlist-music",
-  "mdi-playlist-music-outline",
-  "mdi-playlist-play",
-  "mdi-playlist-plus",
-  "mdi-playlist-remove",
-  "mdi-playlist-star",
-  "mdi-plex",
-  "mdi-pliers",
-  "mdi-plus",
-  "mdi-plus-box",
-  "mdi-plus-box-multiple",
-  "mdi-plus-box-multiple-outline",
-  "mdi-plus-box-outline",
-  "mdi-plus-circle",
-  "mdi-plus-circle-multiple",
-  "mdi-plus-circle-multiple-outline",
-  "mdi-plus-circle-outline",
-  "mdi-plus-lock",
-  "mdi-plus-lock-open",
-  "mdi-plus-minus",
-  "mdi-plus-minus-box",
-  "mdi-plus-minus-variant",
-  "mdi-plus-network",
-  "mdi-plus-network-outline",
-  "mdi-plus-outline",
-  "mdi-plus-thick",
-  "mdi-pocket",
-  "mdi-podcast",
-  "mdi-podium",
-  "mdi-podium-bronze",
-  "mdi-podium-gold",
-  "mdi-podium-silver",
-  "mdi-point-of-sale",
-  "mdi-pokeball",
-  "mdi-pokemon-go",
-  "mdi-poker-chip",
-  "mdi-polaroid",
-  "mdi-police-badge",
-  "mdi-police-badge-outline",
-  "mdi-police-station",
-  "mdi-poll",
-  "mdi-polo",
-  "mdi-polymer",
-  "mdi-pool",
-  "mdi-pool-thermometer",
-  "mdi-popcorn",
-  "mdi-post",
-  "mdi-post-lamp",
-  "mdi-post-outline",
-  "mdi-postage-stamp",
-  "mdi-pot",
-  "mdi-pot-mix",
-  "mdi-pot-mix-outline",
-  "mdi-pot-outline",
-  "mdi-pot-steam",
-  "mdi-pot-steam-outline",
-  "mdi-pound",
-  "mdi-pound-box",
-  "mdi-pound-box-outline",
-  "mdi-power",
-  "mdi-power-cycle",
-  "mdi-power-off",
-  "mdi-power-on",
-  "mdi-power-plug",
-  "mdi-power-plug-battery",
-  "mdi-power-plug-battery-outline",
-  "mdi-power-plug-off",
-  "mdi-power-plug-off-outline",
-  "mdi-power-plug-outline",
-  "mdi-power-settings",
-  "mdi-power-sleep",
-  "mdi-power-socket",
-  "mdi-power-socket-au",
-  "mdi-power-socket-ch",
-  "mdi-power-socket-de",
-  "mdi-power-socket-eu",
-  "mdi-power-socket-fr",
-  "mdi-power-socket-it",
-  "mdi-power-socket-jp",
-  "mdi-power-socket-uk",
-  "mdi-power-socket-us",
-  "mdi-power-standby",
-  "mdi-powershell",
-  "mdi-prescription",
-  "mdi-presentation",
-  "mdi-presentation-play",
-  "mdi-pretzel",
-  "mdi-printer",
-  "mdi-printer-3d",
-  "mdi-printer-3d-nozzle",
-  "mdi-printer-3d-nozzle-alert",
-  "mdi-printer-3d-nozzle-alert-outline",
-  "mdi-printer-3d-nozzle-heat",
-  "mdi-printer-3d-nozzle-heat-outline",
-  "mdi-printer-3d-nozzle-off",
-  "mdi-printer-3d-nozzle-off-outline",
-  "mdi-printer-3d-nozzle-outline",
-  "mdi-printer-3d-off",
-  "mdi-printer-alert",
-  "mdi-printer-check",
-  "mdi-printer-eye",
-  "mdi-printer-off",
-  "mdi-printer-off-outline",
-  "mdi-printer-outline",
-  "mdi-printer-pos",
-  "mdi-printer-pos-alert",
-  "mdi-printer-pos-alert-outline",
-  "mdi-printer-pos-cancel",
-  "mdi-printer-pos-cancel-outline",
-  "mdi-printer-pos-check",
-  "mdi-printer-pos-check-outline",
-  "mdi-printer-pos-cog",
-  "mdi-printer-pos-cog-outline",
-  "mdi-printer-pos-edit",
-  "mdi-printer-pos-edit-outline",
-  "mdi-printer-pos-minus",
-  "mdi-printer-pos-minus-outline",
-  "mdi-printer-pos-network",
-  "mdi-printer-pos-network-outline",
-  "mdi-printer-pos-off",
-  "mdi-printer-pos-off-outline",
-  "mdi-printer-pos-outline",
-  "mdi-printer-pos-pause",
-  "mdi-printer-pos-pause-outline",
-  "mdi-printer-pos-play",
-  "mdi-printer-pos-play-outline",
-  "mdi-printer-pos-plus",
-  "mdi-printer-pos-plus-outline",
-  "mdi-printer-pos-refresh",
-  "mdi-printer-pos-refresh-outline",
-  "mdi-printer-pos-remove",
-  "mdi-printer-pos-remove-outline",
-  "mdi-printer-pos-star",
-  "mdi-printer-pos-star-outline",
-  "mdi-printer-pos-stop",
-  "mdi-printer-pos-stop-outline",
-  "mdi-printer-pos-sync",
-  "mdi-printer-pos-sync-outline",
-  "mdi-printer-pos-wrench",
-  "mdi-printer-pos-wrench-outline",
-  "mdi-printer-search",
-  "mdi-printer-settings",
-  "mdi-printer-wireless",
-  "mdi-priority-high",
-  "mdi-priority-low",
-  "mdi-professional-hexagon",
-  "mdi-progress-alert",
-  "mdi-progress-check",
-  "mdi-progress-clock",
-  "mdi-progress-close",
-  "mdi-progress-download",
-  "mdi-progress-helper",
-  "mdi-progress-pencil",
-  "mdi-progress-question",
-  "mdi-progress-star",
-  "mdi-progress-star-four-points",
-  "mdi-progress-tag",
-  "mdi-progress-upload",
-  "mdi-progress-wrench",
-  "mdi-projector",
-  "mdi-projector-off",
-  "mdi-projector-screen",
-  "mdi-projector-screen-off",
-  "mdi-projector-screen-off-outline",
-  "mdi-projector-screen-outline",
-  "mdi-projector-screen-variant",
-  "mdi-projector-screen-variant-off",
-  "mdi-projector-screen-variant-off-outline",
-  "mdi-projector-screen-variant-outline",
-  "mdi-propane-tank",
-  "mdi-propane-tank-outline",
-  "mdi-protocol",
-  "mdi-publish",
-  "mdi-publish-off",
-  "mdi-pulse",
-  "mdi-pump",
-  "mdi-pump-off",
-  "mdi-pumpkin",
-  "mdi-purse",
-  "mdi-purse-outline",
-  "mdi-puzzle",
-  "mdi-puzzle-check",
-  "mdi-puzzle-check-outline",
-  "mdi-puzzle-edit",
-  "mdi-puzzle-edit-outline",
-  "mdi-puzzle-heart",
-  "mdi-puzzle-heart-outline",
-  "mdi-puzzle-minus",
-  "mdi-puzzle-minus-outline",
-  "mdi-puzzle-outline",
-  "mdi-puzzle-plus",
-  "mdi-puzzle-plus-outline",
-  "mdi-puzzle-remove",
-  "mdi-puzzle-remove-outline",
-  "mdi-puzzle-star",
-  "mdi-puzzle-star-outline",
-  "mdi-pyramid",
-  "mdi-pyramid-off",
-  "mdi-qi",
-  "mdi-qqchat",
-  "mdi-qrcode",
-  "mdi-qrcode-edit",
-  "mdi-qrcode-minus",
-  "mdi-qrcode-plus",
-  "mdi-qrcode-remove",
-  "mdi-qrcode-scan",
-  "mdi-quadcopter",
-  "mdi-quality-high",
-  "mdi-quality-low",
-  "mdi-quality-medium",
-  "mdi-queue-first-in-last-out",
-  "mdi-quora",
-  "mdi-rabbit",
-  "mdi-rabbit-variant",
-  "mdi-rabbit-variant-outline",
-  "mdi-racing-helmet",
-  "mdi-racquetball",
-  "mdi-radar",
-  "mdi-radiator",
-  "mdi-radiator-disabled",
-  "mdi-radiator-off",
-  "mdi-radio",
-  "mdi-radio-am",
-  "mdi-radio-fm",
-  "mdi-radio-handheld",
-  "mdi-radio-off",
-  "mdi-radio-tower",
-  "mdi-radioactive",
-  "mdi-radioactive-circle",
-  "mdi-radioactive-circle-outline",
-  "mdi-radioactive-off",
-  "mdi-radiobox-blank",
-  "mdi-radiobox-indeterminate-variant",
-  "mdi-radiobox-marked",
-  "mdi-radiology-box",
-  "mdi-radiology-box-outline",
-  "mdi-radius",
-  "mdi-radius-outline",
-  "mdi-railroad-light",
-  "mdi-rake",
-  "mdi-raspberry-pi",
-  "mdi-raw",
-  "mdi-raw-off",
-  "mdi-ray-end",
-  "mdi-ray-end-arrow",
-  "mdi-ray-start",
-  "mdi-ray-start-arrow",
-  "mdi-ray-start-end",
-  "mdi-ray-start-vertex-end",
-  "mdi-ray-vertex",
-  "mdi-razor-double-edge",
-  "mdi-razor-single-edge",
-  "mdi-react",
-  "mdi-read",
-  "mdi-receipt",
-  "mdi-receipt-clock",
-  "mdi-receipt-clock-outline",
-  "mdi-receipt-outline",
-  "mdi-receipt-send",
-  "mdi-receipt-send-outline",
-  "mdi-receipt-text",
-  "mdi-receipt-text-arrow-left",
-  "mdi-receipt-text-arrow-left-outline",
-  "mdi-receipt-text-arrow-right",
-  "mdi-receipt-text-arrow-right-outline",
-  "mdi-receipt-text-check",
-  "mdi-receipt-text-check-outline",
-  "mdi-receipt-text-clock",
-  "mdi-receipt-text-clock-outline",
-  "mdi-receipt-text-edit",
-  "mdi-receipt-text-edit-outline",
-  "mdi-receipt-text-minus",
-  "mdi-receipt-text-minus-outline",
-  "mdi-receipt-text-outline",
-  "mdi-receipt-text-plus",
-  "mdi-receipt-text-plus-outline",
-  "mdi-receipt-text-remove",
-  "mdi-receipt-text-remove-outline",
-  "mdi-receipt-text-send",
-  "mdi-receipt-text-send-outline",
-  "mdi-record",
-  "mdi-record-circle",
-  "mdi-record-circle-outline",
-  "mdi-record-player",
-  "mdi-record-rec",
-  "mdi-rectangle",
-  "mdi-rectangle-outline",
-  "mdi-recycle",
-  "mdi-recycle-variant",
-  "mdi-reddit",
-  "mdi-redhat",
-  "mdi-redo",
-  "mdi-redo-variant",
-  "mdi-reflect-horizontal",
-  "mdi-reflect-vertical",
-  "mdi-refresh",
-  "mdi-refresh-auto",
-  "mdi-refresh-circle",
-  "mdi-regex",
-  "mdi-registered-trademark",
-  "mdi-reiterate",
-  "mdi-relation-many-to-many",
-  "mdi-relation-many-to-one",
-  "mdi-relation-many-to-one-or-many",
-  "mdi-relation-many-to-only-one",
-  "mdi-relation-many-to-zero-or-many",
-  "mdi-relation-many-to-zero-or-one",
-  "mdi-relation-one-or-many-to-many",
-  "mdi-relation-one-or-many-to-one",
-  "mdi-relation-one-or-many-to-one-or-many",
-  "mdi-relation-one-or-many-to-only-one",
-  "mdi-relation-one-or-many-to-zero-or-many",
-  "mdi-relation-one-or-many-to-zero-or-one",
-  "mdi-relation-one-to-many",
-  "mdi-relation-one-to-one",
-  "mdi-relation-one-to-one-or-many",
-  "mdi-relation-one-to-only-one",
-  "mdi-relation-one-to-zero-or-many",
-  "mdi-relation-one-to-zero-or-one",
-  "mdi-relation-only-one-to-many",
-  "mdi-relation-only-one-to-one",
-  "mdi-relation-only-one-to-one-or-many",
-  "mdi-relation-only-one-to-only-one",
-  "mdi-relation-only-one-to-zero-or-many",
-  "mdi-relation-only-one-to-zero-or-one",
-  "mdi-relation-zero-or-many-to-many",
-  "mdi-relation-zero-or-many-to-one",
-  "mdi-relation-zero-or-many-to-one-or-many",
-  "mdi-relation-zero-or-many-to-only-one",
-  "mdi-relation-zero-or-many-to-zero-or-many",
-  "mdi-relation-zero-or-many-to-zero-or-one",
-  "mdi-relation-zero-or-one-to-many",
-  "mdi-relation-zero-or-one-to-one",
-  "mdi-relation-zero-or-one-to-one-or-many",
-  "mdi-relation-zero-or-one-to-only-one",
-  "mdi-relation-zero-or-one-to-zero-or-many",
-  "mdi-relation-zero-or-one-to-zero-or-one",
-  "mdi-relative-scale",
-  "mdi-reload",
-  "mdi-reload-alert",
-  "mdi-reminder",
-  "mdi-remote",
-  "mdi-remote-desktop",
-  "mdi-remote-off",
-  "mdi-remote-tv",
-  "mdi-remote-tv-off",
-  "mdi-rename",
-  "mdi-rename-box",
-  "mdi-rename-box-outline",
-  "mdi-rename-outline",
-  "mdi-reorder-horizontal",
-  "mdi-reorder-vertical",
-  "mdi-repeat",
-  "mdi-repeat-off",
-  "mdi-repeat-once",
-  "mdi-repeat-variant",
-  "mdi-replay",
-  "mdi-reply",
-  "mdi-reply-all",
-  "mdi-reply-all-outline",
-  "mdi-reply-circle",
-  "mdi-reply-outline",
-  "mdi-reproduction",
-  "mdi-resistor",
-  "mdi-resistor-nodes",
-  "mdi-resize",
-  "mdi-resize-bottom-right",
-  "mdi-responsive",
-  "mdi-restart",
-  "mdi-restart-alert",
-  "mdi-restart-off",
-  "mdi-restore",
-  "mdi-restore-alert",
-  "mdi-rewind",
-  "mdi-rewind-10",
-  "mdi-rewind-15",
-  "mdi-rewind-30",
-  "mdi-rewind-45",
-  "mdi-rewind-5",
-  "mdi-rewind-60",
-  "mdi-rewind-outline",
-  "mdi-rhombus",
-  "mdi-rhombus-medium",
-  "mdi-rhombus-medium-outline",
-  "mdi-rhombus-outline",
-  "mdi-rhombus-split",
-  "mdi-rhombus-split-outline",
-  "mdi-ribbon",
-  "mdi-rice",
-  "mdi-rickshaw",
-  "mdi-rickshaw-electric",
-  "mdi-ring",
-  "mdi-rivet",
-  "mdi-road",
-  "mdi-road-variant",
-  "mdi-robber",
-  "mdi-robot",
-  "mdi-robot-angry",
-  "mdi-robot-angry-outline",
-  "mdi-robot-confused",
-  "mdi-robot-confused-outline",
-  "mdi-robot-dead",
-  "mdi-robot-dead-outline",
-  "mdi-robot-excited",
-  "mdi-robot-excited-outline",
-  "mdi-robot-happy",
-  "mdi-robot-happy-outline",
-  "mdi-robot-industrial",
-  "mdi-robot-industrial-outline",
-  "mdi-robot-love",
-  "mdi-robot-love-outline",
-  "mdi-robot-mower",
-  "mdi-robot-mower-outline",
-  "mdi-robot-off",
-  "mdi-robot-off-outline",
-  "mdi-robot-outline",
-  "mdi-robot-vacuum",
-  "mdi-robot-vacuum-alert",
-  "mdi-robot-vacuum-off",
-  "mdi-robot-vacuum-variant",
-  "mdi-robot-vacuum-variant-alert",
-  "mdi-robot-vacuum-variant-off",
-  "mdi-rocket",
-  "mdi-rocket-launch",
-  "mdi-rocket-launch-outline",
-  "mdi-rocket-outline",
-  "mdi-rodent",
-  "mdi-roller-shade",
-  "mdi-roller-shade-closed",
-  "mdi-roller-skate",
-  "mdi-roller-skate-off",
-  "mdi-rollerblade",
-  "mdi-rollerblade-off",
-  "mdi-rollupjs",
-  "mdi-rolodex",
-  "mdi-rolodex-outline",
-  "mdi-roman-numeral-1",
-  "mdi-roman-numeral-10",
-  "mdi-roman-numeral-2",
-  "mdi-roman-numeral-3",
-  "mdi-roman-numeral-4",
-  "mdi-roman-numeral-5",
-  "mdi-roman-numeral-6",
-  "mdi-roman-numeral-7",
-  "mdi-roman-numeral-8",
-  "mdi-roman-numeral-9",
-  "mdi-room-service",
-  "mdi-room-service-outline",
-  "mdi-rotate-360",
-  "mdi-rotate-3d",
-  "mdi-rotate-3d-variant",
-  "mdi-rotate-left",
-  "mdi-rotate-left-variant",
-  "mdi-rotate-orbit",
-  "mdi-rotate-right",
-  "mdi-rotate-right-variant",
-  "mdi-rounded-corner",
-  "mdi-router",
-  "mdi-router-network",
-  "mdi-router-network-wireless",
-  "mdi-router-wireless",
-  "mdi-router-wireless-off",
-  "mdi-router-wireless-settings",
-  "mdi-routes",
-  "mdi-routes-clock",
-  "mdi-rowing",
-  "mdi-rss",
-  "mdi-rss-box",
-  "mdi-rss-off",
-  "mdi-rug",
-  "mdi-rugby",
-  "mdi-ruler",
-  "mdi-ruler-square",
-  "mdi-ruler-square-compass",
-  "mdi-run",
-  "mdi-run-fast",
-  "mdi-rv-truck",
-  "mdi-sack",
-  "mdi-sack-outline",
-  "mdi-sack-percent",
-  "mdi-safe",
-  "mdi-safe-square",
-  "mdi-safe-square-outline",
-  "mdi-safety-goggles",
-  "mdi-sail-boat",
-  "mdi-sail-boat-sink",
-  "mdi-sale",
-  "mdi-sale-outline",
-  "mdi-salesforce",
-  "mdi-sass",
-  "mdi-satellite",
-  "mdi-satellite-uplink",
-  "mdi-satellite-variant",
-  "mdi-sausage",
-  "mdi-sausage-off",
-  "mdi-saw-blade",
-  "mdi-sawtooth-wave",
-  "mdi-saxophone",
-  "mdi-scale",
-  "mdi-scale-balance",
-  "mdi-scale-bathroom",
-  "mdi-scale-off",
-  "mdi-scale-unbalanced",
-  "mdi-scan-helper",
-  "mdi-scanner",
-  "mdi-scanner-off",
-  "mdi-scatter-plot",
-  "mdi-scatter-plot-outline",
-  "mdi-scent",
-  "mdi-scent-off",
-  "mdi-school",
-  "mdi-school-outline",
-  "mdi-scissors-cutting",
-  "mdi-scooter",
-  "mdi-scooter-electric",
-  "mdi-scoreboard",
-  "mdi-scoreboard-outline",
-  "mdi-screen-rotation",
-  "mdi-screen-rotation-lock",
-  "mdi-screw-flat-top",
-  "mdi-screw-lag",
-  "mdi-screw-machine-flat-top",
-  "mdi-screw-machine-round-top",
-  "mdi-screw-round-top",
-  "mdi-screwdriver",
-  "mdi-script",
-  "mdi-script-outline",
-  "mdi-script-text",
-  "mdi-script-text-key",
-  "mdi-script-text-key-outline",
-  "mdi-script-text-outline",
-  "mdi-script-text-play",
-  "mdi-script-text-play-outline",
-  "mdi-sd",
-  "mdi-seal",
-  "mdi-seal-variant",
-  "mdi-search-web",
-  "mdi-seat",
-  "mdi-seat-flat",
-  "mdi-seat-flat-angled",
-  "mdi-seat-individual-suite",
-  "mdi-seat-legroom-extra",
-  "mdi-seat-legroom-normal",
-  "mdi-seat-legroom-reduced",
-  "mdi-seat-outline",
-  "mdi-seat-passenger",
-  "mdi-seat-recline-extra",
-  "mdi-seat-recline-normal",
-  "mdi-seatbelt",
-  "mdi-security",
-  "mdi-security-network",
-  "mdi-seed",
-  "mdi-seed-off",
-  "mdi-seed-off-outline",
-  "mdi-seed-outline",
-  "mdi-seed-plus",
-  "mdi-seed-plus-outline",
-  "mdi-seesaw",
-  "mdi-segment",
-  "mdi-select",
-  "mdi-select-all",
-  "mdi-select-arrow-down",
-  "mdi-select-arrow-up",
-  "mdi-select-color",
-  "mdi-select-compare",
-  "mdi-select-drag",
-  "mdi-select-group",
-  "mdi-select-inverse",
-  "mdi-select-marker",
-  "mdi-select-multiple",
-  "mdi-select-multiple-marker",
-  "mdi-select-off",
-  "mdi-select-place",
-  "mdi-select-remove",
-  "mdi-select-search",
-  "mdi-selection",
-  "mdi-selection-drag",
-  "mdi-selection-ellipse",
-  "mdi-selection-ellipse-arrow-inside",
-  "mdi-selection-ellipse-remove",
-  "mdi-selection-marker",
-  "mdi-selection-multiple",
-  "mdi-selection-multiple-marker",
-  "mdi-selection-off",
-  "mdi-selection-remove",
-  "mdi-selection-search",
-  "mdi-semantic-web",
-  "mdi-send",
-  "mdi-send-check",
-  "mdi-send-check-outline",
-  "mdi-send-circle",
-  "mdi-send-circle-outline",
-  "mdi-send-clock",
-  "mdi-send-clock-outline",
-  "mdi-send-lock",
-  "mdi-send-lock-outline",
-  "mdi-send-outline",
-  "mdi-send-variant",
-  "mdi-send-variant-clock",
-  "mdi-send-variant-clock-outline",
-  "mdi-send-variant-outline",
-  "mdi-serial-port",
-  "mdi-server",
-  "mdi-server-minus",
-  "mdi-server-minus-outline",
-  "mdi-server-network",
-  "mdi-server-network-off",
-  "mdi-server-network-outline",
-  "mdi-server-off",
-  "mdi-server-outline",
-  "mdi-server-plus",
-  "mdi-server-plus-outline",
-  "mdi-server-remove",
-  "mdi-server-security",
-  "mdi-set-all",
-  "mdi-set-center",
-  "mdi-set-center-right",
-  "mdi-set-left",
-  "mdi-set-left-center",
-  "mdi-set-left-right",
-  "mdi-set-merge",
-  "mdi-set-none",
-  "mdi-set-right",
-  "mdi-set-split",
-  "mdi-set-square",
-  "mdi-set-top-box",
-  "mdi-settings-helper",
-  "mdi-shaker",
-  "mdi-shaker-outline",
-  "mdi-shape",
-  "mdi-shape-circle-plus",
-  "mdi-shape-outline",
-  "mdi-shape-oval-plus",
-  "mdi-shape-plus",
-  "mdi-shape-plus-outline",
-  "mdi-shape-polygon-plus",
-  "mdi-shape-rectangle-plus",
-  "mdi-shape-square-plus",
-  "mdi-shape-square-rounded-plus",
-  "mdi-share",
-  "mdi-share-all",
-  "mdi-share-all-outline",
-  "mdi-share-circle",
-  "mdi-share-off",
-  "mdi-share-off-outline",
-  "mdi-share-outline",
-  "mdi-share-variant",
-  "mdi-share-variant-outline",
-  "mdi-shark",
-  "mdi-shark-fin",
-  "mdi-shark-fin-outline",
-  "mdi-shark-off",
-  "mdi-sheep",
-  "mdi-shield",
-  "mdi-shield-account",
-  "mdi-shield-account-outline",
-  "mdi-shield-account-variant",
-  "mdi-shield-account-variant-outline",
-  "mdi-shield-airplane",
-  "mdi-shield-airplane-outline",
-  "mdi-shield-alert",
-  "mdi-shield-alert-outline",
-  "mdi-shield-bug",
-  "mdi-shield-bug-outline",
-  "mdi-shield-car",
-  "mdi-shield-check",
-  "mdi-shield-check-outline",
-  "mdi-shield-cross",
-  "mdi-shield-cross-outline",
-  "mdi-shield-crown",
-  "mdi-shield-crown-outline",
-  "mdi-shield-edit",
-  "mdi-shield-edit-outline",
-  "mdi-shield-half",
-  "mdi-shield-half-full",
-  "mdi-shield-home",
-  "mdi-shield-home-outline",
-  "mdi-shield-key",
-  "mdi-shield-key-outline",
-  "mdi-shield-link-variant",
-  "mdi-shield-link-variant-outline",
-  "mdi-shield-lock",
-  "mdi-shield-lock-open",
-  "mdi-shield-lock-open-outline",
-  "mdi-shield-lock-outline",
-  "mdi-shield-moon",
-  "mdi-shield-moon-outline",
-  "mdi-shield-off",
-  "mdi-shield-off-outline",
-  "mdi-shield-outline",
-  "mdi-shield-plus",
-  "mdi-shield-plus-outline",
-  "mdi-shield-refresh",
-  "mdi-shield-refresh-outline",
-  "mdi-shield-remove",
-  "mdi-shield-remove-outline",
-  "mdi-shield-search",
-  "mdi-shield-star",
-  "mdi-shield-star-outline",
-  "mdi-shield-sun",
-  "mdi-shield-sun-outline",
-  "mdi-shield-sword",
-  "mdi-shield-sword-outline",
-  "mdi-shield-sync",
-  "mdi-shield-sync-outline",
-  "mdi-shimmer",
-  "mdi-ship-wheel",
-  "mdi-shipping-pallet",
-  "mdi-shoe-ballet",
-  "mdi-shoe-cleat",
-  "mdi-shoe-formal",
-  "mdi-shoe-heel",
-  "mdi-shoe-print",
-  "mdi-shoe-sneaker",
-  "mdi-shopping",
-  "mdi-shopping-music",
-  "mdi-shopping-outline",
-  "mdi-shopping-search",
-  "mdi-shopping-search-outline",
-  "mdi-shore",
-  "mdi-shovel",
-  "mdi-shovel-off",
-  "mdi-shower",
-  "mdi-shower-head",
-  "mdi-shredder",
-  "mdi-shuffle",
-  "mdi-shuffle-disabled",
-  "mdi-shuffle-variant",
-  "mdi-shuriken",
-  "mdi-sickle",
-  "mdi-sigma",
-  "mdi-sigma-lower",
-  "mdi-sign-caution",
-  "mdi-sign-direction",
-  "mdi-sign-direction-minus",
-  "mdi-sign-direction-plus",
-  "mdi-sign-direction-remove",
-  "mdi-sign-language",
-  "mdi-sign-language-outline",
-  "mdi-sign-pole",
-  "mdi-sign-real-estate",
-  "mdi-sign-text",
-  "mdi-sign-yield",
-  "mdi-signal",
-  "mdi-signal-2g",
-  "mdi-signal-3g",
-  "mdi-signal-4g",
-  "mdi-signal-5g",
-  "mdi-signal-cellular-1",
-  "mdi-signal-cellular-2",
-  "mdi-signal-cellular-3",
-  "mdi-signal-cellular-outline",
-  "mdi-signal-distance-variant",
-  "mdi-signal-hspa",
-  "mdi-signal-hspa-plus",
-  "mdi-signal-off",
-  "mdi-signal-variant",
-  "mdi-signature",
-  "mdi-signature-freehand",
-  "mdi-signature-image",
-  "mdi-signature-text",
-  "mdi-silo",
-  "mdi-silo-outline",
-  "mdi-silverware",
-  "mdi-silverware-clean",
-  "mdi-silverware-fork",
-  "mdi-silverware-fork-knife",
-  "mdi-silverware-spoon",
-  "mdi-silverware-variant",
-  "mdi-sim",
-  "mdi-sim-alert",
-  "mdi-sim-alert-outline",
-  "mdi-sim-off",
-  "mdi-sim-off-outline",
-  "mdi-sim-outline",
-  "mdi-simple-icons",
-  "mdi-sina-weibo",
-  "mdi-sine-wave",
-  "mdi-sitemap",
-  "mdi-sitemap-outline",
-  "mdi-size-l",
-  "mdi-size-m",
-  "mdi-size-s",
-  "mdi-size-xl",
-  "mdi-size-xs",
-  "mdi-size-xxl",
-  "mdi-size-xxs",
-  "mdi-size-xxxl",
-  "mdi-skate",
-  "mdi-skate-off",
-  "mdi-skateboard",
-  "mdi-skateboarding",
-  "mdi-skew-less",
-  "mdi-skew-more",
-  "mdi-ski",
-  "mdi-ski-cross-country",
-  "mdi-ski-water",
-  "mdi-skip-backward",
-  "mdi-skip-backward-outline",
-  "mdi-skip-forward",
-  "mdi-skip-forward-outline",
-  "mdi-skip-next",
-  "mdi-skip-next-circle",
-  "mdi-skip-next-circle-outline",
-  "mdi-skip-next-outline",
-  "mdi-skip-previous",
-  "mdi-skip-previous-circle",
-  "mdi-skip-previous-circle-outline",
-  "mdi-skip-previous-outline",
-  "mdi-skull",
-  "mdi-skull-crossbones",
-  "mdi-skull-crossbones-outline",
-  "mdi-skull-outline",
-  "mdi-skull-scan",
-  "mdi-skull-scan-outline",
-  "mdi-skype",
-  "mdi-skype-business",
-  "mdi-slack",
-  "mdi-slash-forward",
-  "mdi-slash-forward-box",
-  "mdi-sledding",
-  "mdi-sleep",
-  "mdi-sleep-off",
-  "mdi-slide",
-  "mdi-slope-downhill",
-  "mdi-slope-uphill",
-  "mdi-slot-machine",
-  "mdi-slot-machine-outline",
-  "mdi-smart-card",
-  "mdi-smart-card-off",
-  "mdi-smart-card-off-outline",
-  "mdi-smart-card-outline",
-  "mdi-smart-card-reader",
-  "mdi-smart-card-reader-outline",
-  "mdi-smog",
-  "mdi-smoke",
-  "mdi-smoke-detector",
-  "mdi-smoke-detector-alert",
-  "mdi-smoke-detector-alert-outline",
-  "mdi-smoke-detector-off",
-  "mdi-smoke-detector-off-outline",
-  "mdi-smoke-detector-outline",
-  "mdi-smoke-detector-variant",
-  "mdi-smoke-detector-variant-alert",
-  "mdi-smoke-detector-variant-off",
-  "mdi-smoking",
-  "mdi-smoking-off",
-  "mdi-smoking-pipe",
-  "mdi-smoking-pipe-off",
-  "mdi-snail",
-  "mdi-snake",
-  "mdi-snapchat",
-  "mdi-snowboard",
-  "mdi-snowflake",
-  "mdi-snowflake-alert",
-  "mdi-snowflake-check",
-  "mdi-snowflake-melt",
-  "mdi-snowflake-off",
-  "mdi-snowflake-thermometer",
-  "mdi-snowflake-variant",
-  "mdi-snowman",
-  "mdi-snowmobile",
-  "mdi-snowshoeing",
-  "mdi-soccer",
-  "mdi-soccer-field",
-  "mdi-social-distance-2-meters",
-  "mdi-social-distance-6-feet",
-  "mdi-sofa",
-  "mdi-sofa-outline",
-  "mdi-sofa-single",
-  "mdi-sofa-single-outline",
-  "mdi-solar-panel",
-  "mdi-solar-panel-large",
-  "mdi-solar-power",
-  "mdi-solar-power-variant",
-  "mdi-solar-power-variant-outline",
-  "mdi-soldering-iron",
-  "mdi-solid",
-  "mdi-sony-playstation",
-  "mdi-sort",
-  "mdi-sort-alphabetical-ascending",
-  "mdi-sort-alphabetical-ascending-variant",
-  "mdi-sort-alphabetical-descending",
-  "mdi-sort-alphabetical-descending-variant",
-  "mdi-sort-alphabetical-variant",
-  "mdi-sort-ascending",
-  "mdi-sort-bool-ascending",
-  "mdi-sort-bool-ascending-variant",
-  "mdi-sort-bool-descending",
-  "mdi-sort-bool-descending-variant",
-  "mdi-sort-calendar-ascending",
-  "mdi-sort-calendar-descending",
-  "mdi-sort-clock-ascending",
-  "mdi-sort-clock-ascending-outline",
-  "mdi-sort-clock-descending",
-  "mdi-sort-clock-descending-outline",
-  "mdi-sort-descending",
-  "mdi-sort-numeric-ascending",
-  "mdi-sort-numeric-ascending-variant",
-  "mdi-sort-numeric-descending",
-  "mdi-sort-numeric-descending-variant",
-  "mdi-sort-numeric-variant",
-  "mdi-sort-reverse-variant",
-  "mdi-sort-variant",
-  "mdi-sort-variant-lock",
-  "mdi-sort-variant-lock-open",
-  "mdi-sort-variant-off",
-  "mdi-sort-variant-remove",
-  "mdi-soundbar",
-  "mdi-soundcloud",
-  "mdi-source-branch",
-  "mdi-source-branch-check",
-  "mdi-source-branch-minus",
-  "mdi-source-branch-plus",
-  "mdi-source-branch-refresh",
-  "mdi-source-branch-remove",
-  "mdi-source-branch-sync",
-  "mdi-source-commit",
-  "mdi-source-commit-end",
-  "mdi-source-commit-end-local",
-  "mdi-source-commit-local",
-  "mdi-source-commit-next-local",
-  "mdi-source-commit-start",
-  "mdi-source-commit-start-next-local",
-  "mdi-source-fork",
-  "mdi-source-merge",
-  "mdi-source-pull",
-  "mdi-source-repository",
-  "mdi-source-repository-multiple",
-  "mdi-soy-sauce",
-  "mdi-soy-sauce-off",
-  "mdi-spa",
-  "mdi-spa-outline",
-  "mdi-space-invaders",
-  "mdi-space-station",
-  "mdi-spade",
-  "mdi-speaker",
-  "mdi-speaker-bluetooth",
-  "mdi-speaker-message",
-  "mdi-speaker-multiple",
-  "mdi-speaker-off",
-  "mdi-speaker-pause",
-  "mdi-speaker-play",
-  "mdi-speaker-stop",
-  "mdi-speaker-wireless",
-  "mdi-spear",
-  "mdi-speedometer",
-  "mdi-speedometer-medium",
-  "mdi-speedometer-slow",
-  "mdi-spellcheck",
-  "mdi-sphere",
-  "mdi-sphere-off",
-  "mdi-spider",
-  "mdi-spider-outline",
-  "mdi-spider-thread",
-  "mdi-spider-web",
-  "mdi-spirit-level",
-  "mdi-spoon-sugar",
-  "mdi-spotify",
-  "mdi-spotlight",
-  "mdi-spotlight-beam",
-  "mdi-spray",
-  "mdi-spray-bottle",
-  "mdi-sprinkler",
-  "mdi-sprinkler-fire",
-  "mdi-sprinkler-variant",
-  "mdi-sprout",
-  "mdi-sprout-outline",
-  "mdi-square",
-  "mdi-square-circle",
-  "mdi-square-circle-outline",
-  "mdi-square-edit-outline",
-  "mdi-square-medium",
-  "mdi-square-medium-outline",
-  "mdi-square-off",
-  "mdi-square-off-outline",
-  "mdi-square-opacity",
-  "mdi-square-outline",
-  "mdi-square-root",
-  "mdi-square-root-box",
-  "mdi-square-rounded",
-  "mdi-square-rounded-badge",
-  "mdi-square-rounded-badge-outline",
-  "mdi-square-rounded-outline",
-  "mdi-square-small",
-  "mdi-square-wave",
-  "mdi-squeegee",
-  "mdi-ssh",
-  "mdi-stack-exchange",
-  "mdi-stack-overflow",
-  "mdi-stackpath",
-  "mdi-stadium",
-  "mdi-stadium-outline",
-  "mdi-stadium-variant",
-  "mdi-stairs",
-  "mdi-stairs-box",
-  "mdi-stairs-down",
-  "mdi-stairs-up",
-  "mdi-stamper",
-  "mdi-standard-definition",
-  "mdi-star",
-  "mdi-star-box",
-  "mdi-star-box-multiple",
-  "mdi-star-box-multiple-outline",
-  "mdi-star-box-outline",
-  "mdi-star-check",
-  "mdi-star-check-outline",
-  "mdi-star-circle",
-  "mdi-star-circle-outline",
-  "mdi-star-cog",
-  "mdi-star-cog-outline",
-  "mdi-star-crescent",
-  "mdi-star-david",
-  "mdi-star-face",
-  "mdi-star-four-points",
-  "mdi-star-four-points-box",
-  "mdi-star-four-points-box-outline",
-  "mdi-star-four-points-circle",
-  "mdi-star-four-points-circle-outline",
-  "mdi-star-four-points-outline",
-  "mdi-star-four-points-small",
-  "mdi-star-half",
-  "mdi-star-half-full",
-  "mdi-star-minus",
-  "mdi-star-minus-outline",
-  "mdi-star-off",
-  "mdi-star-off-outline",
-  "mdi-star-outline",
-  "mdi-star-plus",
-  "mdi-star-plus-outline",
-  "mdi-star-remove",
-  "mdi-star-remove-outline",
-  "mdi-star-settings",
-  "mdi-star-settings-outline",
-  "mdi-star-shooting",
-  "mdi-star-shooting-outline",
-  "mdi-star-three-points",
-  "mdi-star-three-points-outline",
-  "mdi-state-machine",
-  "mdi-steam",
-  "mdi-steering",
-  "mdi-steering-off",
-  "mdi-step-backward",
-  "mdi-step-backward-2",
-  "mdi-step-forward",
-  "mdi-step-forward-2",
-  "mdi-stethoscope",
-  "mdi-sticker",
-  "mdi-sticker-alert",
-  "mdi-sticker-alert-outline",
-  "mdi-sticker-check",
-  "mdi-sticker-check-outline",
-  "mdi-sticker-circle-outline",
-  "mdi-sticker-emoji",
-  "mdi-sticker-minus",
-  "mdi-sticker-minus-outline",
-  "mdi-sticker-outline",
-  "mdi-sticker-plus",
-  "mdi-sticker-plus-outline",
-  "mdi-sticker-remove",
-  "mdi-sticker-remove-outline",
-  "mdi-sticker-text",
-  "mdi-sticker-text-outline",
-  "mdi-stocking",
-  "mdi-stomach",
-  "mdi-stool",
-  "mdi-stool-outline",
-  "mdi-stop",
-  "mdi-stop-circle",
-  "mdi-stop-circle-outline",
-  "mdi-storage-tank",
-  "mdi-storage-tank-outline",
-  "mdi-store",
-  "mdi-store-24-hour",
-  "mdi-store-alert",
-  "mdi-store-alert-outline",
-  "mdi-store-check",
-  "mdi-store-check-outline",
-  "mdi-store-clock",
-  "mdi-store-clock-outline",
-  "mdi-store-cog",
-  "mdi-store-cog-outline",
-  "mdi-store-edit",
-  "mdi-store-edit-outline",
-  "mdi-store-marker",
-  "mdi-store-marker-outline",
-  "mdi-store-minus",
-  "mdi-store-minus-outline",
-  "mdi-store-off",
-  "mdi-store-off-outline",
-  "mdi-store-outline",
-  "mdi-store-plus",
-  "mdi-store-plus-outline",
-  "mdi-store-remove",
-  "mdi-store-remove-outline",
-  "mdi-store-search",
-  "mdi-store-search-outline",
-  "mdi-store-settings",
-  "mdi-store-settings-outline",
-  "mdi-storefront",
-  "mdi-storefront-check",
-  "mdi-storefront-check-outline",
-  "mdi-storefront-edit",
-  "mdi-storefront-edit-outline",
-  "mdi-storefront-minus",
-  "mdi-storefront-minus-outline",
-  "mdi-storefront-outline",
-  "mdi-storefront-plus",
-  "mdi-storefront-plus-outline",
-  "mdi-storefront-remove",
-  "mdi-storefront-remove-outline",
-  "mdi-stove",
-  "mdi-strategy",
-  "mdi-stretch-to-page",
-  "mdi-stretch-to-page-outline",
-  "mdi-string-lights",
-  "mdi-string-lights-off",
-  "mdi-subdirectory-arrow-left",
-  "mdi-subdirectory-arrow-right",
-  "mdi-submarine",
-  "mdi-subtitles",
-  "mdi-subtitles-outline",
-  "mdi-subway",
-  "mdi-subway-alert-variant",
-  "mdi-subway-variant",
-  "mdi-summit",
-  "mdi-sun-angle",
-  "mdi-sun-angle-outline",
-  "mdi-sun-clock",
-  "mdi-sun-clock-outline",
-  "mdi-sun-compass",
-  "mdi-sun-snowflake",
-  "mdi-sun-snowflake-variant",
-  "mdi-sun-thermometer",
-  "mdi-sun-thermometer-outline",
-  "mdi-sun-wireless",
-  "mdi-sun-wireless-outline",
-  "mdi-sunglasses",
-  "mdi-surfing",
-  "mdi-surround-sound",
-  "mdi-surround-sound-2-0",
-  "mdi-surround-sound-2-1",
-  "mdi-surround-sound-3-1",
-  "mdi-surround-sound-5-1",
-  "mdi-surround-sound-5-1-2",
-  "mdi-surround-sound-7-1",
-  "mdi-svg",
-  "mdi-swap-horizontal",
-  "mdi-swap-horizontal-bold",
-  "mdi-swap-horizontal-circle",
-  "mdi-swap-horizontal-circle-outline",
-  "mdi-swap-horizontal-hidden",
-  "mdi-swap-horizontal-variant",
-  "mdi-swap-vertical",
-  "mdi-swap-vertical-bold",
-  "mdi-swap-vertical-circle",
-  "mdi-swap-vertical-circle-outline",
-  "mdi-swap-vertical-variant",
-  "mdi-swim",
-  "mdi-switch",
-  "mdi-sword",
-  "mdi-sword-cross",
-  "mdi-syllabary-hangul",
-  "mdi-syllabary-hiragana",
-  "mdi-syllabary-katakana",
-  "mdi-syllabary-katakana-halfwidth",
-  "mdi-symbol",
-  "mdi-symfony",
-  "mdi-synagogue",
-  "mdi-synagogue-outline",
-  "mdi-sync",
-  "mdi-sync-alert",
-  "mdi-sync-circle",
-  "mdi-sync-off",
-  "mdi-tab",
-  "mdi-tab-minus",
-  "mdi-tab-plus",
-  "mdi-tab-remove",
-  "mdi-tab-search",
-  "mdi-tab-unselected",
-  "mdi-table",
-  "mdi-table-account",
-  "mdi-table-alert",
-  "mdi-table-arrow-down",
-  "mdi-table-arrow-left",
-  "mdi-table-arrow-right",
-  "mdi-table-arrow-up",
-  "mdi-table-border",
-  "mdi-table-cancel",
-  "mdi-table-chair",
-  "mdi-table-check",
-  "mdi-table-clock",
-  "mdi-table-cog",
-  "mdi-table-column",
-  "mdi-table-column-plus-after",
-  "mdi-table-column-plus-before",
-  "mdi-table-column-remove",
-  "mdi-table-column-width",
-  "mdi-table-edit",
-  "mdi-table-eye",
-  "mdi-table-eye-off",
-  "mdi-table-filter",
-  "mdi-table-furniture",
-  "mdi-table-headers-eye",
-  "mdi-table-headers-eye-off",
-  "mdi-table-heart",
-  "mdi-table-key",
-  "mdi-table-large",
-  "mdi-table-large-plus",
-  "mdi-table-large-remove",
-  "mdi-table-lock",
-  "mdi-table-merge-cells",
-  "mdi-table-minus",
-  "mdi-table-multiple",
-  "mdi-table-network",
-  "mdi-table-of-contents",
-  "mdi-table-off",
-  "mdi-table-picnic",
-  "mdi-table-pivot",
-  "mdi-table-plus",
-  "mdi-table-question",
-  "mdi-table-refresh",
-  "mdi-table-remove",
-  "mdi-table-row",
-  "mdi-table-row-height",
-  "mdi-table-row-plus-after",
-  "mdi-table-row-plus-before",
-  "mdi-table-row-remove",
-  "mdi-table-search",
-  "mdi-table-settings",
-  "mdi-table-split-cell",
-  "mdi-table-star",
-  "mdi-table-sync",
-  "mdi-table-tennis",
-  "mdi-tablet",
-  "mdi-tablet-cellphone",
-  "mdi-tablet-dashboard",
-  "mdi-taco",
-  "mdi-tag",
-  "mdi-tag-arrow-down",
-  "mdi-tag-arrow-down-outline",
-  "mdi-tag-arrow-left",
-  "mdi-tag-arrow-left-outline",
-  "mdi-tag-arrow-right",
-  "mdi-tag-arrow-right-outline",
-  "mdi-tag-arrow-up",
-  "mdi-tag-arrow-up-outline",
-  "mdi-tag-check",
-  "mdi-tag-check-outline",
-  "mdi-tag-edit",
-  "mdi-tag-edit-outline",
-  "mdi-tag-faces",
-  "mdi-tag-heart",
-  "mdi-tag-heart-outline",
-  "mdi-tag-hidden",
-  "mdi-tag-minus",
-  "mdi-tag-minus-outline",
-  "mdi-tag-multiple",
-  "mdi-tag-multiple-outline",
-  "mdi-tag-off",
-  "mdi-tag-off-outline",
-  "mdi-tag-outline",
-  "mdi-tag-plus",
-  "mdi-tag-plus-outline",
-  "mdi-tag-remove",
-  "mdi-tag-remove-outline",
-  "mdi-tag-search",
-  "mdi-tag-search-outline",
-  "mdi-tag-text",
-  "mdi-tag-text-outline",
-  "mdi-tailwind",
-  "mdi-tally-mark-1",
-  "mdi-tally-mark-2",
-  "mdi-tally-mark-3",
-  "mdi-tally-mark-4",
-  "mdi-tally-mark-5",
-  "mdi-tangram",
-  "mdi-tank",
-  "mdi-tanker-truck",
-  "mdi-tape-drive",
-  "mdi-tape-measure",
-  "mdi-target",
-  "mdi-target-account",
-  "mdi-target-variant",
-  "mdi-taxi",
-  "mdi-tea",
-  "mdi-tea-outline",
-  "mdi-teamviewer",
-  "mdi-teddy-bear",
-  "mdi-telescope",
-  "mdi-television",
-  "mdi-television-ambient-light",
-  "mdi-television-box",
-  "mdi-television-classic",
-  "mdi-television-classic-off",
-  "mdi-television-guide",
-  "mdi-television-off",
-  "mdi-television-pause",
-  "mdi-television-play",
-  "mdi-television-shimmer",
-  "mdi-television-speaker",
-  "mdi-television-speaker-off",
-  "mdi-television-stop",
-  "mdi-temperature-celsius",
-  "mdi-temperature-fahrenheit",
-  "mdi-temperature-kelvin",
-  "mdi-temple-buddhist",
-  "mdi-temple-buddhist-outline",
-  "mdi-temple-hindu",
-  "mdi-temple-hindu-outline",
-  "mdi-tennis",
-  "mdi-tennis-ball",
-  "mdi-tennis-ball-outline",
-  "mdi-tent",
-  "mdi-terraform",
-  "mdi-terrain",
-  "mdi-test-tube",
-  "mdi-test-tube-empty",
-  "mdi-test-tube-off",
-  "mdi-text",
-  "mdi-text-account",
-  "mdi-text-box",
-  "mdi-text-box-check",
-  "mdi-text-box-check-outline",
-  "mdi-text-box-edit",
-  "mdi-text-box-edit-outline",
-  "mdi-text-box-minus",
-  "mdi-text-box-minus-outline",
-  "mdi-text-box-multiple",
-  "mdi-text-box-multiple-outline",
-  "mdi-text-box-outline",
-  "mdi-text-box-plus",
-  "mdi-text-box-plus-outline",
-  "mdi-text-box-remove",
-  "mdi-text-box-remove-outline",
-  "mdi-text-box-search",
-  "mdi-text-box-search-outline",
-  "mdi-text-long",
-  "mdi-text-recognition",
-  "mdi-text-search",
-  "mdi-text-search-variant",
-  "mdi-text-shadow",
-  "mdi-text-short",
-  "mdi-texture",
-  "mdi-texture-box",
-  "mdi-theater",
-  "mdi-theme-light-dark",
-  "mdi-thermometer",
-  "mdi-thermometer-alert",
-  "mdi-thermometer-auto",
-  "mdi-thermometer-bluetooth",
-  "mdi-thermometer-check",
-  "mdi-thermometer-chevron-down",
-  "mdi-thermometer-chevron-up",
-  "mdi-thermometer-high",
-  "mdi-thermometer-lines",
-  "mdi-thermometer-low",
-  "mdi-thermometer-minus",
-  "mdi-thermometer-off",
-  "mdi-thermometer-plus",
-  "mdi-thermometer-probe",
-  "mdi-thermometer-probe-off",
-  "mdi-thermometer-water",
-  "mdi-thermostat",
-  "mdi-thermostat-auto",
-  "mdi-thermostat-box",
-  "mdi-thermostat-box-auto",
-  "mdi-thermostat-cog",
-  "mdi-thought-bubble",
-  "mdi-thought-bubble-outline",
-  "mdi-thumb-down",
-  "mdi-thumb-down-outline",
-  "mdi-thumb-up",
-  "mdi-thumb-up-outline",
-  "mdi-thumbs-up-down",
-  "mdi-thumbs-up-down-outline",
-  "mdi-ticket",
-  "mdi-ticket-account",
-  "mdi-ticket-confirmation",
-  "mdi-ticket-confirmation-outline",
-  "mdi-ticket-outline",
-  "mdi-ticket-percent",
-  "mdi-ticket-percent-outline",
-  "mdi-tie",
-  "mdi-tilde",
-  "mdi-tilde-off",
-  "mdi-timelapse",
-  "mdi-timeline",
-  "mdi-timeline-alert",
-  "mdi-timeline-alert-outline",
-  "mdi-timeline-check",
-  "mdi-timeline-check-outline",
-  "mdi-timeline-clock",
-  "mdi-timeline-clock-outline",
-  "mdi-timeline-minus",
-  "mdi-timeline-minus-outline",
-  "mdi-timeline-outline",
-  "mdi-timeline-plus",
-  "mdi-timeline-plus-outline",
-  "mdi-timeline-question",
-  "mdi-timeline-question-outline",
-  "mdi-timeline-remove",
-  "mdi-timeline-remove-outline",
-  "mdi-timeline-text",
-  "mdi-timeline-text-outline",
-  "mdi-timer",
-  "mdi-timer-10",
-  "mdi-timer-3",
-  "mdi-timer-alert",
-  "mdi-timer-alert-outline",
-  "mdi-timer-cancel",
-  "mdi-timer-cancel-outline",
-  "mdi-timer-check",
-  "mdi-timer-check-outline",
-  "mdi-timer-cog",
-  "mdi-timer-cog-outline",
-  "mdi-timer-edit",
-  "mdi-timer-edit-outline",
-  "mdi-timer-lock",
-  "mdi-timer-lock-open",
-  "mdi-timer-lock-open-outline",
-  "mdi-timer-lock-outline",
-  "mdi-timer-marker",
-  "mdi-timer-marker-outline",
-  "mdi-timer-minus",
-  "mdi-timer-minus-outline",
-  "mdi-timer-music",
-  "mdi-timer-music-outline",
-  "mdi-timer-off",
-  "mdi-timer-off-outline",
-  "mdi-timer-outline",
-  "mdi-timer-pause",
-  "mdi-timer-pause-outline",
-  "mdi-timer-play",
-  "mdi-timer-play-outline",
-  "mdi-timer-plus",
-  "mdi-timer-plus-outline",
-  "mdi-timer-refresh",
-  "mdi-timer-refresh-outline",
-  "mdi-timer-remove",
-  "mdi-timer-remove-outline",
-  "mdi-timer-sand",
-  "mdi-timer-sand-complete",
-  "mdi-timer-sand-empty",
-  "mdi-timer-sand-full",
-  "mdi-timer-sand-paused",
-  "mdi-timer-settings",
-  "mdi-timer-settings-outline",
-  "mdi-timer-star",
-  "mdi-timer-star-outline",
-  "mdi-timer-stop",
-  "mdi-timer-stop-outline",
-  "mdi-timer-sync",
-  "mdi-timer-sync-outline",
-  "mdi-timetable",
-  "mdi-tire",
-  "mdi-toaster",
-  "mdi-toaster-off",
-  "mdi-toaster-oven",
-  "mdi-toggle-switch",
-  "mdi-toggle-switch-off",
-  "mdi-toggle-switch-off-outline",
-  "mdi-toggle-switch-outline",
-  "mdi-toggle-switch-variant",
-  "mdi-toggle-switch-variant-off",
-  "mdi-toilet",
-  "mdi-toolbox",
-  "mdi-toolbox-outline",
-  "mdi-tools",
-  "mdi-tooltip",
-  "mdi-tooltip-account",
-  "mdi-tooltip-cellphone",
-  "mdi-tooltip-check",
-  "mdi-tooltip-check-outline",
-  "mdi-tooltip-edit",
-  "mdi-tooltip-edit-outline",
-  "mdi-tooltip-image",
-  "mdi-tooltip-image-outline",
-  "mdi-tooltip-minus",
-  "mdi-tooltip-minus-outline",
-  "mdi-tooltip-outline",
-  "mdi-tooltip-plus",
-  "mdi-tooltip-plus-outline",
-  "mdi-tooltip-question",
-  "mdi-tooltip-question-outline",
-  "mdi-tooltip-remove",
-  "mdi-tooltip-remove-outline",
-  "mdi-tooltip-text",
-  "mdi-tooltip-text-outline",
-  "mdi-tooth",
-  "mdi-tooth-outline",
-  "mdi-toothbrush",
-  "mdi-toothbrush-electric",
-  "mdi-toothbrush-paste",
-  "mdi-torch",
-  "mdi-tortoise",
-  "mdi-toslink",
-  "mdi-touch-text-outline",
-  "mdi-tournament",
-  "mdi-tow-truck",
-  "mdi-tower-beach",
-  "mdi-tower-fire",
-  "mdi-town-hall",
-  "mdi-toy-brick",
-  "mdi-toy-brick-marker",
-  "mdi-toy-brick-marker-outline",
-  "mdi-toy-brick-minus",
-  "mdi-toy-brick-minus-outline",
-  "mdi-toy-brick-outline",
-  "mdi-toy-brick-plus",
-  "mdi-toy-brick-plus-outline",
-  "mdi-toy-brick-remove",
-  "mdi-toy-brick-remove-outline",
-  "mdi-toy-brick-search",
-  "mdi-toy-brick-search-outline",
-  "mdi-track-light",
-  "mdi-track-light-off",
-  "mdi-trackpad",
-  "mdi-trackpad-lock",
-  "mdi-tractor",
-  "mdi-tractor-variant",
-  "mdi-trademark",
-  "mdi-traffic-cone",
-  "mdi-traffic-light",
-  "mdi-traffic-light-outline",
-  "mdi-train",
-  "mdi-train-bus",
-  "mdi-train-car",
-  "mdi-train-car-autorack",
-  "mdi-train-car-box",
-  "mdi-train-car-box-full",
-  "mdi-train-car-box-open",
-  "mdi-train-car-caboose",
-  "mdi-train-car-centerbeam",
-  "mdi-train-car-centerbeam-full",
-  "mdi-train-car-container",
-  "mdi-train-car-flatbed",
-  "mdi-train-car-flatbed-car",
-  "mdi-train-car-flatbed-tank",
-  "mdi-train-car-gondola",
-  "mdi-train-car-gondola-full",
-  "mdi-train-car-hopper",
-  "mdi-train-car-hopper-covered",
-  "mdi-train-car-hopper-full",
-  "mdi-train-car-intermodal",
-  "mdi-train-car-passenger",
-  "mdi-train-car-passenger-door",
-  "mdi-train-car-passenger-door-open",
-  "mdi-train-car-passenger-variant",
-  "mdi-train-car-tank",
-  "mdi-train-variant",
-  "mdi-tram",
-  "mdi-tram-side",
-  "mdi-transcribe",
-  "mdi-transcribe-close",
-  "mdi-transfer",
-  "mdi-transfer-down",
-  "mdi-transfer-left",
-  "mdi-transfer-right",
-  "mdi-transfer-up",
-  "mdi-transit-connection",
-  "mdi-transit-connection-horizontal",
-  "mdi-transit-connection-variant",
-  "mdi-transit-detour",
-  "mdi-transit-skip",
-  "mdi-transit-transfer",
-  "mdi-transition",
-  "mdi-transition-masked",
-  "mdi-translate",
-  "mdi-translate-off",
-  "mdi-translate-variant",
-  "mdi-transmission-tower",
-  "mdi-transmission-tower-export",
-  "mdi-transmission-tower-import",
-  "mdi-transmission-tower-off",
-  "mdi-trash-can",
-  "mdi-trash-can-outline",
-  "mdi-tray",
-  "mdi-tray-alert",
-  "mdi-tray-arrow-down",
-  "mdi-tray-arrow-up",
-  "mdi-tray-full",
-  "mdi-tray-minus",
-  "mdi-tray-plus",
-  "mdi-tray-remove",
-  "mdi-treasure-chest",
-  "mdi-treasure-chest-outline",
-  "mdi-tree",
-  "mdi-tree-outline",
-  "mdi-trello",
-  "mdi-trending-down",
-  "mdi-trending-neutral",
-  "mdi-trending-up",
-  "mdi-triangle",
-  "mdi-triangle-down",
-  "mdi-triangle-down-outline",
-  "mdi-triangle-outline",
-  "mdi-triangle-small-down",
-  "mdi-triangle-small-up",
-  "mdi-triangle-wave",
-  "mdi-triforce",
-  "mdi-trophy",
-  "mdi-trophy-award",
-  "mdi-trophy-broken",
-  "mdi-trophy-outline",
-  "mdi-trophy-variant",
-  "mdi-trophy-variant-outline",
-  "mdi-truck",
-  "mdi-truck-alert",
-  "mdi-truck-alert-outline",
-  "mdi-truck-cargo-container",
-  "mdi-truck-check",
-  "mdi-truck-check-outline",
-  "mdi-truck-delivery",
-  "mdi-truck-delivery-outline",
-  "mdi-truck-fast",
-  "mdi-truck-fast-outline",
-  "mdi-truck-flatbed",
-  "mdi-truck-minus",
-  "mdi-truck-minus-outline",
-  "mdi-truck-off-road",
-  "mdi-truck-off-road-off",
-  "mdi-truck-outline",
-  "mdi-truck-plus",
-  "mdi-truck-plus-outline",
-  "mdi-truck-remove",
-  "mdi-truck-remove-outline",
-  "mdi-truck-snowflake",
-  "mdi-truck-trailer",
-  "mdi-trumpet",
-  "mdi-tshirt-crew",
-  "mdi-tshirt-crew-outline",
-  "mdi-tshirt-v",
-  "mdi-tshirt-v-outline",
-  "mdi-tsunami",
-  "mdi-tumble-dryer",
-  "mdi-tumble-dryer-alert",
-  "mdi-tumble-dryer-off",
-  "mdi-tune",
-  "mdi-tune-variant",
-  "mdi-tune-vertical",
-  "mdi-tune-vertical-variant",
-  "mdi-tunnel",
-  "mdi-tunnel-outline",
-  "mdi-turbine",
-  "mdi-turkey",
-  "mdi-turnstile",
-  "mdi-turnstile-outline",
-  "mdi-turtle",
-  "mdi-twitch",
-  "mdi-twitter",
-  "mdi-two-factor-authentication",
-  "mdi-typewriter",
-  "mdi-ubisoft",
-  "mdi-ubuntu",
-  "mdi-ufo",
-  "mdi-ufo-outline",
-  "mdi-ultra-high-definition",
-  "mdi-umbraco",
-  "mdi-umbrella",
-  "mdi-umbrella-beach",
-  "mdi-umbrella-beach-outline",
-  "mdi-umbrella-closed",
-  "mdi-umbrella-closed-outline",
-  "mdi-umbrella-closed-variant",
-  "mdi-umbrella-outline",
-  "mdi-underwear-outline",
-  "mdi-undo",
-  "mdi-undo-variant",
-  "mdi-unfold-less-horizontal",
-  "mdi-unfold-less-vertical",
-  "mdi-unfold-more-horizontal",
-  "mdi-unfold-more-vertical",
-  "mdi-ungroup",
-  "mdi-unicode",
-  "mdi-unicorn",
-  "mdi-unicorn-variant",
-  "mdi-unicycle",
-  "mdi-unity",
-  "mdi-unreal",
-  "mdi-update",
-  "mdi-upload",
-  "mdi-upload-box",
-  "mdi-upload-box-outline",
-  "mdi-upload-circle",
-  "mdi-upload-circle-outline",
-  "mdi-upload-lock",
-  "mdi-upload-lock-outline",
-  "mdi-upload-multiple",
-  "mdi-upload-multiple-outline",
-  "mdi-upload-network",
-  "mdi-upload-network-outline",
-  "mdi-upload-off",
-  "mdi-upload-off-outline",
-  "mdi-upload-outline",
-  "mdi-usb",
-  "mdi-usb-c-port",
-  "mdi-usb-flash-drive",
-  "mdi-usb-flash-drive-outline",
-  "mdi-usb-port",
-  "mdi-vacuum",
-  "mdi-vacuum-outline",
-  "mdi-valve",
-  "mdi-valve-closed",
-  "mdi-valve-open",
-  "mdi-van-passenger",
-  "mdi-van-utility",
-  "mdi-vanish",
-  "mdi-vanish-quarter",
-  "mdi-vanity-light",
-  "mdi-variable",
-  "mdi-variable-box",
-  "mdi-vector-arrange-above",
-  "mdi-vector-arrange-below",
-  "mdi-vector-bezier",
-  "mdi-vector-circle",
-  "mdi-vector-circle-variant",
-  "mdi-vector-combine",
-  "mdi-vector-curve",
-  "mdi-vector-difference",
-  "mdi-vector-difference-ab",
-  "mdi-vector-difference-ba",
-  "mdi-vector-ellipse",
-  "mdi-vector-intersection",
-  "mdi-vector-line",
-  "mdi-vector-link",
-  "mdi-vector-point",
-  "mdi-vector-point-edit",
-  "mdi-vector-point-minus",
-  "mdi-vector-point-plus",
-  "mdi-vector-point-select",
-  "mdi-vector-polygon",
-  "mdi-vector-polygon-variant",
-  "mdi-vector-polyline",
-  "mdi-vector-polyline-edit",
-  "mdi-vector-polyline-minus",
-  "mdi-vector-polyline-plus",
-  "mdi-vector-polyline-remove",
-  "mdi-vector-radius",
-  "mdi-vector-rectangle",
-  "mdi-vector-selection",
-  "mdi-vector-square",
-  "mdi-vector-square-close",
-  "mdi-vector-square-edit",
-  "mdi-vector-square-minus",
-  "mdi-vector-square-open",
-  "mdi-vector-square-plus",
-  "mdi-vector-square-remove",
-  "mdi-vector-triangle",
-  "mdi-vector-union",
-  "mdi-vhs",
-  "mdi-vibrate",
-  "mdi-vibrate-off",
-  "mdi-video",
-  "mdi-video-2d",
-  "mdi-video-3d",
-  "mdi-video-3d-off",
-  "mdi-video-3d-variant",
-  "mdi-video-4k-box",
-  "mdi-video-account",
-  "mdi-video-box",
-  "mdi-video-box-off",
-  "mdi-video-check",
-  "mdi-video-check-outline",
-  "mdi-video-high-definition",
-  "mdi-video-image",
-  "mdi-video-input-antenna",
-  "mdi-video-input-component",
-  "mdi-video-input-hdmi",
-  "mdi-video-input-scart",
-  "mdi-video-input-svideo",
-  "mdi-video-marker",
-  "mdi-video-marker-outline",
-  "mdi-video-minus",
-  "mdi-video-minus-outline",
-  "mdi-video-off",
-  "mdi-video-off-outline",
-  "mdi-video-outline",
-  "mdi-video-plus",
-  "mdi-video-plus-outline",
-  "mdi-video-stabilization",
-  "mdi-video-standard-definition",
-  "mdi-video-switch",
-  "mdi-video-switch-outline",
-  "mdi-video-vintage",
-  "mdi-video-wireless",
-  "mdi-video-wireless-outline",
-  "mdi-view-agenda",
-  "mdi-view-agenda-outline",
-  "mdi-view-array",
-  "mdi-view-array-outline",
-  "mdi-view-carousel",
-  "mdi-view-carousel-outline",
-  "mdi-view-column",
-  "mdi-view-column-outline",
-  "mdi-view-comfy",
-  "mdi-view-comfy-outline",
-  "mdi-view-compact",
-  "mdi-view-compact-outline",
-  "mdi-view-dashboard",
-  "mdi-view-dashboard-edit",
-  "mdi-view-dashboard-edit-outline",
-  "mdi-view-dashboard-outline",
-  "mdi-view-dashboard-variant",
-  "mdi-view-dashboard-variant-outline",
-  "mdi-view-day",
-  "mdi-view-day-outline",
-  "mdi-view-gallery",
-  "mdi-view-gallery-outline",
-  "mdi-view-grid",
-  "mdi-view-grid-compact",
-  "mdi-view-grid-outline",
-  "mdi-view-grid-plus",
-  "mdi-view-grid-plus-outline",
-  "mdi-view-headline",
-  "mdi-view-list",
-  "mdi-view-list-outline",
-  "mdi-view-module",
-  "mdi-view-module-outline",
-  "mdi-view-parallel",
-  "mdi-view-parallel-outline",
-  "mdi-view-quilt",
-  "mdi-view-quilt-outline",
-  "mdi-view-sequential",
-  "mdi-view-sequential-outline",
-  "mdi-view-split-horizontal",
-  "mdi-view-split-vertical",
-  "mdi-view-stream",
-  "mdi-view-stream-outline",
-  "mdi-view-week",
-  "mdi-view-week-outline",
-  "mdi-vimeo",
-  "mdi-violin",
-  "mdi-virtual-reality",
-  "mdi-virus",
-  "mdi-virus-off",
-  "mdi-virus-off-outline",
-  "mdi-virus-outline",
-  "mdi-vlc",
-  "mdi-voicemail",
-  "mdi-volcano",
-  "mdi-volcano-outline",
-  "mdi-volleyball",
-  "mdi-volume-equal",
-  "mdi-volume-high",
-  "mdi-volume-low",
-  "mdi-volume-medium",
-  "mdi-volume-minus",
-  "mdi-volume-mute",
-  "mdi-volume-off",
-  "mdi-volume-plus",
-  "mdi-volume-source",
-  "mdi-volume-variant-off",
-  "mdi-volume-vibrate",
-  "mdi-vote",
-  "mdi-vote-outline",
-  "mdi-vpn",
-  "mdi-vuejs",
-  "mdi-vuetify",
-  "mdi-walk",
-  "mdi-wall",
-  "mdi-wall-fire",
-  "mdi-wall-sconce",
-  "mdi-wall-sconce-flat",
-  "mdi-wall-sconce-flat-outline",
-  "mdi-wall-sconce-flat-variant",
-  "mdi-wall-sconce-flat-variant-outline",
-  "mdi-wall-sconce-outline",
-  "mdi-wall-sconce-round",
-  "mdi-wall-sconce-round-outline",
-  "mdi-wall-sconce-round-variant",
-  "mdi-wall-sconce-round-variant-outline",
-  "mdi-wallet",
-  "mdi-wallet-bifold",
-  "mdi-wallet-bifold-outline",
-  "mdi-wallet-giftcard",
-  "mdi-wallet-membership",
-  "mdi-wallet-outline",
-  "mdi-wallet-plus",
-  "mdi-wallet-plus-outline",
-  "mdi-wallet-travel",
-  "mdi-wallpaper",
-  "mdi-wan",
-  "mdi-wardrobe",
-  "mdi-wardrobe-outline",
-  "mdi-warehouse",
-  "mdi-washing-machine",
-  "mdi-washing-machine-alert",
-  "mdi-washing-machine-off",
-  "mdi-watch",
-  "mdi-watch-export",
-  "mdi-watch-export-variant",
-  "mdi-watch-import",
-  "mdi-watch-import-variant",
-  "mdi-watch-variant",
-  "mdi-watch-vibrate",
-  "mdi-watch-vibrate-off",
-  "mdi-water",
-  "mdi-water-alert",
-  "mdi-water-alert-outline",
-  "mdi-water-boiler",
-  "mdi-water-boiler-alert",
-  "mdi-water-boiler-auto",
-  "mdi-water-boiler-off",
-  "mdi-water-check",
-  "mdi-water-check-outline",
-  "mdi-water-circle",
-  "mdi-water-minus",
-  "mdi-water-minus-outline",
-  "mdi-water-off",
-  "mdi-water-off-outline",
-  "mdi-water-opacity",
-  "mdi-water-outline",
-  "mdi-water-percent",
-  "mdi-water-percent-alert",
-  "mdi-water-plus",
-  "mdi-water-plus-outline",
-  "mdi-water-polo",
-  "mdi-water-pump",
-  "mdi-water-pump-off",
-  "mdi-water-remove",
-  "mdi-water-remove-outline",
-  "mdi-water-sync",
-  "mdi-water-thermometer",
-  "mdi-water-thermometer-outline",
-  "mdi-water-well",
-  "mdi-water-well-outline",
-  "mdi-waterfall",
-  "mdi-watering-can",
-  "mdi-watering-can-outline",
-  "mdi-watermark",
-  "mdi-wave",
-  "mdi-wave-arrow-down",
-  "mdi-wave-arrow-up",
-  "mdi-wave-undercurrent",
-  "mdi-waveform",
-  "mdi-waves",
-  "mdi-waves-arrow-left",
-  "mdi-waves-arrow-right",
-  "mdi-waves-arrow-up",
-  "mdi-waze",
-  "mdi-weather-cloudy",
-  "mdi-weather-cloudy-alert",
-  "mdi-weather-cloudy-arrow-right",
-  "mdi-weather-cloudy-clock",
-  "mdi-weather-dust",
-  "mdi-weather-fog",
-  "mdi-weather-hail",
-  "mdi-weather-hazy",
-  "mdi-weather-hurricane",
-  "mdi-weather-hurricane-outline",
-  "mdi-weather-lightning",
-  "mdi-weather-lightning-rainy",
-  "mdi-weather-moonset",
-  "mdi-weather-moonset-down",
-  "mdi-weather-moonset-up",
-  "mdi-weather-night",
-  "mdi-weather-night-partly-cloudy",
-  "mdi-weather-partly-cloudy",
-  "mdi-weather-partly-lightning",
-  "mdi-weather-partly-rainy",
-  "mdi-weather-partly-snowy",
-  "mdi-weather-partly-snowy-rainy",
-  "mdi-weather-pouring",
-  "mdi-weather-rainy",
-  "mdi-weather-snowy",
-  "mdi-weather-snowy-heavy",
-  "mdi-weather-snowy-rainy",
-  "mdi-weather-sunny",
-  "mdi-weather-sunny-alert",
-  "mdi-weather-sunny-off",
-  "mdi-weather-sunset",
-  "mdi-weather-sunset-down",
-  "mdi-weather-sunset-up",
-  "mdi-weather-tornado",
-  "mdi-weather-windy",
-  "mdi-weather-windy-variant",
-  "mdi-web",
-  "mdi-web-box",
-  "mdi-web-cancel",
-  "mdi-web-check",
-  "mdi-web-clock",
-  "mdi-web-minus",
-  "mdi-web-off",
-  "mdi-web-plus",
-  "mdi-web-refresh",
-  "mdi-web-remove",
-  "mdi-web-sync",
-  "mdi-webcam",
-  "mdi-webcam-off",
-  "mdi-webhook",
-  "mdi-webpack",
-  "mdi-webrtc",
-  "mdi-wechat",
-  "mdi-weight",
-  "mdi-weight-gram",
-  "mdi-weight-kilogram",
-  "mdi-weight-lifter",
-  "mdi-weight-pound",
-  "mdi-whatsapp",
-  "mdi-wheel-barrow",
-  "mdi-wheelchair",
-  "mdi-wheelchair-accessibility",
-  "mdi-whistle",
-  "mdi-whistle-outline",
-  "mdi-white-balance-auto",
-  "mdi-white-balance-incandescent",
-  "mdi-white-balance-iridescent",
-  "mdi-white-balance-sunny",
-  "mdi-widgets",
-  "mdi-widgets-outline",
-  "mdi-wifi",
-  "mdi-wifi-alert",
-  "mdi-wifi-arrow-down",
-  "mdi-wifi-arrow-left",
-  "mdi-wifi-arrow-left-right",
-  "mdi-wifi-arrow-right",
-  "mdi-wifi-arrow-up",
-  "mdi-wifi-arrow-up-down",
-  "mdi-wifi-cancel",
-  "mdi-wifi-check",
-  "mdi-wifi-cog",
-  "mdi-wifi-lock",
-  "mdi-wifi-lock-open",
-  "mdi-wifi-marker",
-  "mdi-wifi-minus",
-  "mdi-wifi-off",
-  "mdi-wifi-plus",
-  "mdi-wifi-refresh",
-  "mdi-wifi-remove",
-  "mdi-wifi-settings",
-  "mdi-wifi-star",
-  "mdi-wifi-strength-1",
-  "mdi-wifi-strength-1-alert",
-  "mdi-wifi-strength-1-lock",
-  "mdi-wifi-strength-1-lock-open",
-  "mdi-wifi-strength-2",
-  "mdi-wifi-strength-2-alert",
-  "mdi-wifi-strength-2-lock",
-  "mdi-wifi-strength-2-lock-open",
-  "mdi-wifi-strength-3",
-  "mdi-wifi-strength-3-alert",
-  "mdi-wifi-strength-3-lock",
-  "mdi-wifi-strength-3-lock-open",
-  "mdi-wifi-strength-4",
-  "mdi-wifi-strength-4-alert",
-  "mdi-wifi-strength-4-lock",
-  "mdi-wifi-strength-4-lock-open",
-  "mdi-wifi-strength-alert-outline",
-  "mdi-wifi-strength-lock-open-outline",
-  "mdi-wifi-strength-lock-outline",
-  "mdi-wifi-strength-off",
-  "mdi-wifi-strength-off-outline",
-  "mdi-wifi-strength-outline",
-  "mdi-wifi-sync",
-  "mdi-wikipedia",
-  "mdi-wind-power",
-  "mdi-wind-power-outline",
-  "mdi-wind-turbine",
-  "mdi-wind-turbine-alert",
-  "mdi-wind-turbine-check",
-  "mdi-window-close",
-  "mdi-window-closed",
-  "mdi-window-closed-variant",
-  "mdi-window-maximize",
-  "mdi-window-minimize",
-  "mdi-window-open",
-  "mdi-window-open-variant",
-  "mdi-window-restore",
-  "mdi-window-shutter",
-  "mdi-window-shutter-alert",
-  "mdi-window-shutter-auto",
-  "mdi-window-shutter-cog",
-  "mdi-window-shutter-open",
-  "mdi-window-shutter-settings",
-  "mdi-windsock",
-  "mdi-wiper",
-  "mdi-wiper-wash",
-  "mdi-wiper-wash-alert",
-  "mdi-wizard-hat",
-  "mdi-wordpress",
-  "mdi-wrap",
-  "mdi-wrap-disabled",
-  "mdi-wrench",
-  "mdi-wrench-check",
-  "mdi-wrench-check-outline",
-  "mdi-wrench-clock",
-  "mdi-wrench-clock-outline",
-  "mdi-wrench-cog",
-  "mdi-wrench-cog-outline",
-  "mdi-wrench-outline",
-  "mdi-xamarin",
-  "mdi-xml",
-  "mdi-xmpp",
-  "mdi-yahoo",
-  "mdi-yeast",
-  "mdi-yin-yang",
-  "mdi-yoga",
-  "mdi-youtube",
-  "mdi-youtube-gaming",
-  "mdi-youtube-studio",
-  "mdi-youtube-subscription",
-  "mdi-youtube-tv",
-  "mdi-yurt",
-  "mdi-z-wave",
-  "mdi-zend",
-  "mdi-zigbee",
-  "mdi-zip-box",
-  "mdi-zip-box-outline",
-  "mdi-zip-disk",
-  "mdi-zodiac-aquarius",
-  "mdi-zodiac-aries",
-  "mdi-zodiac-cancer",
-  "mdi-zodiac-capricorn",
-  "mdi-zodiac-gemini",
-  "mdi-zodiac-leo",
-  "mdi-zodiac-libra",
-  "mdi-zodiac-pisces",
-  "mdi-zodiac-sagittarius",
-  "mdi-zodiac-scorpio",
-  "mdi-zodiac-taurus",
-  "mdi-zodiac-virgo"
-]);
-
-// src/common/plugin-input-functions.ts
-var display = { $ref: "#/definitions/requiredPluginDisplayText" };
-var PLUGIN_INPUT_FUNCTION_SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  required: ["functionId", "name", "inputs"],
-  properties: {
-    functionId: { type: "string", minLength: 1, pattern: "^[a-zA-Z0-9][a-zA-Z0-9._-]*$" },
-    name: display,
-    description: display,
-    icon: { type: "string", minLength: 1 },
-    target: { type: "string", minLength: 1 },
-    inputs: {
-      type: "object",
-      additionalProperties: false,
-      minProperties: 1,
-      properties: { rotate: { enum: ["required", "optional"] }, press: { enum: ["required", "optional"] }, value: { enum: ["required", "optional"] } }
-    },
-    settings: { type: "object", additionalProperties: {
-      type: "object",
-      additionalProperties: false,
-      required: ["type", "label", "default"],
-      properties: {
-        type: { enum: ["text", "textarea", "select", "number", "switch"] },
-        label: display,
-        default: { type: ["string", "number", "boolean"] },
-        required: { type: "boolean" },
-        maxBytes: { type: "integer", minimum: 1, maximum: 24e3 },
-        min: { type: "number" },
-        max: { type: "number" },
-        step: { type: "number", exclusiveMinimum: 0 },
-        items: { type: "array", minItems: 1, maxItems: 32, items: { type: "object", additionalProperties: false, required: ["value", "title"], properties: { value: { type: "string" }, title: display } } }
-      }
-    } },
-    settingsPage: { type: "string", minLength: 1 }
-  }
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
+  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
+}) : x)(function(x) {
+  if (typeof require !== "undefined") return require.apply(this, arguments);
+  throw Error('Dynamic require of "' + x + '" is not supported');
+});
+var __commonJS = (cb, mod) => function __require2() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
-var defaultText = (value) => typeof value === "string" ? value : value.default;
-function validateInputFunctionDefinitions(functions, unitIds) {
-  const ids = /* @__PURE__ */ new Set();
-  for (const definition of functions) {
-    if (ids.has(definition.functionId)) throw new Error("Duplicate input function ID");
-    ids.add(definition.functionId);
-    if (!defaultText(definition.name).trim()) throw new Error("Empty input function name");
-    if (definition.icon && !INPUT_MDI_NAMES.has(definition.icon)) throw new Error("Unsupported input function icon");
-    if (!Object.values(definition.inputs).includes("required")) throw new Error("Input function requires a channel");
-    if (definition.target && !unitIds.has(definition.target)) throw new Error("Input function target must belong to this plugin");
-    if (definition.settingsPage && (/^[a-zA-Z]+:|^[\\/]|[?#]/.test(definition.settingsPage) || definition.settingsPage.split(/[\\/]/).some((part) => part === "..") || !definition.settingsPage.endsWith(".html"))) throw new Error("Invalid input settings page");
-    for (const [key, field] of Object.entries(definition.settings ?? {})) {
-      const resolved = {
-        ...field,
-        key,
-        label: defaultText(field.label),
-        value: field.default,
-        ...field.type === "select" ? { items: field.items.map((item) => ({ value: item.value, title: defaultText(item.title) })) } : {}
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+
+// node_modules/uri-js/dist/es5/uri.all.js
+var require_uri_all = __commonJS({
+  "node_modules/uri-js/dist/es5/uri.all.js"(exports, module) {
+    (function(global2, factory) {
+      typeof exports === "object" && typeof module !== "undefined" ? factory(exports) : typeof define === "function" && define.amd ? define(["exports"], factory) : factory(global2.URI = global2.URI || {});
+    })(exports, function(exports2) {
+      "use strict";
+      function merge() {
+        for (var _len = arguments.length, sets = Array(_len), _key = 0; _key < _len; _key++) {
+          sets[_key] = arguments[_key];
+        }
+        if (sets.length > 1) {
+          sets[0] = sets[0].slice(0, -1);
+          var xl = sets.length - 1;
+          for (var x = 1; x < xl; ++x) {
+            sets[x] = sets[x].slice(1, -1);
+          }
+          sets[xl] = sets[xl].slice(1);
+          return sets.join("");
+        } else {
+          return sets[0];
+        }
+      }
+      function subexp(str) {
+        return "(?:" + str + ")";
+      }
+      function typeOf(o) {
+        return o === void 0 ? "undefined" : o === null ? "null" : Object.prototype.toString.call(o).split(" ").pop().split("]").shift().toLowerCase();
+      }
+      function toUpperCase(str) {
+        return str.toUpperCase();
+      }
+      function toArray(obj) {
+        return obj !== void 0 && obj !== null ? obj instanceof Array ? obj : typeof obj.length !== "number" || obj.split || obj.setInterval || obj.call ? [obj] : Array.prototype.slice.call(obj) : [];
+      }
+      function assign(target, source) {
+        var obj = target;
+        if (source) {
+          for (var key in source) {
+            obj[key] = source[key];
+          }
+        }
+        return obj;
+      }
+      function buildExps(isIRI2) {
+        var ALPHA$$ = "[A-Za-z]", CR$ = "[\\x0D]", DIGIT$$ = "[0-9]", DQUOTE$$ = "[\\x22]", HEXDIG$$2 = merge(DIGIT$$, "[A-Fa-f]"), LF$$ = "[\\x0A]", SP$$ = "[\\x20]", PCT_ENCODED$2 = subexp(subexp("%[EFef]" + HEXDIG$$2 + "%" + HEXDIG$$2 + HEXDIG$$2 + "%" + HEXDIG$$2 + HEXDIG$$2) + "|" + subexp("%[89A-Fa-f]" + HEXDIG$$2 + "%" + HEXDIG$$2 + HEXDIG$$2) + "|" + subexp("%" + HEXDIG$$2 + HEXDIG$$2)), GEN_DELIMS$$ = "[\\:\\/\\?\\#\\[\\]\\@]", SUB_DELIMS$$ = "[\\!\\$\\&\\'\\(\\)\\*\\+\\,\\;\\=]", RESERVED$$ = merge(GEN_DELIMS$$, SUB_DELIMS$$), UCSCHAR$$ = isIRI2 ? "[\\xA0-\\u200D\\u2010-\\u2029\\u202F-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF]" : "[]", IPRIVATE$$ = isIRI2 ? "[\\uE000-\\uF8FF]" : "[]", UNRESERVED$$2 = merge(ALPHA$$, DIGIT$$, "[\\-\\.\\_\\~]", UCSCHAR$$), SCHEME$ = subexp(ALPHA$$ + merge(ALPHA$$, DIGIT$$, "[\\+\\-\\.]") + "*"), USERINFO$ = subexp(subexp(PCT_ENCODED$2 + "|" + merge(UNRESERVED$$2, SUB_DELIMS$$, "[\\:]")) + "*"), DEC_OCTET$ = subexp(subexp("25[0-5]") + "|" + subexp("2[0-4]" + DIGIT$$) + "|" + subexp("1" + DIGIT$$ + DIGIT$$) + "|" + subexp("[1-9]" + DIGIT$$) + "|" + DIGIT$$), DEC_OCTET_RELAXED$ = subexp(subexp("25[0-5]") + "|" + subexp("2[0-4]" + DIGIT$$) + "|" + subexp("1" + DIGIT$$ + DIGIT$$) + "|" + subexp("0?[1-9]" + DIGIT$$) + "|0?0?" + DIGIT$$), IPV4ADDRESS$ = subexp(DEC_OCTET_RELAXED$ + "\\." + DEC_OCTET_RELAXED$ + "\\." + DEC_OCTET_RELAXED$ + "\\." + DEC_OCTET_RELAXED$), H16$ = subexp(HEXDIG$$2 + "{1,4}"), LS32$ = subexp(subexp(H16$ + "\\:" + H16$) + "|" + IPV4ADDRESS$), IPV6ADDRESS1$ = subexp(subexp(H16$ + "\\:") + "{6}" + LS32$), IPV6ADDRESS2$ = subexp("\\:\\:" + subexp(H16$ + "\\:") + "{5}" + LS32$), IPV6ADDRESS3$ = subexp(subexp(H16$) + "?\\:\\:" + subexp(H16$ + "\\:") + "{4}" + LS32$), IPV6ADDRESS4$ = subexp(subexp(subexp(H16$ + "\\:") + "{0,1}" + H16$) + "?\\:\\:" + subexp(H16$ + "\\:") + "{3}" + LS32$), IPV6ADDRESS5$ = subexp(subexp(subexp(H16$ + "\\:") + "{0,2}" + H16$) + "?\\:\\:" + subexp(H16$ + "\\:") + "{2}" + LS32$), IPV6ADDRESS6$ = subexp(subexp(subexp(H16$ + "\\:") + "{0,3}" + H16$) + "?\\:\\:" + H16$ + "\\:" + LS32$), IPV6ADDRESS7$ = subexp(subexp(subexp(H16$ + "\\:") + "{0,4}" + H16$) + "?\\:\\:" + LS32$), IPV6ADDRESS8$ = subexp(subexp(subexp(H16$ + "\\:") + "{0,5}" + H16$) + "?\\:\\:" + H16$), IPV6ADDRESS9$ = subexp(subexp(subexp(H16$ + "\\:") + "{0,6}" + H16$) + "?\\:\\:"), IPV6ADDRESS$ = subexp([IPV6ADDRESS1$, IPV6ADDRESS2$, IPV6ADDRESS3$, IPV6ADDRESS4$, IPV6ADDRESS5$, IPV6ADDRESS6$, IPV6ADDRESS7$, IPV6ADDRESS8$, IPV6ADDRESS9$].join("|")), ZONEID$ = subexp(subexp(UNRESERVED$$2 + "|" + PCT_ENCODED$2) + "+"), IPV6ADDRZ$ = subexp(IPV6ADDRESS$ + "\\%25" + ZONEID$), IPV6ADDRZ_RELAXED$ = subexp(IPV6ADDRESS$ + subexp("\\%25|\\%(?!" + HEXDIG$$2 + "{2})") + ZONEID$), IPVFUTURE$ = subexp("[vV]" + HEXDIG$$2 + "+\\." + merge(UNRESERVED$$2, SUB_DELIMS$$, "[\\:]") + "+"), IP_LITERAL$ = subexp("\\[" + subexp(IPV6ADDRZ_RELAXED$ + "|" + IPV6ADDRESS$ + "|" + IPVFUTURE$) + "\\]"), REG_NAME$ = subexp(subexp(PCT_ENCODED$2 + "|" + merge(UNRESERVED$$2, SUB_DELIMS$$)) + "*"), HOST$ = subexp(IP_LITERAL$ + "|" + IPV4ADDRESS$ + "(?!" + REG_NAME$ + ")|" + REG_NAME$), PORT$ = subexp(DIGIT$$ + "*"), AUTHORITY$ = subexp(subexp(USERINFO$ + "@") + "?" + HOST$ + subexp("\\:" + PORT$) + "?"), PCHAR$ = subexp(PCT_ENCODED$2 + "|" + merge(UNRESERVED$$2, SUB_DELIMS$$, "[\\:\\@]")), SEGMENT$ = subexp(PCHAR$ + "*"), SEGMENT_NZ$ = subexp(PCHAR$ + "+"), SEGMENT_NZ_NC$ = subexp(subexp(PCT_ENCODED$2 + "|" + merge(UNRESERVED$$2, SUB_DELIMS$$, "[\\@]")) + "+"), PATH_ABEMPTY$ = subexp(subexp("\\/" + SEGMENT$) + "*"), PATH_ABSOLUTE$ = subexp("\\/" + subexp(SEGMENT_NZ$ + PATH_ABEMPTY$) + "?"), PATH_NOSCHEME$ = subexp(SEGMENT_NZ_NC$ + PATH_ABEMPTY$), PATH_ROOTLESS$ = subexp(SEGMENT_NZ$ + PATH_ABEMPTY$), PATH_EMPTY$ = "(?!" + PCHAR$ + ")", PATH$ = subexp(PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_NOSCHEME$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$), QUERY$ = subexp(subexp(PCHAR$ + "|" + merge("[\\/\\?]", IPRIVATE$$)) + "*"), FRAGMENT$ = subexp(subexp(PCHAR$ + "|[\\/\\?]") + "*"), HIER_PART$ = subexp(subexp("\\/\\/" + AUTHORITY$ + PATH_ABEMPTY$) + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$), URI$ = subexp(SCHEME$ + "\\:" + HIER_PART$ + subexp("\\?" + QUERY$) + "?" + subexp("\\#" + FRAGMENT$) + "?"), RELATIVE_PART$ = subexp(subexp("\\/\\/" + AUTHORITY$ + PATH_ABEMPTY$) + "|" + PATH_ABSOLUTE$ + "|" + PATH_NOSCHEME$ + "|" + PATH_EMPTY$), RELATIVE$ = subexp(RELATIVE_PART$ + subexp("\\?" + QUERY$) + "?" + subexp("\\#" + FRAGMENT$) + "?"), URI_REFERENCE$ = subexp(URI$ + "|" + RELATIVE$), ABSOLUTE_URI$ = subexp(SCHEME$ + "\\:" + HIER_PART$ + subexp("\\?" + QUERY$) + "?"), GENERIC_REF$ = "^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$", RELATIVE_REF$ = "^(){0}" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_NOSCHEME$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$", ABSOLUTE_REF$ = "^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?$", SAMEDOC_REF$ = "^" + subexp("\\#(" + FRAGMENT$ + ")") + "?$", AUTHORITY_REF$ = "^" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?$";
+        return {
+          NOT_SCHEME: new RegExp(merge("[^]", ALPHA$$, DIGIT$$, "[\\+\\-\\.]"), "g"),
+          NOT_USERINFO: new RegExp(merge("[^\\%\\:]", UNRESERVED$$2, SUB_DELIMS$$), "g"),
+          NOT_HOST: new RegExp(merge("[^\\%\\[\\]\\:]", UNRESERVED$$2, SUB_DELIMS$$), "g"),
+          NOT_PATH: new RegExp(merge("[^\\%\\/\\:\\@]", UNRESERVED$$2, SUB_DELIMS$$), "g"),
+          NOT_PATH_NOSCHEME: new RegExp(merge("[^\\%\\/\\@]", UNRESERVED$$2, SUB_DELIMS$$), "g"),
+          NOT_QUERY: new RegExp(merge("[^\\%]", UNRESERVED$$2, SUB_DELIMS$$, "[\\:\\@\\/\\?]", IPRIVATE$$), "g"),
+          NOT_FRAGMENT: new RegExp(merge("[^\\%]", UNRESERVED$$2, SUB_DELIMS$$, "[\\:\\@\\/\\?]"), "g"),
+          ESCAPE: new RegExp(merge("[^]", UNRESERVED$$2, SUB_DELIMS$$), "g"),
+          UNRESERVED: new RegExp(UNRESERVED$$2, "g"),
+          OTHER_CHARS: new RegExp(merge("[^\\%]", UNRESERVED$$2, RESERVED$$), "g"),
+          PCT_ENCODED: new RegExp(PCT_ENCODED$2, "g"),
+          IPV4ADDRESS: new RegExp("^(" + IPV4ADDRESS$ + ")$"),
+          IPV6ADDRESS: new RegExp("^\\[?(" + IPV6ADDRESS$ + ")" + subexp(subexp("\\%25|\\%(?!" + HEXDIG$$2 + "{2})") + "(" + ZONEID$ + ")") + "?\\]?$")
+          //RFC 6874, with relaxed parsing rules
+        };
+      }
+      var URI_PROTOCOL = buildExps(false);
+      var IRI_PROTOCOL = buildExps(true);
+      var slicedToArray = /* @__PURE__ */ function() {
+        function sliceIterator(arr, i) {
+          var _arr = [];
+          var _n = true;
+          var _d = false;
+          var _e = void 0;
+          try {
+            for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+              _arr.push(_s.value);
+              if (i && _arr.length === i) break;
+            }
+          } catch (err) {
+            _d = true;
+            _e = err;
+          } finally {
+            try {
+              if (!_n && _i["return"]) _i["return"]();
+            } finally {
+              if (_d) throw _e;
+            }
+          }
+          return _arr;
+        }
+        return function(arr, i) {
+          if (Array.isArray(arr)) {
+            return arr;
+          } else if (Symbol.iterator in Object(arr)) {
+            return sliceIterator(arr, i);
+          } else {
+            throw new TypeError("Invalid attempt to destructure non-iterable instance");
+          }
+        };
+      }();
+      var toConsumableArray = function(arr) {
+        if (Array.isArray(arr)) {
+          for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+          return arr2;
+        } else {
+          return Array.from(arr);
+        }
       };
-      validatePluginFormField(resolved);
-      if (pluginFormError({ requiredText: "invalid", tooLongText: "invalid" }, resolved, field.default)) throw new Error("Invalid input setting default");
-    }
-  }
-}
-
-// src/common/plugin-panel-model.ts
-var PANEL_LIMITS = Object.freeze({ modelBytes: 12288, items: 8, pagesPerItem: 8, actionsPerPage: 4, linesPerPage: 4, lineBytes: 240, defaultStaleAfterMs: 3e4 });
-var PLUGIN_UNIT_STATES = ["idle", "active", "attention", "success", "error", "disabled"];
-var PanelValidationError = class extends Error {
-  code;
-  constructor(code) {
-    super(code);
-    this.name = "PanelValidationError";
-    this.code = code;
-  }
-};
-var fail = (code = "panel-invalid") => {
-  throw new PanelValidationError(code);
-};
-var bytes = (value) => new TextEncoder().encode(value).byteLength;
-function object(value, allowed, required = []) {
-  if (!value || typeof value !== "object" || Array.isArray(value) || Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null) fail();
-  if (Object.keys(value).some((key) => !allowed.includes(key)) || required.some((key) => !Object.prototype.hasOwnProperty.call(value, key))) fail();
-}
-function text2(value, required = false) {
-  if (value === void 0 && !required) return;
-  if (typeof value !== "string" || value.includes("\0")) fail();
-  if (bytes(value) > PANEL_LIMITS.lineBytes) fail("panel-line-too-large");
-}
-function id(value) {
-  if (typeof value !== "string" || !value || value.includes("\0")) fail();
-}
-function integer(value, minimum = 0) {
-  if (!Number.isSafeInteger(value) || value < minimum) fail();
-}
-function timer(value) {
-  if (value === void 0) return;
-  object(value, ["since", "elapsedMs"], ["since"]);
-  integer(value.since);
-  if (value.elapsedMs !== void 0) integer(value.elapsedMs);
-}
-function bool(value) {
-  if (value !== void 0 && typeof value !== "boolean") fail();
-}
-function array(value, max) {
-  if (!Array.isArray(value) || value.length > max) fail("panel-limit-exceeded");
-}
-function unique(entries) {
-  const ids = /* @__PURE__ */ new Set();
-  for (const entry of entries) {
-    id(entry?.id);
-    if (ids.has(entry.id)) fail("panel-duplicate-id");
-    ids.add(entry.id);
-  }
-}
-function validatePanelModel(value) {
-  const model = value;
-  object(model, ["v", "layout", "noticeIcon", "notice", "defaultItem", "staleAfterMs", "pagination", "navigation", "items"], ["v", "items"]);
-  if (model.v !== 1) fail("panel-version-unsupported");
-  if (model.layout !== void 0 && model.layout !== "sessions") fail();
-  if (model.noticeIcon !== void 0 && !["power", "loading", "link-off", "inbox"].includes(model.noticeIcon)) fail();
-  if (model.pagination !== void 0) {
-    object(model.pagination, ["offset", "total"], ["offset", "total"]);
-    integer(model.pagination.offset);
-    integer(model.pagination.total, 1);
-    if (model.pagination.offset >= model.pagination.total || model.pagination.offset + (model.items?.length ?? 0) > model.pagination.total) fail();
-  }
-  if (model.notice !== null) text2(model.notice);
-  if (model.defaultItem !== void 0 && model.defaultItem !== null) id(model.defaultItem);
-  if (model.staleAfterMs !== void 0) integer(model.staleAfterMs, 1);
-  array(model.items, PANEL_LIMITS.items);
-  unique(model.items);
-  const occupiedSlots = /* @__PURE__ */ new Set();
-  for (const item of model.items) {
-    if (item.slot !== void 0) {
-      integer(item.slot, 1);
-      if (item.slot > 8 || occupiedSlots.has(item.slot)) fail();
-      occupiedSlots.add(item.slot);
-    }
-    object(item, ["id", "slot", "title", "subtitle", "activity", "state", "stateText", "badge", "timer", "pages"], ["id", "title", "state", "pages"]);
-    text2(item.title, true);
-    text2(item.subtitle);
-    text2(item.activity);
-    text2(item.stateText);
-    if (!PLUGIN_UNIT_STATES.includes(item.state)) fail();
-    if (item.badge !== void 0) integer(item.badge);
-    timer(item.timer);
-    array(item.pages, PANEL_LIMITS.pagesPerItem);
-    unique(item.pages);
-    for (const page of item.pages) {
-      object(page, ["id", "title", "layout", "timer", "lines", "progress", "actions"], ["id", "lines", "actions"]);
-      text2(page.title);
-      if (page.layout !== void 0 && page.layout !== "decision") fail();
-      timer(page.timer);
-      array(page.lines, PANEL_LIMITS.linesPerPage);
-      array(page.actions, PANEL_LIMITS.actionsPerPage);
-      unique(page.actions);
-      for (const line of page.lines) {
-        object(line, ["text", "mono", "secondary"], ["text"]);
-        text2(line.text, true);
-        bool(line.mono);
-        bool(line.secondary);
+      var maxInt = 2147483647;
+      var base = 36;
+      var tMin = 1;
+      var tMax = 26;
+      var skew = 38;
+      var damp = 700;
+      var initialBias = 72;
+      var initialN = 128;
+      var delimiter = "-";
+      var regexPunycode = /^xn--/;
+      var regexNonASCII = /[^\0-\x7E]/;
+      var regexSeparators = /[\x2E\u3002\uFF0E\uFF61]/g;
+      var errors = {
+        "overflow": "Overflow: input needs wider integers to process",
+        "not-basic": "Illegal input >= 0x80 (not a basic code point)",
+        "invalid-input": "Invalid input"
+      };
+      var baseMinusTMin = base - tMin;
+      var floor = Math.floor;
+      var stringFromCharCode = String.fromCharCode;
+      function error$1(type) {
+        throw new RangeError(errors[type]);
       }
-      if (page.progress !== void 0) {
-        if (!Array.isArray(page.progress) || page.progress.length !== 2) fail();
-        integer(page.progress[0]);
-        integer(page.progress[1]);
-        if (page.progress[0] > page.progress[1]) fail();
+      function map(array3, fn) {
+        var result = [];
+        var length = array3.length;
+        while (length--) {
+          result[length] = fn(array3[length]);
+        }
+        return result;
       }
-      for (const action of page.actions) {
-        object(action, ["id", "label", "description", "buttonLabel", "icon", "style", "confirm", "priority", "requireFullLabel", "enabled"], ["id", "label"]);
-        text2(action.label, true);
-        text2(action.description);
-        text2(action.buttonLabel);
-        if (action.icon !== void 0 && action.icon !== "open-in-new") fail();
-        if (action.buttonLabel !== void 0 && (!action.buttonLabel || action.description === void 0 || page.layout !== "decision")) fail();
-        if (action.style !== void 0 && !["normal", "primary", "danger"].includes(action.style)) fail();
-        if (action.confirm !== void 0 && action.confirm !== "hold") fail();
-        if (action.priority !== void 0 && !Number.isFinite(action.priority)) fail();
-        bool(action.requireFullLabel);
-        bool(action.enabled);
+      function mapDomain(string3, fn) {
+        var parts = string3.split("@");
+        var result = "";
+        if (parts.length > 1) {
+          result = parts[0] + "@";
+          string3 = parts[1];
+        }
+        string3 = string3.replace(regexSeparators, ".");
+        var labels = string3.split(".");
+        var encoded = map(labels, fn).join(".");
+        return result + encoded;
       }
-    }
-  }
-  if (model.defaultItem != null && !model.items.some((item) => item.id === model.defaultItem)) fail("panel-default-item-missing");
-  if (model.navigation !== void 0) {
-    const nav = model.navigation;
-    object(nav, ["token", "view", "item", "page", "action"], ["token", "view", "item"]);
-    id(nav.token);
-    if (bytes(nav.token) > 64) fail();
-    if (!["overview", "detail"].includes(nav.view)) fail();
-    const item = model.items.find((item2) => item2.id === nav.item);
-    if (nav.item !== null) {
-      id(nav.item);
-      if (!item) fail("panel-navigation-target-missing");
-    }
-    if (nav.view === "overview") {
-      if (nav.page !== void 0 || nav.action !== void 0) fail();
-    } else {
-      if (!item) fail("panel-navigation-target-missing");
-      if (nav.page !== void 0) id(nav.page);
-      const page = nav.page === void 0 ? item.pages[0] : item.pages.find((page2) => page2.id === nav.page);
-      if (nav.page !== void 0 && !page) fail("panel-navigation-target-missing");
-      if (nav.action !== void 0) {
-        id(nav.action);
-        if (!page?.actions.some((action) => action.id === nav.action)) fail("panel-navigation-target-missing");
+      function ucs2decode(string3) {
+        var output = [];
+        var counter = 0;
+        var length = string3.length;
+        while (counter < length) {
+          var value = string3.charCodeAt(counter++);
+          if (value >= 55296 && value <= 56319 && counter < length) {
+            var extra = string3.charCodeAt(counter++);
+            if ((extra & 64512) == 56320) {
+              output.push(((value & 1023) << 10) + (extra & 1023) + 65536);
+            } else {
+              output.push(value);
+              counter--;
+            }
+          } else {
+            output.push(value);
+          }
+        }
+        return output;
       }
-    }
-  }
-  let serialized;
-  try {
-    serialized = JSON.stringify(model);
-  } catch {
-    fail();
-  }
-  if (bytes(serialized) > PANEL_LIMITS.modelBytes) fail("panel-model-too-large");
-}
-function buildPanelModel(model) {
-  validatePanelModel(model);
-  return JSON.parse(JSON.stringify(model));
-}
-function resolvePluginPanelDefinition(value) {
-  object(value, ["defaultItemCount", "sessionCatalogMethod", "staleAfterMs", "exampleModel"]);
-  const defaultItemCount = value.defaultItemCount ?? 3, staleAfterMs = value.staleAfterMs ?? PANEL_LIMITS.defaultStaleAfterMs;
-  integer(defaultItemCount, 1);
-  if (defaultItemCount > PANEL_LIMITS.items) fail();
-  integer(staleAfterMs, 1);
-  if (value.exampleModel !== void 0) validatePanelModel(value.exampleModel);
-  if (value.sessionCatalogMethod !== void 0) id(value.sessionCatalogMethod);
-  return { defaultItemCount, staleAfterMs, ...value.sessionCatalogMethod ? { sessionCatalogMethod: value.sessionCatalogMethod } : {}, ...value.exampleModel ? { exampleModel: buildPanelModel(value.exampleModel) } : {} };
-}
-
-// src/common/plugin-native-data.ts
-function supportsStatusCountElementsV1(type) {
-  return type === "standard" || type === "chart";
-}
-
-// src/main/plugin/plugin-definitions-validate.ts
-import Ajv from "ajv";
-
-// src/common/plugin-panel-schema.ts
-var PANEL_DEFINITION_JSON_SCHEMA = {
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "sessionCatalogMethod": {
-      "type": "string",
-      "minLength": 1
-    },
-    "defaultItemCount": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 8
-    },
-    "staleAfterMs": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 9007199254740991
-    },
-    "exampleModel": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "v",
-        "items"
-      ],
-      "properties": {
-        "v": {
-          "const": 1
-        },
-        "notice": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^[^\\u0000]*$"
-        },
-        "defaultItem": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^[^\\u0000]*$"
-        },
-        "staleAfterMs": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 9007199254740991
-        },
-        "items": {
-          "type": "array",
-          "maxItems": 8,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "id",
-              "title",
-              "state",
-              "pages"
-            ],
-            "properties": {
-              "id": {
-                "type": "string",
-                "minLength": 1,
-                "pattern": "^[^\\u0000]*$"
-              },
-              "title": {
-                "type": "string",
-                "pattern": "^[^\\u0000]*$"
-              },
-              "subtitle": {
-                "type": "string",
-                "pattern": "^[^\\u0000]*$"
-              },
-              "state": {
-                "enum": [
-                  "idle",
-                  "active",
-                  "attention",
-                  "success",
-                  "error",
-                  "disabled"
-                ]
-              },
-              "stateText": {
-                "type": "string",
-                "pattern": "^[^\\u0000]*$"
-              },
-              "badge": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 9007199254740991
-              },
-              "timer": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "since"
-                ],
-                "properties": {
-                  "since": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 9007199254740991
-                  },
-                  "elapsedMs": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 9007199254740991
-                  }
-                }
-              },
-              "pages": {
-                "type": "array",
-                "maxItems": 8,
-                "items": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "id",
-                    "lines",
-                    "actions"
-                  ],
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "minLength": 1,
-                      "pattern": "^[^\\u0000]*$"
-                    },
-                    "title": {
-                      "type": "string",
-                      "pattern": "^[^\\u0000]*$"
-                    },
-                    "timer": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "since"
-                      ],
-                      "properties": {
-                        "since": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "maximum": 9007199254740991
-                        },
-                        "elapsedMs": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "maximum": 9007199254740991
-                        }
-                      }
-                    },
-                    "lines": {
-                      "type": "array",
-                      "maxItems": 4,
-                      "items": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "required": [
-                          "text"
-                        ],
-                        "properties": {
-                          "text": {
-                            "type": "string",
-                            "pattern": "^[^\\u0000]*$"
-                          },
-                          "mono": {
-                            "type": "boolean"
-                          },
-                          "secondary": {
-                            "type": "boolean"
-                          }
-                        }
-                      }
-                    },
-                    "progress": {
-                      "type": "array",
-                      "minItems": 2,
-                      "maxItems": 2,
-                      "items": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 9007199254740991
-                      }
-                    },
-                    "actions": {
-                      "type": "array",
-                      "maxItems": 4,
-                      "items": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "required": [
-                          "id",
-                          "label"
-                        ],
-                        "properties": {
-                          "id": {
-                            "type": "string",
-                            "minLength": 1,
-                            "pattern": "^[^\\u0000]*$"
-                          },
-                          "label": {
-                            "type": "string",
-                            "pattern": "^[^\\u0000]*$"
-                          },
-                          "style": {
-                            "enum": [
-                              "normal",
-                              "primary",
-                              "danger"
-                            ]
-                          },
-                          "confirm": {
-                            "const": "hold"
-                          },
-                          "priority": {
-                            "type": "number"
-                          },
-                          "requireFullLabel": {
-                            "type": "boolean"
-                          },
-                          "enabled": {
-                            "type": "boolean"
-                          },
-                          "description": {
-                            "type": "string",
-                            "pattern": "^[^\\u0000]*$"
-                          },
-                          "buttonLabel": {
-                            "type": "string",
-                            "pattern": "^[^\\u0000]*$",
-                            "minLength": 1
-                          },
-                          "icon": {
-                            "enum": [
-                              "open-in-new"
-                            ]
-                          }
-                        },
-                        "dependencies": {
-                          "buttonLabel": [
-                            "description"
-                          ]
-                        }
-                      }
-                    },
-                    "layout": {
-                      "const": "decision"
-                    }
-                  }
-                }
-              },
-              "activity": {
-                "type": "string",
-                "pattern": "^[^\\u0000]*$"
-              },
-              "slot": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 8
+      var ucs2encode = function ucs2encode2(array3) {
+        return String.fromCodePoint.apply(String, toConsumableArray(array3));
+      };
+      var basicToDigit = function basicToDigit2(codePoint) {
+        if (codePoint - 48 < 10) {
+          return codePoint - 22;
+        }
+        if (codePoint - 65 < 26) {
+          return codePoint - 65;
+        }
+        if (codePoint - 97 < 26) {
+          return codePoint - 97;
+        }
+        return base;
+      };
+      var digitToBasic = function digitToBasic2(digit, flag) {
+        return digit + 22 + 75 * (digit < 26) - ((flag != 0) << 5);
+      };
+      var adapt = function adapt2(delta, numPoints, firstTime) {
+        var k = 0;
+        delta = firstTime ? floor(delta / damp) : delta >> 1;
+        delta += floor(delta / numPoints);
+        for (
+          ;
+          /* no initialization */
+          delta > baseMinusTMin * tMax >> 1;
+          k += base
+        ) {
+          delta = floor(delta / baseMinusTMin);
+        }
+        return floor(k + (baseMinusTMin + 1) * delta / (delta + skew));
+      };
+      var decode = function decode2(input) {
+        var output = [];
+        var inputLength = input.length;
+        var i = 0;
+        var n = initialN;
+        var bias = initialBias;
+        var basic = input.lastIndexOf(delimiter);
+        if (basic < 0) {
+          basic = 0;
+        }
+        for (var j = 0; j < basic; ++j) {
+          if (input.charCodeAt(j) >= 128) {
+            error$1("not-basic");
+          }
+          output.push(input.charCodeAt(j));
+        }
+        for (var index = basic > 0 ? basic + 1 : 0; index < inputLength; ) {
+          var oldi = i;
+          for (
+            var w = 1, k = base;
+            ;
+            /* no condition */
+            k += base
+          ) {
+            if (index >= inputLength) {
+              error$1("invalid-input");
+            }
+            var digit = basicToDigit(input.charCodeAt(index++));
+            if (digit >= base || digit > floor((maxInt - i) / w)) {
+              error$1("overflow");
+            }
+            i += digit * w;
+            var t = k <= bias ? tMin : k >= bias + tMax ? tMax : k - bias;
+            if (digit < t) {
+              break;
+            }
+            var baseMinusT = base - t;
+            if (w > floor(maxInt / baseMinusT)) {
+              error$1("overflow");
+            }
+            w *= baseMinusT;
+          }
+          var out = output.length + 1;
+          bias = adapt(i - oldi, out, oldi == 0);
+          if (floor(i / out) > maxInt - n) {
+            error$1("overflow");
+          }
+          n += floor(i / out);
+          i %= out;
+          output.splice(i++, 0, n);
+        }
+        return String.fromCodePoint.apply(String, output);
+      };
+      var encode = function encode2(input) {
+        var output = [];
+        input = ucs2decode(input);
+        var inputLength = input.length;
+        var n = initialN;
+        var delta = 0;
+        var bias = initialBias;
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = void 0;
+        try {
+          for (var _iterator = input[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var _currentValue2 = _step.value;
+            if (_currentValue2 < 128) {
+              output.push(stringFromCharCode(_currentValue2));
+            }
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator.return) {
+              _iterator.return();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
+        }
+        var basicLength = output.length;
+        var handledCPCount = basicLength;
+        if (basicLength) {
+          output.push(delimiter);
+        }
+        while (handledCPCount < inputLength) {
+          var m = maxInt;
+          var _iteratorNormalCompletion2 = true;
+          var _didIteratorError2 = false;
+          var _iteratorError2 = void 0;
+          try {
+            for (var _iterator2 = input[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+              var currentValue = _step2.value;
+              if (currentValue >= n && currentValue < m) {
+                m = currentValue;
+              }
+            }
+          } catch (err) {
+            _didIteratorError2 = true;
+            _iteratorError2 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                _iterator2.return();
+              }
+            } finally {
+              if (_didIteratorError2) {
+                throw _iteratorError2;
               }
             }
           }
-        },
-        "pagination": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "offset",
-            "total"
-          ],
-          "properties": {
-            "offset": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 9007199254740991
-            },
-            "total": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 9007199254740991
+          var handledCPCountPlusOne = handledCPCount + 1;
+          if (m - n > floor((maxInt - delta) / handledCPCountPlusOne)) {
+            error$1("overflow");
+          }
+          delta += (m - n) * handledCPCountPlusOne;
+          n = m;
+          var _iteratorNormalCompletion3 = true;
+          var _didIteratorError3 = false;
+          var _iteratorError3 = void 0;
+          try {
+            for (var _iterator3 = input[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+              var _currentValue = _step3.value;
+              if (_currentValue < n && ++delta > maxInt) {
+                error$1("overflow");
+              }
+              if (_currentValue == n) {
+                var q = delta;
+                for (
+                  var k = base;
+                  ;
+                  /* no condition */
+                  k += base
+                ) {
+                  var t = k <= bias ? tMin : k >= bias + tMax ? tMax : k - bias;
+                  if (q < t) {
+                    break;
+                  }
+                  var qMinusT = q - t;
+                  var baseMinusT = base - t;
+                  output.push(stringFromCharCode(digitToBasic(t + qMinusT % baseMinusT, 0)));
+                  q = floor(qMinusT / baseMinusT);
+                }
+                output.push(stringFromCharCode(digitToBasic(q, 0)));
+                bias = adapt(delta, handledCPCountPlusOne, handledCPCount == basicLength);
+                delta = 0;
+                ++handledCPCount;
+              }
+            }
+          } catch (err) {
+            _didIteratorError3 = true;
+            _iteratorError3 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                _iterator3.return();
+              }
+            } finally {
+              if (_didIteratorError3) {
+                throw _iteratorError3;
+              }
             }
           }
+          ++delta;
+          ++n;
+        }
+        return output.join("");
+      };
+      var toUnicode = function toUnicode2(input) {
+        return mapDomain(input, function(string3) {
+          return regexPunycode.test(string3) ? decode(string3.slice(4).toLowerCase()) : string3;
+        });
+      };
+      var toASCII = function toASCII2(input) {
+        return mapDomain(input, function(string3) {
+          return regexNonASCII.test(string3) ? "xn--" + encode(string3) : string3;
+        });
+      };
+      var punycode = {
+        /**
+         * A string representing the current Punycode.js version number.
+         * @memberOf punycode
+         * @type String
+         */
+        "version": "2.1.0",
+        /**
+         * An object of methods to convert from JavaScript's internal character
+         * representation (UCS-2) to Unicode code points, and back.
+         * @see <https://mathiasbynens.be/notes/javascript-encoding>
+         * @memberOf punycode
+         * @type Object
+         */
+        "ucs2": {
+          "decode": ucs2decode,
+          "encode": ucs2encode
         },
-        "layout": {
-          "const": "sessions"
+        "decode": decode,
+        "encode": encode,
+        "toASCII": toASCII,
+        "toUnicode": toUnicode
+      };
+      var SCHEMES = {};
+      function pctEncChar(chr) {
+        var c = chr.charCodeAt(0);
+        var e = void 0;
+        if (c < 16) e = "%0" + c.toString(16).toUpperCase();
+        else if (c < 128) e = "%" + c.toString(16).toUpperCase();
+        else if (c < 2048) e = "%" + (c >> 6 | 192).toString(16).toUpperCase() + "%" + (c & 63 | 128).toString(16).toUpperCase();
+        else e = "%" + (c >> 12 | 224).toString(16).toUpperCase() + "%" + (c >> 6 & 63 | 128).toString(16).toUpperCase() + "%" + (c & 63 | 128).toString(16).toUpperCase();
+        return e;
+      }
+      function pctDecChars(str) {
+        var newStr = "";
+        var i = 0;
+        var il = str.length;
+        while (i < il) {
+          var c = parseInt(str.substr(i + 1, 2), 16);
+          if (c < 128) {
+            newStr += String.fromCharCode(c);
+            i += 3;
+          } else if (c >= 194 && c < 224) {
+            if (il - i >= 6) {
+              var c2 = parseInt(str.substr(i + 4, 2), 16);
+              newStr += String.fromCharCode((c & 31) << 6 | c2 & 63);
+            } else {
+              newStr += str.substr(i, 6);
+            }
+            i += 6;
+          } else if (c >= 224) {
+            if (il - i >= 9) {
+              var _c = parseInt(str.substr(i + 4, 2), 16);
+              var c3 = parseInt(str.substr(i + 7, 2), 16);
+              newStr += String.fromCharCode((c & 15) << 12 | (_c & 63) << 6 | c3 & 63);
+            } else {
+              newStr += str.substr(i, 9);
+            }
+            i += 9;
+          } else {
+            newStr += str.substr(i, 3);
+            i += 3;
+          }
+        }
+        return newStr;
+      }
+      function _normalizeComponentEncoding(components, protocol) {
+        function decodeUnreserved2(str) {
+          var decStr = pctDecChars(str);
+          return !decStr.match(protocol.UNRESERVED) ? str : decStr;
+        }
+        if (components.scheme) components.scheme = String(components.scheme).replace(protocol.PCT_ENCODED, decodeUnreserved2).toLowerCase().replace(protocol.NOT_SCHEME, "");
+        if (components.userinfo !== void 0) components.userinfo = String(components.userinfo).replace(protocol.PCT_ENCODED, decodeUnreserved2).replace(protocol.NOT_USERINFO, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
+        if (components.host !== void 0) components.host = String(components.host).replace(protocol.PCT_ENCODED, decodeUnreserved2).toLowerCase().replace(protocol.NOT_HOST, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
+        if (components.path !== void 0) components.path = String(components.path).replace(protocol.PCT_ENCODED, decodeUnreserved2).replace(components.scheme ? protocol.NOT_PATH : protocol.NOT_PATH_NOSCHEME, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
+        if (components.query !== void 0) components.query = String(components.query).replace(protocol.PCT_ENCODED, decodeUnreserved2).replace(protocol.NOT_QUERY, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
+        if (components.fragment !== void 0) components.fragment = String(components.fragment).replace(protocol.PCT_ENCODED, decodeUnreserved2).replace(protocol.NOT_FRAGMENT, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
+        return components;
+      }
+      function _stripLeadingZeros(str) {
+        return str.replace(/^0*(.*)/, "$1") || "0";
+      }
+      function _normalizeIPv4(host, protocol) {
+        var matches = host.match(protocol.IPV4ADDRESS) || [];
+        var _matches = slicedToArray(matches, 2), address = _matches[1];
+        if (address) {
+          return address.split(".").map(_stripLeadingZeros).join(".");
+        } else {
+          return host;
+        }
+      }
+      function _normalizeIPv6(host, protocol) {
+        var matches = host.match(protocol.IPV6ADDRESS) || [];
+        var _matches2 = slicedToArray(matches, 3), address = _matches2[1], zone = _matches2[2];
+        if (address) {
+          var _address$toLowerCase$ = address.toLowerCase().split("::").reverse(), _address$toLowerCase$2 = slicedToArray(_address$toLowerCase$, 2), last = _address$toLowerCase$2[0], first = _address$toLowerCase$2[1];
+          var firstFields = first ? first.split(":").map(_stripLeadingZeros) : [];
+          var lastFields = last.split(":").map(_stripLeadingZeros);
+          var isLastFieldIPv4Address = protocol.IPV4ADDRESS.test(lastFields[lastFields.length - 1]);
+          var fieldCount = isLastFieldIPv4Address ? 7 : 8;
+          var lastFieldsStart = lastFields.length - fieldCount;
+          var fields = Array(fieldCount);
+          for (var x = 0; x < fieldCount; ++x) {
+            fields[x] = firstFields[x] || lastFields[lastFieldsStart + x] || "";
+          }
+          if (isLastFieldIPv4Address) {
+            fields[fieldCount - 1] = _normalizeIPv4(fields[fieldCount - 1], protocol);
+          }
+          var allZeroFields = fields.reduce(function(acc, field, index) {
+            if (!field || field === "0") {
+              var lastLongest = acc[acc.length - 1];
+              if (lastLongest && lastLongest.index + lastLongest.length === index) {
+                lastLongest.length++;
+              } else {
+                acc.push({ index, length: 1 });
+              }
+            }
+            return acc;
+          }, []);
+          var longestZeroFields = allZeroFields.sort(function(a, b) {
+            return b.length - a.length;
+          })[0];
+          var newHost = void 0;
+          if (longestZeroFields && longestZeroFields.length > 1) {
+            var newFirst = fields.slice(0, longestZeroFields.index);
+            var newLast = fields.slice(longestZeroFields.index + longestZeroFields.length);
+            newHost = newFirst.join(":") + "::" + newLast.join(":");
+          } else {
+            newHost = fields.join(":");
+          }
+          if (zone) {
+            newHost += "%" + zone;
+          }
+          return newHost;
+        } else {
+          return host;
+        }
+      }
+      var URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?(\[[^\/?#\]]+\]|[^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n|\r)*))?/i;
+      var NO_MATCH_IS_UNDEFINED = "".match(/(){0}/)[1] === void 0;
+      function parse(uriString) {
+        var options = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
+        var components = {};
+        var protocol = options.iri !== false ? IRI_PROTOCOL : URI_PROTOCOL;
+        if (options.reference === "suffix") uriString = (options.scheme ? options.scheme + ":" : "") + "//" + uriString;
+        var matches = uriString.match(URI_PARSE);
+        if (matches) {
+          if (NO_MATCH_IS_UNDEFINED) {
+            components.scheme = matches[1];
+            components.userinfo = matches[3];
+            components.host = matches[4];
+            components.port = parseInt(matches[5], 10);
+            components.path = matches[6] || "";
+            components.query = matches[7];
+            components.fragment = matches[8];
+            if (isNaN(components.port)) {
+              components.port = matches[5];
+            }
+          } else {
+            components.scheme = matches[1] || void 0;
+            components.userinfo = uriString.indexOf("@") !== -1 ? matches[3] : void 0;
+            components.host = uriString.indexOf("//") !== -1 ? matches[4] : void 0;
+            components.port = parseInt(matches[5], 10);
+            components.path = matches[6] || "";
+            components.query = uriString.indexOf("?") !== -1 ? matches[7] : void 0;
+            components.fragment = uriString.indexOf("#") !== -1 ? matches[8] : void 0;
+            if (isNaN(components.port)) {
+              components.port = uriString.match(/\/\/(?:.|\n)*\:(?:\/|\?|\#|$)/) ? matches[4] : void 0;
+            }
+          }
+          if (components.host) {
+            components.host = _normalizeIPv6(_normalizeIPv4(components.host, protocol), protocol);
+          }
+          if (components.scheme === void 0 && components.userinfo === void 0 && components.host === void 0 && components.port === void 0 && !components.path && components.query === void 0) {
+            components.reference = "same-document";
+          } else if (components.scheme === void 0) {
+            components.reference = "relative";
+          } else if (components.fragment === void 0) {
+            components.reference = "absolute";
+          } else {
+            components.reference = "uri";
+          }
+          if (options.reference && options.reference !== "suffix" && options.reference !== components.reference) {
+            components.error = components.error || "URI is not a " + options.reference + " reference.";
+          }
+          var schemeHandler = SCHEMES[(options.scheme || components.scheme || "").toLowerCase()];
+          if (!options.unicodeSupport && (!schemeHandler || !schemeHandler.unicodeSupport)) {
+            if (components.host && (options.domainHost || schemeHandler && schemeHandler.domainHost)) {
+              try {
+                components.host = punycode.toASCII(components.host.replace(protocol.PCT_ENCODED, pctDecChars).toLowerCase());
+              } catch (e) {
+                components.error = components.error || "Host's domain name can not be converted to ASCII via punycode: " + e;
+              }
+            }
+            _normalizeComponentEncoding(components, URI_PROTOCOL);
+          } else {
+            _normalizeComponentEncoding(components, protocol);
+          }
+          if (schemeHandler && schemeHandler.parse) {
+            schemeHandler.parse(components, options);
+          }
+        } else {
+          components.error = components.error || "URI can not be parsed.";
+        }
+        return components;
+      }
+      function _recomposeAuthority(components, options) {
+        var protocol = options.iri !== false ? IRI_PROTOCOL : URI_PROTOCOL;
+        var uriTokens = [];
+        if (components.userinfo !== void 0) {
+          uriTokens.push(components.userinfo);
+          uriTokens.push("@");
+        }
+        if (components.host !== void 0) {
+          uriTokens.push(_normalizeIPv6(_normalizeIPv4(String(components.host), protocol), protocol).replace(protocol.IPV6ADDRESS, function(_, $1, $2) {
+            return "[" + $1 + ($2 ? "%25" + $2 : "") + "]";
+          }));
+        }
+        if (typeof components.port === "number" || typeof components.port === "string") {
+          uriTokens.push(":");
+          uriTokens.push(String(components.port));
+        }
+        return uriTokens.length ? uriTokens.join("") : void 0;
+      }
+      var RDS1 = /^\.\.?\//;
+      var RDS2 = /^\/\.(\/|$)/;
+      var RDS3 = /^\/\.\.(\/|$)/;
+      var RDS5 = /^\/?(?:.|\n)*?(?=\/|$)/;
+      function removeDotSegments(input) {
+        var output = [];
+        while (input.length) {
+          if (input.match(RDS1)) {
+            input = input.replace(RDS1, "");
+          } else if (input.match(RDS2)) {
+            input = input.replace(RDS2, "/");
+          } else if (input.match(RDS3)) {
+            input = input.replace(RDS3, "/");
+            output.pop();
+          } else if (input === "." || input === "..") {
+            input = "";
+          } else {
+            var im = input.match(RDS5);
+            if (im) {
+              var s = im[0];
+              input = input.slice(s.length);
+              output.push(s);
+            } else {
+              throw new Error("Unexpected dot segment condition");
+            }
+          }
+        }
+        return output.join("");
+      }
+      function serialize(components) {
+        var options = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
+        var protocol = options.iri ? IRI_PROTOCOL : URI_PROTOCOL;
+        var uriTokens = [];
+        var schemeHandler = SCHEMES[(options.scheme || components.scheme || "").toLowerCase()];
+        if (schemeHandler && schemeHandler.serialize) schemeHandler.serialize(components, options);
+        if (components.host) {
+          if (protocol.IPV6ADDRESS.test(components.host)) {
+          } else if (options.domainHost || schemeHandler && schemeHandler.domainHost) {
+            try {
+              components.host = !options.iri ? punycode.toASCII(components.host.replace(protocol.PCT_ENCODED, pctDecChars).toLowerCase()) : punycode.toUnicode(components.host);
+            } catch (e) {
+              components.error = components.error || "Host's domain name can not be converted to " + (!options.iri ? "ASCII" : "Unicode") + " via punycode: " + e;
+            }
+          }
+        }
+        _normalizeComponentEncoding(components, protocol);
+        if (options.reference !== "suffix" && components.scheme) {
+          uriTokens.push(components.scheme);
+          uriTokens.push(":");
+        }
+        var authority = _recomposeAuthority(components, options);
+        if (authority !== void 0) {
+          if (options.reference !== "suffix") {
+            uriTokens.push("//");
+          }
+          uriTokens.push(authority);
+          if (components.path && components.path.charAt(0) !== "/") {
+            uriTokens.push("/");
+          }
+        }
+        if (components.path !== void 0) {
+          var s = components.path;
+          if (!options.absolutePath && (!schemeHandler || !schemeHandler.absolutePath)) {
+            s = removeDotSegments(s);
+          }
+          if (authority === void 0) {
+            s = s.replace(/^\/\//, "/%2F");
+          }
+          uriTokens.push(s);
+        }
+        if (components.query !== void 0) {
+          uriTokens.push("?");
+          uriTokens.push(components.query);
+        }
+        if (components.fragment !== void 0) {
+          uriTokens.push("#");
+          uriTokens.push(components.fragment);
+        }
+        return uriTokens.join("");
+      }
+      function resolveComponents(base2, relative) {
+        var options = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
+        var skipNormalization = arguments[3];
+        var target = {};
+        if (!skipNormalization) {
+          base2 = parse(serialize(base2, options), options);
+          relative = parse(serialize(relative, options), options);
+        }
+        options = options || {};
+        if (!options.tolerant && relative.scheme) {
+          target.scheme = relative.scheme;
+          target.userinfo = relative.userinfo;
+          target.host = relative.host;
+          target.port = relative.port;
+          target.path = removeDotSegments(relative.path || "");
+          target.query = relative.query;
+        } else {
+          if (relative.userinfo !== void 0 || relative.host !== void 0 || relative.port !== void 0) {
+            target.userinfo = relative.userinfo;
+            target.host = relative.host;
+            target.port = relative.port;
+            target.path = removeDotSegments(relative.path || "");
+            target.query = relative.query;
+          } else {
+            if (!relative.path) {
+              target.path = base2.path;
+              if (relative.query !== void 0) {
+                target.query = relative.query;
+              } else {
+                target.query = base2.query;
+              }
+            } else {
+              if (relative.path.charAt(0) === "/") {
+                target.path = removeDotSegments(relative.path);
+              } else {
+                if ((base2.userinfo !== void 0 || base2.host !== void 0 || base2.port !== void 0) && !base2.path) {
+                  target.path = "/" + relative.path;
+                } else if (!base2.path) {
+                  target.path = relative.path;
+                } else {
+                  target.path = base2.path.slice(0, base2.path.lastIndexOf("/") + 1) + relative.path;
+                }
+                target.path = removeDotSegments(target.path);
+              }
+              target.query = relative.query;
+            }
+            target.userinfo = base2.userinfo;
+            target.host = base2.host;
+            target.port = base2.port;
+          }
+          target.scheme = base2.scheme;
+        }
+        target.fragment = relative.fragment;
+        return target;
+      }
+      function resolve(baseURI, relativeURI, options) {
+        var schemelessOptions = assign({ scheme: "null" }, options);
+        return serialize(resolveComponents(parse(baseURI, schemelessOptions), parse(relativeURI, schemelessOptions), schemelessOptions, true), schemelessOptions);
+      }
+      function normalize(uri, options) {
+        if (typeof uri === "string") {
+          uri = serialize(parse(uri, options), options);
+        } else if (typeOf(uri) === "object") {
+          uri = parse(serialize(uri, options), options);
+        }
+        return uri;
+      }
+      function equal(uriA, uriB, options) {
+        if (typeof uriA === "string") {
+          uriA = serialize(parse(uriA, options), options);
+        } else if (typeOf(uriA) === "object") {
+          uriA = serialize(uriA, options);
+        }
+        if (typeof uriB === "string") {
+          uriB = serialize(parse(uriB, options), options);
+        } else if (typeOf(uriB) === "object") {
+          uriB = serialize(uriB, options);
+        }
+        return uriA === uriB;
+      }
+      function escapeComponent(str, options) {
+        return str && str.toString().replace(!options || !options.iri ? URI_PROTOCOL.ESCAPE : IRI_PROTOCOL.ESCAPE, pctEncChar);
+      }
+      function unescapeComponent(str, options) {
+        return str && str.toString().replace(!options || !options.iri ? URI_PROTOCOL.PCT_ENCODED : IRI_PROTOCOL.PCT_ENCODED, pctDecChars);
+      }
+      var handler = {
+        scheme: "http",
+        domainHost: true,
+        parse: function parse2(components, options) {
+          if (!components.host) {
+            components.error = components.error || "HTTP URIs must have a host.";
+          }
+          return components;
         },
-        "noticeIcon": {
-          "enum": [
-            "power",
-            "loading",
-            "link-off",
-            "inbox"
+        serialize: function serialize2(components, options) {
+          var secure = String(components.scheme).toLowerCase() === "https";
+          if (components.port === (secure ? 443 : 80) || components.port === "") {
+            components.port = void 0;
+          }
+          if (!components.path) {
+            components.path = "/";
+          }
+          return components;
+        }
+      };
+      var handler$1 = {
+        scheme: "https",
+        domainHost: handler.domainHost,
+        parse: handler.parse,
+        serialize: handler.serialize
+      };
+      function isSecure(wsComponents) {
+        return typeof wsComponents.secure === "boolean" ? wsComponents.secure : String(wsComponents.scheme).toLowerCase() === "wss";
+      }
+      var handler$2 = {
+        scheme: "ws",
+        domainHost: true,
+        parse: function parse2(components, options) {
+          var wsComponents = components;
+          wsComponents.secure = isSecure(wsComponents);
+          wsComponents.resourceName = (wsComponents.path || "/") + (wsComponents.query ? "?" + wsComponents.query : "");
+          wsComponents.path = void 0;
+          wsComponents.query = void 0;
+          return wsComponents;
+        },
+        serialize: function serialize2(wsComponents, options) {
+          if (wsComponents.port === (isSecure(wsComponents) ? 443 : 80) || wsComponents.port === "") {
+            wsComponents.port = void 0;
+          }
+          if (typeof wsComponents.secure === "boolean") {
+            wsComponents.scheme = wsComponents.secure ? "wss" : "ws";
+            wsComponents.secure = void 0;
+          }
+          if (wsComponents.resourceName) {
+            var _wsComponents$resourc = wsComponents.resourceName.split("?"), _wsComponents$resourc2 = slicedToArray(_wsComponents$resourc, 2), path = _wsComponents$resourc2[0], query = _wsComponents$resourc2[1];
+            wsComponents.path = path && path !== "/" ? path : void 0;
+            wsComponents.query = query;
+            wsComponents.resourceName = void 0;
+          }
+          wsComponents.fragment = void 0;
+          return wsComponents;
+        }
+      };
+      var handler$3 = {
+        scheme: "wss",
+        domainHost: handler$2.domainHost,
+        parse: handler$2.parse,
+        serialize: handler$2.serialize
+      };
+      var O = {};
+      var isIRI = true;
+      var UNRESERVED$$ = "[A-Za-z0-9\\-\\.\\_\\~" + (isIRI ? "\\xA0-\\u200D\\u2010-\\u2029\\u202F-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF" : "") + "]";
+      var HEXDIG$$ = "[0-9A-Fa-f]";
+      var PCT_ENCODED$ = subexp(subexp("%[EFef]" + HEXDIG$$ + "%" + HEXDIG$$ + HEXDIG$$ + "%" + HEXDIG$$ + HEXDIG$$) + "|" + subexp("%[89A-Fa-f]" + HEXDIG$$ + "%" + HEXDIG$$ + HEXDIG$$) + "|" + subexp("%" + HEXDIG$$ + HEXDIG$$));
+      var ATEXT$$ = "[A-Za-z0-9\\!\\$\\%\\'\\*\\+\\-\\^\\_\\`\\{\\|\\}\\~]";
+      var QTEXT$$ = "[\\!\\$\\%\\'\\(\\)\\*\\+\\,\\-\\.0-9\\<\\>A-Z\\x5E-\\x7E]";
+      var VCHAR$$ = merge(QTEXT$$, '[\\"\\\\]');
+      var SOME_DELIMS$$ = "[\\!\\$\\'\\(\\)\\*\\+\\,\\;\\:\\@]";
+      var UNRESERVED = new RegExp(UNRESERVED$$, "g");
+      var PCT_ENCODED = new RegExp(PCT_ENCODED$, "g");
+      var NOT_LOCAL_PART = new RegExp(merge("[^]", ATEXT$$, "[\\.]", '[\\"]', VCHAR$$), "g");
+      var NOT_HFNAME = new RegExp(merge("[^]", UNRESERVED$$, SOME_DELIMS$$), "g");
+      var NOT_HFVALUE = NOT_HFNAME;
+      function decodeUnreserved(str) {
+        var decStr = pctDecChars(str);
+        return !decStr.match(UNRESERVED) ? str : decStr;
+      }
+      var handler$4 = {
+        scheme: "mailto",
+        parse: function parse$$1(components, options) {
+          var mailtoComponents = components;
+          var to = mailtoComponents.to = mailtoComponents.path ? mailtoComponents.path.split(",") : [];
+          mailtoComponents.path = void 0;
+          if (mailtoComponents.query) {
+            var unknownHeaders = false;
+            var headers = {};
+            var hfields = mailtoComponents.query.split("&");
+            for (var x = 0, xl = hfields.length; x < xl; ++x) {
+              var hfield = hfields[x].split("=");
+              switch (hfield[0]) {
+                case "to":
+                  var toAddrs = hfield[1].split(",");
+                  for (var _x = 0, _xl = toAddrs.length; _x < _xl; ++_x) {
+                    to.push(toAddrs[_x]);
+                  }
+                  break;
+                case "subject":
+                  mailtoComponents.subject = unescapeComponent(hfield[1], options);
+                  break;
+                case "body":
+                  mailtoComponents.body = unescapeComponent(hfield[1], options);
+                  break;
+                default:
+                  unknownHeaders = true;
+                  headers[unescapeComponent(hfield[0], options)] = unescapeComponent(hfield[1], options);
+                  break;
+              }
+            }
+            if (unknownHeaders) mailtoComponents.headers = headers;
+          }
+          mailtoComponents.query = void 0;
+          for (var _x2 = 0, _xl2 = to.length; _x2 < _xl2; ++_x2) {
+            var addr = to[_x2].split("@");
+            addr[0] = unescapeComponent(addr[0]);
+            if (!options.unicodeSupport) {
+              try {
+                addr[1] = punycode.toASCII(unescapeComponent(addr[1], options).toLowerCase());
+              } catch (e) {
+                mailtoComponents.error = mailtoComponents.error || "Email address's domain name can not be converted to ASCII via punycode: " + e;
+              }
+            } else {
+              addr[1] = unescapeComponent(addr[1], options).toLowerCase();
+            }
+            to[_x2] = addr.join("@");
+          }
+          return mailtoComponents;
+        },
+        serialize: function serialize$$1(mailtoComponents, options) {
+          var components = mailtoComponents;
+          var to = toArray(mailtoComponents.to);
+          if (to) {
+            for (var x = 0, xl = to.length; x < xl; ++x) {
+              var toAddr = String(to[x]);
+              var atIdx = toAddr.lastIndexOf("@");
+              var localPart = toAddr.slice(0, atIdx).replace(PCT_ENCODED, decodeUnreserved).replace(PCT_ENCODED, toUpperCase).replace(NOT_LOCAL_PART, pctEncChar);
+              var domain = toAddr.slice(atIdx + 1);
+              try {
+                domain = !options.iri ? punycode.toASCII(unescapeComponent(domain, options).toLowerCase()) : punycode.toUnicode(domain);
+              } catch (e) {
+                components.error = components.error || "Email address's domain name can not be converted to " + (!options.iri ? "ASCII" : "Unicode") + " via punycode: " + e;
+              }
+              to[x] = localPart + "@" + domain;
+            }
+            components.path = to.join(",");
+          }
+          var headers = mailtoComponents.headers = mailtoComponents.headers || {};
+          if (mailtoComponents.subject) headers["subject"] = mailtoComponents.subject;
+          if (mailtoComponents.body) headers["body"] = mailtoComponents.body;
+          var fields = [];
+          for (var name2 in headers) {
+            if (headers[name2] !== O[name2]) {
+              fields.push(name2.replace(PCT_ENCODED, decodeUnreserved).replace(PCT_ENCODED, toUpperCase).replace(NOT_HFNAME, pctEncChar) + "=" + headers[name2].replace(PCT_ENCODED, decodeUnreserved).replace(PCT_ENCODED, toUpperCase).replace(NOT_HFVALUE, pctEncChar));
+            }
+          }
+          if (fields.length) {
+            components.query = fields.join("&");
+          }
+          return components;
+        }
+      };
+      var URN_PARSE = /^([^\:]+)\:(.*)/;
+      var handler$5 = {
+        scheme: "urn",
+        parse: function parse$$1(components, options) {
+          var matches = components.path && components.path.match(URN_PARSE);
+          var urnComponents = components;
+          if (matches) {
+            var scheme = options.scheme || urnComponents.scheme || "urn";
+            var nid = matches[1].toLowerCase();
+            var nss = matches[2];
+            var urnScheme = scheme + ":" + (options.nid || nid);
+            var schemeHandler = SCHEMES[urnScheme];
+            urnComponents.nid = nid;
+            urnComponents.nss = nss;
+            urnComponents.path = void 0;
+            if (schemeHandler) {
+              urnComponents = schemeHandler.parse(urnComponents, options);
+            }
+          } else {
+            urnComponents.error = urnComponents.error || "URN can not be parsed.";
+          }
+          return urnComponents;
+        },
+        serialize: function serialize$$1(urnComponents, options) {
+          var scheme = options.scheme || urnComponents.scheme || "urn";
+          var nid = urnComponents.nid;
+          var urnScheme = scheme + ":" + (options.nid || nid);
+          var schemeHandler = SCHEMES[urnScheme];
+          if (schemeHandler) {
+            urnComponents = schemeHandler.serialize(urnComponents, options);
+          }
+          var uriComponents = urnComponents;
+          var nss = urnComponents.nss;
+          uriComponents.path = (nid || options.nid) + ":" + nss;
+          return uriComponents;
+        }
+      };
+      var UUID = /^[0-9A-Fa-f]{8}(?:\-[0-9A-Fa-f]{4}){3}\-[0-9A-Fa-f]{12}$/;
+      var handler$6 = {
+        scheme: "urn:uuid",
+        parse: function parse2(urnComponents, options) {
+          var uuidComponents = urnComponents;
+          uuidComponents.uuid = uuidComponents.nss;
+          uuidComponents.nss = void 0;
+          if (!options.tolerant && (!uuidComponents.uuid || !uuidComponents.uuid.match(UUID))) {
+            uuidComponents.error = uuidComponents.error || "UUID is not valid.";
+          }
+          return uuidComponents;
+        },
+        serialize: function serialize2(uuidComponents, options) {
+          var urnComponents = uuidComponents;
+          urnComponents.nss = (uuidComponents.uuid || "").toLowerCase();
+          return urnComponents;
+        }
+      };
+      SCHEMES[handler.scheme] = handler;
+      SCHEMES[handler$1.scheme] = handler$1;
+      SCHEMES[handler$2.scheme] = handler$2;
+      SCHEMES[handler$3.scheme] = handler$3;
+      SCHEMES[handler$4.scheme] = handler$4;
+      SCHEMES[handler$5.scheme] = handler$5;
+      SCHEMES[handler$6.scheme] = handler$6;
+      exports2.SCHEMES = SCHEMES;
+      exports2.pctEncChar = pctEncChar;
+      exports2.pctDecChars = pctDecChars;
+      exports2.parse = parse;
+      exports2.removeDotSegments = removeDotSegments;
+      exports2.serialize = serialize;
+      exports2.resolveComponents = resolveComponents;
+      exports2.resolve = resolve;
+      exports2.normalize = normalize;
+      exports2.equal = equal;
+      exports2.escapeComponent = escapeComponent;
+      exports2.unescapeComponent = unescapeComponent;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+    });
+  }
+});
+
+// node_modules/fast-deep-equal/index.js
+var require_fast_deep_equal = __commonJS({
+  "node_modules/fast-deep-equal/index.js"(exports, module) {
+    "use strict";
+    module.exports = function equal(a, b) {
+      if (a === b) return true;
+      if (a && b && typeof a == "object" && typeof b == "object") {
+        if (a.constructor !== b.constructor) return false;
+        var length, i, keys;
+        if (Array.isArray(a)) {
+          length = a.length;
+          if (length != b.length) return false;
+          for (i = length; i-- !== 0; )
+            if (!equal(a[i], b[i])) return false;
+          return true;
+        }
+        if (a.constructor === RegExp) return a.source === b.source && a.flags === b.flags;
+        if (a.valueOf !== Object.prototype.valueOf) return a.valueOf() === b.valueOf();
+        if (a.toString !== Object.prototype.toString) return a.toString() === b.toString();
+        keys = Object.keys(a);
+        length = keys.length;
+        if (length !== Object.keys(b).length) return false;
+        for (i = length; i-- !== 0; )
+          if (!Object.prototype.hasOwnProperty.call(b, keys[i])) return false;
+        for (i = length; i-- !== 0; ) {
+          var key = keys[i];
+          if (!equal(a[key], b[key])) return false;
+        }
+        return true;
+      }
+      return a !== a && b !== b;
+    };
+  }
+});
+
+// node_modules/ajv/lib/compile/ucs2length.js
+var require_ucs2length = __commonJS({
+  "node_modules/ajv/lib/compile/ucs2length.js"(exports, module) {
+    "use strict";
+    module.exports = function ucs2length(str) {
+      var length = 0, len = str.length, pos = 0, value;
+      while (pos < len) {
+        length++;
+        value = str.charCodeAt(pos++);
+        if (value >= 55296 && value <= 56319 && pos < len) {
+          value = str.charCodeAt(pos);
+          if ((value & 64512) == 56320) pos++;
+        }
+      }
+      return length;
+    };
+  }
+});
+
+// node_modules/ajv/lib/compile/util.js
+var require_util = __commonJS({
+  "node_modules/ajv/lib/compile/util.js"(exports, module) {
+    "use strict";
+    module.exports = {
+      copy,
+      checkDataType,
+      checkDataTypes,
+      coerceToTypes,
+      toHash,
+      getProperty,
+      escapeQuotes,
+      equal: require_fast_deep_equal(),
+      ucs2length: require_ucs2length(),
+      varOccurences,
+      varReplace,
+      schemaHasRules,
+      schemaHasRulesExcept,
+      schemaUnknownRules,
+      toQuotedString,
+      getPathExpr,
+      getPath,
+      getData,
+      unescapeFragment,
+      unescapeJsonPointer,
+      escapeFragment,
+      escapeJsonPointer
+    };
+    function copy(o, to) {
+      to = to || {};
+      for (var key in o) to[key] = o[key];
+      return to;
+    }
+    function checkDataType(dataType, data, strictNumbers, negate) {
+      var EQUAL = negate ? " !== " : " === ", AND = negate ? " || " : " && ", OK = negate ? "!" : "", NOT = negate ? "" : "!";
+      switch (dataType) {
+        case "null":
+          return data + EQUAL + "null";
+        case "array":
+          return OK + "Array.isArray(" + data + ")";
+        case "object":
+          return "(" + OK + data + AND + "typeof " + data + EQUAL + '"object"' + AND + NOT + "Array.isArray(" + data + "))";
+        case "integer":
+          return "(typeof " + data + EQUAL + '"number"' + AND + NOT + "(" + data + " % 1)" + AND + data + EQUAL + data + (strictNumbers ? AND + OK + "isFinite(" + data + ")" : "") + ")";
+        case "number":
+          return "(typeof " + data + EQUAL + '"' + dataType + '"' + (strictNumbers ? AND + OK + "isFinite(" + data + ")" : "") + ")";
+        default:
+          return "typeof " + data + EQUAL + '"' + dataType + '"';
+      }
+    }
+    function checkDataTypes(dataTypes, data, strictNumbers) {
+      switch (dataTypes.length) {
+        case 1:
+          return checkDataType(dataTypes[0], data, strictNumbers, true);
+        default:
+          var code = "";
+          var types = toHash(dataTypes);
+          if (types.array && types.object) {
+            code = types.null ? "(" : "(!" + data + " || ";
+            code += "typeof " + data + ' !== "object")';
+            delete types.null;
+            delete types.array;
+            delete types.object;
+          }
+          if (types.number) delete types.integer;
+          for (var t in types)
+            code += (code ? " && " : "") + checkDataType(t, data, strictNumbers, true);
+          return code;
+      }
+    }
+    var COERCE_TO_TYPES = toHash(["string", "number", "integer", "boolean", "null"]);
+    function coerceToTypes(optionCoerceTypes, dataTypes) {
+      if (Array.isArray(dataTypes)) {
+        var types = [];
+        for (var i = 0; i < dataTypes.length; i++) {
+          var t = dataTypes[i];
+          if (COERCE_TO_TYPES[t]) types[types.length] = t;
+          else if (optionCoerceTypes === "array" && t === "array") types[types.length] = t;
+        }
+        if (types.length) return types;
+      } else if (COERCE_TO_TYPES[dataTypes]) {
+        return [dataTypes];
+      } else if (optionCoerceTypes === "array" && dataTypes === "array") {
+        return ["array"];
+      }
+    }
+    function toHash(arr) {
+      var hash2 = {};
+      for (var i = 0; i < arr.length; i++) hash2[arr[i]] = true;
+      return hash2;
+    }
+    var IDENTIFIER = /^[a-z$_][a-z$_0-9]*$/i;
+    var SINGLE_QUOTE = /'|\\/g;
+    function getProperty(key) {
+      return typeof key == "number" ? "[" + key + "]" : IDENTIFIER.test(key) ? "." + key : "['" + escapeQuotes(key) + "']";
+    }
+    function escapeQuotes(str) {
+      return str.replace(SINGLE_QUOTE, "\\$&").replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\f/g, "\\f").replace(/\t/g, "\\t");
+    }
+    function varOccurences(str, dataVar) {
+      dataVar += "[^0-9]";
+      var matches = str.match(new RegExp(dataVar, "g"));
+      return matches ? matches.length : 0;
+    }
+    function varReplace(str, dataVar, expr) {
+      dataVar += "([^0-9])";
+      expr = expr.replace(/\$/g, "$$$$");
+      return str.replace(new RegExp(dataVar, "g"), expr + "$1");
+    }
+    function schemaHasRules(schema, rules) {
+      if (typeof schema == "boolean") return !schema;
+      for (var key in schema) if (rules[key]) return true;
+    }
+    function schemaHasRulesExcept(schema, rules, exceptKeyword) {
+      if (typeof schema == "boolean") return !schema && exceptKeyword != "not";
+      for (var key in schema) if (key != exceptKeyword && rules[key]) return true;
+    }
+    function schemaUnknownRules(schema, rules) {
+      if (typeof schema == "boolean") return;
+      for (var key in schema) if (!rules[key]) return key;
+    }
+    function toQuotedString(str) {
+      return "'" + escapeQuotes(str) + "'";
+    }
+    function getPathExpr(currentPath, expr, jsonPointers, isNumber) {
+      var path = jsonPointers ? "'/' + " + expr + (isNumber ? "" : ".replace(/~/g, '~0').replace(/\\//g, '~1')") : isNumber ? "'[' + " + expr + " + ']'" : "'[\\'' + " + expr + " + '\\']'";
+      return joinPaths(currentPath, path);
+    }
+    function getPath(currentPath, prop, jsonPointers) {
+      var path = jsonPointers ? toQuotedString("/" + escapeJsonPointer(prop)) : toQuotedString(getProperty(prop));
+      return joinPaths(currentPath, path);
+    }
+    var JSON_POINTER = /^\/(?:[^~]|~0|~1)*$/;
+    var RELATIVE_JSON_POINTER = /^([0-9]+)(#|\/(?:[^~]|~0|~1)*)?$/;
+    function getData($data, lvl, paths) {
+      var up, jsonPointer, data, matches;
+      if ($data === "") return "rootData";
+      if ($data[0] == "/") {
+        if (!JSON_POINTER.test($data)) throw new Error("Invalid JSON-pointer: " + $data);
+        jsonPointer = $data;
+        data = "rootData";
+      } else {
+        matches = $data.match(RELATIVE_JSON_POINTER);
+        if (!matches) throw new Error("Invalid JSON-pointer: " + $data);
+        up = +matches[1];
+        jsonPointer = matches[2];
+        if (jsonPointer == "#") {
+          if (up >= lvl) throw new Error("Cannot access property/index " + up + " levels up, current level is " + lvl);
+          return paths[lvl - up];
+        }
+        if (up > lvl) throw new Error("Cannot access data " + up + " levels up, current level is " + lvl);
+        data = "data" + (lvl - up || "");
+        if (!jsonPointer) return data;
+      }
+      var expr = data;
+      var segments = jsonPointer.split("/");
+      for (var i = 0; i < segments.length; i++) {
+        var segment = segments[i];
+        if (segment) {
+          data += getProperty(unescapeJsonPointer(segment));
+          expr += " && " + data;
+        }
+      }
+      return expr;
+    }
+    function joinPaths(a, b) {
+      if (a == '""') return b;
+      return (a + " + " + b).replace(/([^\\])' \+ '/g, "$1");
+    }
+    function unescapeFragment(str) {
+      return unescapeJsonPointer(decodeURIComponent(str));
+    }
+    function escapeFragment(str) {
+      return encodeURIComponent(escapeJsonPointer(str));
+    }
+    function escapeJsonPointer(str) {
+      return str.replace(/~/g, "~0").replace(/\//g, "~1");
+    }
+    function unescapeJsonPointer(str) {
+      return str.replace(/~1/g, "/").replace(/~0/g, "~");
+    }
+  }
+});
+
+// node_modules/ajv/lib/compile/schema_obj.js
+var require_schema_obj = __commonJS({
+  "node_modules/ajv/lib/compile/schema_obj.js"(exports, module) {
+    "use strict";
+    var util = require_util();
+    module.exports = SchemaObject;
+    function SchemaObject(obj) {
+      util.copy(obj, this);
+    }
+  }
+});
+
+// node_modules/json-schema-traverse/index.js
+var require_json_schema_traverse = __commonJS({
+  "node_modules/json-schema-traverse/index.js"(exports, module) {
+    "use strict";
+    var traverse = module.exports = function(schema, opts, cb) {
+      if (typeof opts == "function") {
+        cb = opts;
+        opts = {};
+      }
+      cb = opts.cb || cb;
+      var pre = typeof cb == "function" ? cb : cb.pre || function() {
+      };
+      var post = cb.post || function() {
+      };
+      _traverse(opts, pre, post, schema, "", schema);
+    };
+    traverse.keywords = {
+      additionalItems: true,
+      items: true,
+      contains: true,
+      additionalProperties: true,
+      propertyNames: true,
+      not: true
+    };
+    traverse.arrayKeywords = {
+      items: true,
+      allOf: true,
+      anyOf: true,
+      oneOf: true
+    };
+    traverse.propsKeywords = {
+      definitions: true,
+      properties: true,
+      patternProperties: true,
+      dependencies: true
+    };
+    traverse.skipKeywords = {
+      default: true,
+      enum: true,
+      const: true,
+      required: true,
+      maximum: true,
+      minimum: true,
+      exclusiveMaximum: true,
+      exclusiveMinimum: true,
+      multipleOf: true,
+      maxLength: true,
+      minLength: true,
+      pattern: true,
+      format: true,
+      maxItems: true,
+      minItems: true,
+      uniqueItems: true,
+      maxProperties: true,
+      minProperties: true
+    };
+    function _traverse(opts, pre, post, schema, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex) {
+      if (schema && typeof schema == "object" && !Array.isArray(schema)) {
+        pre(schema, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex);
+        for (var key in schema) {
+          var sch = schema[key];
+          if (Array.isArray(sch)) {
+            if (key in traverse.arrayKeywords) {
+              for (var i = 0; i < sch.length; i++)
+                _traverse(opts, pre, post, sch[i], jsonPtr + "/" + key + "/" + i, rootSchema, jsonPtr, key, schema, i);
+            }
+          } else if (key in traverse.propsKeywords) {
+            if (sch && typeof sch == "object") {
+              for (var prop in sch)
+                _traverse(opts, pre, post, sch[prop], jsonPtr + "/" + key + "/" + escapeJsonPtr(prop), rootSchema, jsonPtr, key, schema, prop);
+            }
+          } else if (key in traverse.keywords || opts.allKeys && !(key in traverse.skipKeywords)) {
+            _traverse(opts, pre, post, sch, jsonPtr + "/" + key, rootSchema, jsonPtr, key, schema);
+          }
+        }
+        post(schema, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex);
+      }
+    }
+    function escapeJsonPtr(str) {
+      return str.replace(/~/g, "~0").replace(/\//g, "~1");
+    }
+  }
+});
+
+// node_modules/ajv/lib/compile/resolve.js
+var require_resolve = __commonJS({
+  "node_modules/ajv/lib/compile/resolve.js"(exports, module) {
+    "use strict";
+    var URI = require_uri_all();
+    var equal = require_fast_deep_equal();
+    var util = require_util();
+    var SchemaObject = require_schema_obj();
+    var traverse = require_json_schema_traverse();
+    module.exports = resolve;
+    resolve.normalizeId = normalizeId;
+    resolve.fullPath = getFullPath;
+    resolve.url = resolveUrl;
+    resolve.ids = resolveIds;
+    resolve.inlineRef = inlineRef;
+    resolve.schema = resolveSchema;
+    function resolve(compile, root, ref2) {
+      var refVal = this._refs[ref2];
+      if (typeof refVal == "string") {
+        if (this._refs[refVal]) refVal = this._refs[refVal];
+        else return resolve.call(this, compile, root, refVal);
+      }
+      refVal = refVal || this._schemas[ref2];
+      if (refVal instanceof SchemaObject) {
+        return inlineRef(refVal.schema, this._opts.inlineRefs) ? refVal.schema : refVal.validate || this._compile(refVal);
+      }
+      var res = resolveSchema.call(this, root, ref2);
+      var schema, v, baseId;
+      if (res) {
+        schema = res.schema;
+        root = res.root;
+        baseId = res.baseId;
+      }
+      if (schema instanceof SchemaObject) {
+        v = schema.validate || compile.call(this, schema.schema, root, void 0, baseId);
+      } else if (schema !== void 0) {
+        v = inlineRef(schema, this._opts.inlineRefs) ? schema : compile.call(this, schema, root, void 0, baseId);
+      }
+      return v;
+    }
+    function resolveSchema(root, ref2) {
+      var p = URI.parse(ref2), refPath = _getFullPath(p), baseId = getFullPath(this._getId(root.schema));
+      if (Object.keys(root.schema).length === 0 || refPath !== baseId) {
+        var id3 = normalizeId(refPath);
+        var refVal = this._refs[id3];
+        if (typeof refVal == "string") {
+          return resolveRecursive.call(this, root, refVal, p);
+        } else if (refVal instanceof SchemaObject) {
+          if (!refVal.validate) this._compile(refVal);
+          root = refVal;
+        } else {
+          refVal = this._schemas[id3];
+          if (refVal instanceof SchemaObject) {
+            if (!refVal.validate) this._compile(refVal);
+            if (id3 == normalizeId(ref2))
+              return { schema: refVal, root, baseId };
+            root = refVal;
+          } else {
+            return;
+          }
+        }
+        if (!root.schema) return;
+        baseId = getFullPath(this._getId(root.schema));
+      }
+      return getJsonPointer.call(this, p, baseId, root.schema, root);
+    }
+    function resolveRecursive(root, ref2, parsedRef) {
+      var res = resolveSchema.call(this, root, ref2);
+      if (res) {
+        var schema = res.schema;
+        var baseId = res.baseId;
+        root = res.root;
+        var id3 = this._getId(schema);
+        if (id3) baseId = resolveUrl(baseId, id3);
+        return getJsonPointer.call(this, parsedRef, baseId, schema, root);
+      }
+    }
+    var PREVENT_SCOPE_CHANGE = util.toHash(["properties", "patternProperties", "enum", "dependencies", "definitions"]);
+    function getJsonPointer(parsedRef, baseId, schema, root) {
+      parsedRef.fragment = parsedRef.fragment || "";
+      if (parsedRef.fragment.slice(0, 1) != "/") return;
+      var parts = parsedRef.fragment.split("/");
+      for (var i = 1; i < parts.length; i++) {
+        var part = parts[i];
+        if (part) {
+          part = util.unescapeFragment(part);
+          schema = schema[part];
+          if (schema === void 0) break;
+          var id3;
+          if (!PREVENT_SCOPE_CHANGE[part]) {
+            id3 = this._getId(schema);
+            if (id3) baseId = resolveUrl(baseId, id3);
+            if (schema.$ref) {
+              var $ref = resolveUrl(baseId, schema.$ref);
+              var res = resolveSchema.call(this, root, $ref);
+              if (res) {
+                schema = res.schema;
+                root = res.root;
+                baseId = res.baseId;
+              }
+            }
+          }
+        }
+      }
+      if (schema !== void 0 && schema !== root.schema)
+        return { schema, root, baseId };
+    }
+    var SIMPLE_INLINED = util.toHash([
+      "type",
+      "format",
+      "pattern",
+      "maxLength",
+      "minLength",
+      "maxProperties",
+      "minProperties",
+      "maxItems",
+      "minItems",
+      "maximum",
+      "minimum",
+      "uniqueItems",
+      "multipleOf",
+      "required",
+      "enum"
+    ]);
+    function inlineRef(schema, limit) {
+      if (limit === false) return false;
+      if (limit === void 0 || limit === true) return checkNoRef(schema);
+      else if (limit) return countKeys(schema) <= limit;
+    }
+    function checkNoRef(schema) {
+      var item;
+      if (Array.isArray(schema)) {
+        for (var i = 0; i < schema.length; i++) {
+          item = schema[i];
+          if (typeof item == "object" && !checkNoRef(item)) return false;
+        }
+      } else {
+        for (var key in schema) {
+          if (key == "$ref") return false;
+          item = schema[key];
+          if (typeof item == "object" && !checkNoRef(item)) return false;
+        }
+      }
+      return true;
+    }
+    function countKeys(schema) {
+      var count = 0, item;
+      if (Array.isArray(schema)) {
+        for (var i = 0; i < schema.length; i++) {
+          item = schema[i];
+          if (typeof item == "object") count += countKeys(item);
+          if (count == Infinity) return Infinity;
+        }
+      } else {
+        for (var key in schema) {
+          if (key == "$ref") return Infinity;
+          if (SIMPLE_INLINED[key]) {
+            count++;
+          } else {
+            item = schema[key];
+            if (typeof item == "object") count += countKeys(item) + 1;
+            if (count == Infinity) return Infinity;
+          }
+        }
+      }
+      return count;
+    }
+    function getFullPath(id3, normalize) {
+      if (normalize !== false) id3 = normalizeId(id3);
+      var p = URI.parse(id3);
+      return _getFullPath(p);
+    }
+    function _getFullPath(p) {
+      return URI.serialize(p).split("#")[0] + "#";
+    }
+    var TRAILING_SLASH_HASH = /#\/?$/;
+    function normalizeId(id3) {
+      return id3 ? id3.replace(TRAILING_SLASH_HASH, "") : "";
+    }
+    function resolveUrl(baseId, id3) {
+      id3 = normalizeId(id3);
+      return URI.resolve(baseId, id3);
+    }
+    function resolveIds(schema) {
+      var schemaId = normalizeId(this._getId(schema));
+      var baseIds = { "": schemaId };
+      var fullPaths = { "": getFullPath(schemaId, false) };
+      var localRefs = {};
+      var self2 = this;
+      traverse(schema, { allKeys: true }, function(sch, jsonPtr, rootSchema, parentJsonPtr, parentKeyword, parentSchema, keyIndex) {
+        if (jsonPtr === "") return;
+        var id3 = self2._getId(sch);
+        var baseId = baseIds[parentJsonPtr];
+        var fullPath = fullPaths[parentJsonPtr] + "/" + parentKeyword;
+        if (keyIndex !== void 0)
+          fullPath += "/" + (typeof keyIndex == "number" ? keyIndex : util.escapeFragment(keyIndex));
+        if (typeof id3 == "string") {
+          id3 = baseId = normalizeId(baseId ? URI.resolve(baseId, id3) : id3);
+          var refVal = self2._refs[id3];
+          if (typeof refVal == "string") refVal = self2._refs[refVal];
+          if (refVal && refVal.schema) {
+            if (!equal(sch, refVal.schema))
+              throw new Error('id "' + id3 + '" resolves to more than one schema');
+          } else if (id3 != normalizeId(fullPath)) {
+            if (id3[0] == "#") {
+              if (localRefs[id3] && !equal(sch, localRefs[id3]))
+                throw new Error('id "' + id3 + '" resolves to more than one schema');
+              localRefs[id3] = sch;
+            } else {
+              self2._refs[id3] = fullPath;
+            }
+          }
+        }
+        baseIds[jsonPtr] = baseId;
+        fullPaths[jsonPtr] = fullPath;
+      });
+      return localRefs;
+    }
+  }
+});
+
+// node_modules/ajv/lib/compile/error_classes.js
+var require_error_classes = __commonJS({
+  "node_modules/ajv/lib/compile/error_classes.js"(exports, module) {
+    "use strict";
+    var resolve = require_resolve();
+    module.exports = {
+      Validation: errorSubclass(ValidationError),
+      MissingRef: errorSubclass(MissingRefError)
+    };
+    function ValidationError(errors) {
+      this.message = "validation failed";
+      this.errors = errors;
+      this.ajv = this.validation = true;
+    }
+    MissingRefError.message = function(baseId, ref2) {
+      return "can't resolve reference " + ref2 + " from id " + baseId;
+    };
+    function MissingRefError(baseId, ref2, message) {
+      this.message = message || MissingRefError.message(baseId, ref2);
+      this.missingRef = resolve.url(baseId, ref2);
+      this.missingSchema = resolve.normalizeId(resolve.fullPath(this.missingRef));
+    }
+    function errorSubclass(Subclass) {
+      Subclass.prototype = Object.create(Error.prototype);
+      Subclass.prototype.constructor = Subclass;
+      return Subclass;
+    }
+  }
+});
+
+// node_modules/fast-json-stable-stringify/index.js
+var require_fast_json_stable_stringify = __commonJS({
+  "node_modules/fast-json-stable-stringify/index.js"(exports, module) {
+    "use strict";
+    module.exports = function(data, opts) {
+      if (!opts) opts = {};
+      if (typeof opts === "function") opts = { cmp: opts };
+      var cycles = typeof opts.cycles === "boolean" ? opts.cycles : false;
+      var cmp = opts.cmp && /* @__PURE__ */ function(f) {
+        return function(node) {
+          return function(a, b) {
+            var aobj = { key: a, value: node[a] };
+            var bobj = { key: b, value: node[b] };
+            return f(aobj, bobj);
+          };
+        };
+      }(opts.cmp);
+      var seen = [];
+      return function stringify(node) {
+        if (node && node.toJSON && typeof node.toJSON === "function") {
+          node = node.toJSON();
+        }
+        if (node === void 0) return;
+        if (typeof node == "number") return isFinite(node) ? "" + node : "null";
+        if (typeof node !== "object") return JSON.stringify(node);
+        var i, out;
+        if (Array.isArray(node)) {
+          out = "[";
+          for (i = 0; i < node.length; i++) {
+            if (i) out += ",";
+            out += stringify(node[i]) || "null";
+          }
+          return out + "]";
+        }
+        if (node === null) return "null";
+        if (seen.indexOf(node) !== -1) {
+          if (cycles) return JSON.stringify("__cycle__");
+          throw new TypeError("Converting circular structure to JSON");
+        }
+        var seenIndex = seen.push(node) - 1;
+        var keys = Object.keys(node).sort(cmp && cmp(node));
+        out = "";
+        for (i = 0; i < keys.length; i++) {
+          var key = keys[i];
+          var value = stringify(node[key]);
+          if (!value) continue;
+          if (out) out += ",";
+          out += JSON.stringify(key) + ":" + value;
+        }
+        seen.splice(seenIndex, 1);
+        return "{" + out + "}";
+      }(data);
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/validate.js
+var require_validate = __commonJS({
+  "node_modules/ajv/lib/dotjs/validate.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_validate(it, $keyword, $ruleType) {
+      var out = "";
+      var $async = it.schema.$async === true, $refKeywords = it.util.schemaHasRulesExcept(it.schema, it.RULES.all, "$ref"), $id = it.self._getId(it.schema);
+      if (it.opts.strictKeywords) {
+        var $unknownKwd = it.util.schemaUnknownRules(it.schema, it.RULES.keywords);
+        if ($unknownKwd) {
+          var $keywordsMsg = "unknown keyword: " + $unknownKwd;
+          if (it.opts.strictKeywords === "log") it.logger.warn($keywordsMsg);
+          else throw new Error($keywordsMsg);
+        }
+      }
+      if (it.isTop) {
+        out += " var validate = ";
+        if ($async) {
+          it.async = true;
+          out += "async ";
+        }
+        out += "function(data, dataPath, parentData, parentDataProperty, rootData) { 'use strict'; ";
+        if ($id && (it.opts.sourceCode || it.opts.processCode)) {
+          out += " " + ("/*# sourceURL=" + $id + " */") + " ";
+        }
+      }
+      if (typeof it.schema == "boolean" || !($refKeywords || it.schema.$ref)) {
+        var $keyword = "false schema";
+        var $lvl = it.level;
+        var $dataLvl = it.dataLevel;
+        var $schema = it.schema[$keyword];
+        var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+        var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+        var $breakOnError = !it.opts.allErrors;
+        var $errorKeyword;
+        var $data = "data" + ($dataLvl || "");
+        var $valid = "valid" + $lvl;
+        if (it.schema === false) {
+          if (it.isTop) {
+            $breakOnError = true;
+          } else {
+            out += " var " + $valid + " = false; ";
+          }
+          var $$outStack = $$outStack || [];
+          $$outStack.push(out);
+          out = "";
+          if (it.createErrors !== false) {
+            out += " { keyword: '" + ($errorKeyword || "false schema") + "' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: {} ";
+            if (it.opts.messages !== false) {
+              out += " , message: 'boolean schema is false' ";
+            }
+            if (it.opts.verbose) {
+              out += " , schema: false , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+            }
+            out += " } ";
+          } else {
+            out += " {} ";
+          }
+          var __err = out;
+          out = $$outStack.pop();
+          if (!it.compositeRule && $breakOnError) {
+            if (it.async) {
+              out += " throw new ValidationError([" + __err + "]); ";
+            } else {
+              out += " validate.errors = [" + __err + "]; return false; ";
+            }
+          } else {
+            out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+          }
+        } else {
+          if (it.isTop) {
+            if ($async) {
+              out += " return data; ";
+            } else {
+              out += " validate.errors = null; return true; ";
+            }
+          } else {
+            out += " var " + $valid + " = true; ";
+          }
+        }
+        if (it.isTop) {
+          out += " }; return validate; ";
+        }
+        return out;
+      }
+      if (it.isTop) {
+        var $top = it.isTop, $lvl = it.level = 0, $dataLvl = it.dataLevel = 0, $data = "data";
+        it.rootId = it.resolve.fullPath(it.self._getId(it.root.schema));
+        it.baseId = it.baseId || it.rootId;
+        delete it.isTop;
+        it.dataPathArr = [""];
+        if (it.schema.default !== void 0 && it.opts.useDefaults && it.opts.strictDefaults) {
+          var $defaultMsg = "default is ignored in the schema root";
+          if (it.opts.strictDefaults === "log") it.logger.warn($defaultMsg);
+          else throw new Error($defaultMsg);
+        }
+        out += " var vErrors = null; ";
+        out += " var errors = 0;     ";
+        out += " if (rootData === undefined) rootData = data; ";
+      } else {
+        var $lvl = it.level, $dataLvl = it.dataLevel, $data = "data" + ($dataLvl || "");
+        if ($id) it.baseId = it.resolve.url(it.baseId, $id);
+        if ($async && !it.async) throw new Error("async schema in sync schema");
+        out += " var errs_" + $lvl + " = errors;";
+      }
+      var $valid = "valid" + $lvl, $breakOnError = !it.opts.allErrors, $closingBraces1 = "", $closingBraces2 = "";
+      var $errorKeyword;
+      var $typeSchema = it.schema.type, $typeIsArray = Array.isArray($typeSchema);
+      if ($typeSchema && it.opts.nullable && it.schema.nullable === true) {
+        if ($typeIsArray) {
+          if ($typeSchema.indexOf("null") == -1) $typeSchema = $typeSchema.concat("null");
+        } else if ($typeSchema != "null") {
+          $typeSchema = [$typeSchema, "null"];
+          $typeIsArray = true;
+        }
+      }
+      if ($typeIsArray && $typeSchema.length == 1) {
+        $typeSchema = $typeSchema[0];
+        $typeIsArray = false;
+      }
+      if (it.schema.$ref && $refKeywords) {
+        if (it.opts.extendRefs == "fail") {
+          throw new Error('$ref: validation keywords used in schema at path "' + it.errSchemaPath + '" (see option extendRefs)');
+        } else if (it.opts.extendRefs !== true) {
+          $refKeywords = false;
+          it.logger.warn('$ref: keywords ignored in schema at path "' + it.errSchemaPath + '"');
+        }
+      }
+      if (it.schema.$comment && it.opts.$comment) {
+        out += " " + it.RULES.all.$comment.code(it, "$comment");
+      }
+      if ($typeSchema) {
+        if (it.opts.coerceTypes) {
+          var $coerceToTypes = it.util.coerceToTypes(it.opts.coerceTypes, $typeSchema);
+        }
+        var $rulesGroup = it.RULES.types[$typeSchema];
+        if ($coerceToTypes || $typeIsArray || $rulesGroup === true || $rulesGroup && !$shouldUseGroup($rulesGroup)) {
+          var $schemaPath = it.schemaPath + ".type", $errSchemaPath = it.errSchemaPath + "/type";
+          var $schemaPath = it.schemaPath + ".type", $errSchemaPath = it.errSchemaPath + "/type", $method = $typeIsArray ? "checkDataTypes" : "checkDataType";
+          out += " if (" + it.util[$method]($typeSchema, $data, it.opts.strictNumbers, true) + ") { ";
+          if ($coerceToTypes) {
+            var $dataType = "dataType" + $lvl, $coerced = "coerced" + $lvl;
+            out += " var " + $dataType + " = typeof " + $data + "; var " + $coerced + " = undefined; ";
+            if (it.opts.coerceTypes == "array") {
+              out += " if (" + $dataType + " == 'object' && Array.isArray(" + $data + ") && " + $data + ".length == 1) { " + $data + " = " + $data + "[0]; " + $dataType + " = typeof " + $data + "; if (" + it.util.checkDataType(it.schema.type, $data, it.opts.strictNumbers) + ") " + $coerced + " = " + $data + "; } ";
+            }
+            out += " if (" + $coerced + " !== undefined) ; ";
+            var arr1 = $coerceToTypes;
+            if (arr1) {
+              var $type, $i = -1, l1 = arr1.length - 1;
+              while ($i < l1) {
+                $type = arr1[$i += 1];
+                if ($type == "string") {
+                  out += " else if (" + $dataType + " == 'number' || " + $dataType + " == 'boolean') " + $coerced + " = '' + " + $data + "; else if (" + $data + " === null) " + $coerced + " = ''; ";
+                } else if ($type == "number" || $type == "integer") {
+                  out += " else if (" + $dataType + " == 'boolean' || " + $data + " === null || (" + $dataType + " == 'string' && " + $data + " && " + $data + " == +" + $data + " ";
+                  if ($type == "integer") {
+                    out += " && !(" + $data + " % 1)";
+                  }
+                  out += ")) " + $coerced + " = +" + $data + "; ";
+                } else if ($type == "boolean") {
+                  out += " else if (" + $data + " === 'false' || " + $data + " === 0 || " + $data + " === null) " + $coerced + " = false; else if (" + $data + " === 'true' || " + $data + " === 1) " + $coerced + " = true; ";
+                } else if ($type == "null") {
+                  out += " else if (" + $data + " === '' || " + $data + " === 0 || " + $data + " === false) " + $coerced + " = null; ";
+                } else if (it.opts.coerceTypes == "array" && $type == "array") {
+                  out += " else if (" + $dataType + " == 'string' || " + $dataType + " == 'number' || " + $dataType + " == 'boolean' || " + $data + " == null) " + $coerced + " = [" + $data + "]; ";
+                }
+              }
+            }
+            out += " else {   ";
+            var $$outStack = $$outStack || [];
+            $$outStack.push(out);
+            out = "";
+            if (it.createErrors !== false) {
+              out += " { keyword: '" + ($errorKeyword || "type") + "' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { type: '";
+              if ($typeIsArray) {
+                out += "" + $typeSchema.join(",");
+              } else {
+                out += "" + $typeSchema;
+              }
+              out += "' } ";
+              if (it.opts.messages !== false) {
+                out += " , message: 'should be ";
+                if ($typeIsArray) {
+                  out += "" + $typeSchema.join(",");
+                } else {
+                  out += "" + $typeSchema;
+                }
+                out += "' ";
+              }
+              if (it.opts.verbose) {
+                out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+              }
+              out += " } ";
+            } else {
+              out += " {} ";
+            }
+            var __err = out;
+            out = $$outStack.pop();
+            if (!it.compositeRule && $breakOnError) {
+              if (it.async) {
+                out += " throw new ValidationError([" + __err + "]); ";
+              } else {
+                out += " validate.errors = [" + __err + "]; return false; ";
+              }
+            } else {
+              out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+            }
+            out += " } if (" + $coerced + " !== undefined) {  ";
+            var $parentData = $dataLvl ? "data" + ($dataLvl - 1 || "") : "parentData", $parentDataProperty = $dataLvl ? it.dataPathArr[$dataLvl] : "parentDataProperty";
+            out += " " + $data + " = " + $coerced + "; ";
+            if (!$dataLvl) {
+              out += "if (" + $parentData + " !== undefined)";
+            }
+            out += " " + $parentData + "[" + $parentDataProperty + "] = " + $coerced + "; } ";
+          } else {
+            var $$outStack = $$outStack || [];
+            $$outStack.push(out);
+            out = "";
+            if (it.createErrors !== false) {
+              out += " { keyword: '" + ($errorKeyword || "type") + "' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { type: '";
+              if ($typeIsArray) {
+                out += "" + $typeSchema.join(",");
+              } else {
+                out += "" + $typeSchema;
+              }
+              out += "' } ";
+              if (it.opts.messages !== false) {
+                out += " , message: 'should be ";
+                if ($typeIsArray) {
+                  out += "" + $typeSchema.join(",");
+                } else {
+                  out += "" + $typeSchema;
+                }
+                out += "' ";
+              }
+              if (it.opts.verbose) {
+                out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+              }
+              out += " } ";
+            } else {
+              out += " {} ";
+            }
+            var __err = out;
+            out = $$outStack.pop();
+            if (!it.compositeRule && $breakOnError) {
+              if (it.async) {
+                out += " throw new ValidationError([" + __err + "]); ";
+              } else {
+                out += " validate.errors = [" + __err + "]; return false; ";
+              }
+            } else {
+              out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+            }
+          }
+          out += " } ";
+        }
+      }
+      if (it.schema.$ref && !$refKeywords) {
+        out += " " + it.RULES.all.$ref.code(it, "$ref") + " ";
+        if ($breakOnError) {
+          out += " } if (errors === ";
+          if ($top) {
+            out += "0";
+          } else {
+            out += "errs_" + $lvl;
+          }
+          out += ") { ";
+          $closingBraces2 += "}";
+        }
+      } else {
+        var arr2 = it.RULES;
+        if (arr2) {
+          var $rulesGroup, i2 = -1, l2 = arr2.length - 1;
+          while (i2 < l2) {
+            $rulesGroup = arr2[i2 += 1];
+            if ($shouldUseGroup($rulesGroup)) {
+              if ($rulesGroup.type) {
+                out += " if (" + it.util.checkDataType($rulesGroup.type, $data, it.opts.strictNumbers) + ") { ";
+              }
+              if (it.opts.useDefaults) {
+                if ($rulesGroup.type == "object" && it.schema.properties) {
+                  var $schema = it.schema.properties, $schemaKeys = Object.keys($schema);
+                  var arr3 = $schemaKeys;
+                  if (arr3) {
+                    var $propertyKey, i3 = -1, l3 = arr3.length - 1;
+                    while (i3 < l3) {
+                      $propertyKey = arr3[i3 += 1];
+                      var $sch = $schema[$propertyKey];
+                      if ($sch.default !== void 0) {
+                        var $passData = $data + it.util.getProperty($propertyKey);
+                        if (it.compositeRule) {
+                          if (it.opts.strictDefaults) {
+                            var $defaultMsg = "default is ignored for: " + $passData;
+                            if (it.opts.strictDefaults === "log") it.logger.warn($defaultMsg);
+                            else throw new Error($defaultMsg);
+                          }
+                        } else {
+                          out += " if (" + $passData + " === undefined ";
+                          if (it.opts.useDefaults == "empty") {
+                            out += " || " + $passData + " === null || " + $passData + " === '' ";
+                          }
+                          out += " ) " + $passData + " = ";
+                          if (it.opts.useDefaults == "shared") {
+                            out += " " + it.useDefault($sch.default) + " ";
+                          } else {
+                            out += " " + JSON.stringify($sch.default) + " ";
+                          }
+                          out += "; ";
+                        }
+                      }
+                    }
+                  }
+                } else if ($rulesGroup.type == "array" && Array.isArray(it.schema.items)) {
+                  var arr4 = it.schema.items;
+                  if (arr4) {
+                    var $sch, $i = -1, l4 = arr4.length - 1;
+                    while ($i < l4) {
+                      $sch = arr4[$i += 1];
+                      if ($sch.default !== void 0) {
+                        var $passData = $data + "[" + $i + "]";
+                        if (it.compositeRule) {
+                          if (it.opts.strictDefaults) {
+                            var $defaultMsg = "default is ignored for: " + $passData;
+                            if (it.opts.strictDefaults === "log") it.logger.warn($defaultMsg);
+                            else throw new Error($defaultMsg);
+                          }
+                        } else {
+                          out += " if (" + $passData + " === undefined ";
+                          if (it.opts.useDefaults == "empty") {
+                            out += " || " + $passData + " === null || " + $passData + " === '' ";
+                          }
+                          out += " ) " + $passData + " = ";
+                          if (it.opts.useDefaults == "shared") {
+                            out += " " + it.useDefault($sch.default) + " ";
+                          } else {
+                            out += " " + JSON.stringify($sch.default) + " ";
+                          }
+                          out += "; ";
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              var arr5 = $rulesGroup.rules;
+              if (arr5) {
+                var $rule, i5 = -1, l5 = arr5.length - 1;
+                while (i5 < l5) {
+                  $rule = arr5[i5 += 1];
+                  if ($shouldUseRule($rule)) {
+                    var $code = $rule.code(it, $rule.keyword, $rulesGroup.type);
+                    if ($code) {
+                      out += " " + $code + " ";
+                      if ($breakOnError) {
+                        $closingBraces1 += "}";
+                      }
+                    }
+                  }
+                }
+              }
+              if ($breakOnError) {
+                out += " " + $closingBraces1 + " ";
+                $closingBraces1 = "";
+              }
+              if ($rulesGroup.type) {
+                out += " } ";
+                if ($typeSchema && $typeSchema === $rulesGroup.type && !$coerceToTypes) {
+                  out += " else { ";
+                  var $schemaPath = it.schemaPath + ".type", $errSchemaPath = it.errSchemaPath + "/type";
+                  var $$outStack = $$outStack || [];
+                  $$outStack.push(out);
+                  out = "";
+                  if (it.createErrors !== false) {
+                    out += " { keyword: '" + ($errorKeyword || "type") + "' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { type: '";
+                    if ($typeIsArray) {
+                      out += "" + $typeSchema.join(",");
+                    } else {
+                      out += "" + $typeSchema;
+                    }
+                    out += "' } ";
+                    if (it.opts.messages !== false) {
+                      out += " , message: 'should be ";
+                      if ($typeIsArray) {
+                        out += "" + $typeSchema.join(",");
+                      } else {
+                        out += "" + $typeSchema;
+                      }
+                      out += "' ";
+                    }
+                    if (it.opts.verbose) {
+                      out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+                    }
+                    out += " } ";
+                  } else {
+                    out += " {} ";
+                  }
+                  var __err = out;
+                  out = $$outStack.pop();
+                  if (!it.compositeRule && $breakOnError) {
+                    if (it.async) {
+                      out += " throw new ValidationError([" + __err + "]); ";
+                    } else {
+                      out += " validate.errors = [" + __err + "]; return false; ";
+                    }
+                  } else {
+                    out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+                  }
+                  out += " } ";
+                }
+              }
+              if ($breakOnError) {
+                out += " if (errors === ";
+                if ($top) {
+                  out += "0";
+                } else {
+                  out += "errs_" + $lvl;
+                }
+                out += ") { ";
+                $closingBraces2 += "}";
+              }
+            }
+          }
+        }
+      }
+      if ($breakOnError) {
+        out += " " + $closingBraces2 + " ";
+      }
+      if ($top) {
+        if ($async) {
+          out += " if (errors === 0) return data;           ";
+          out += " else throw new ValidationError(vErrors); ";
+        } else {
+          out += " validate.errors = vErrors; ";
+          out += " return errors === 0;       ";
+        }
+        out += " }; return validate;";
+      } else {
+        out += " var " + $valid + " = errors === errs_" + $lvl + ";";
+      }
+      function $shouldUseGroup($rulesGroup2) {
+        var rules = $rulesGroup2.rules;
+        for (var i = 0; i < rules.length; i++)
+          if ($shouldUseRule(rules[i])) return true;
+      }
+      function $shouldUseRule($rule2) {
+        return it.schema[$rule2.keyword] !== void 0 || $rule2.implements && $ruleImplementsSomeKeyword($rule2);
+      }
+      function $ruleImplementsSomeKeyword($rule2) {
+        var impl = $rule2.implements;
+        for (var i = 0; i < impl.length; i++)
+          if (it.schema[impl[i]] !== void 0) return true;
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/compile/index.js
+var require_compile = __commonJS({
+  "node_modules/ajv/lib/compile/index.js"(exports, module) {
+    "use strict";
+    var resolve = require_resolve();
+    var util = require_util();
+    var errorClasses = require_error_classes();
+    var stableStringify = require_fast_json_stable_stringify();
+    var validateGenerator = require_validate();
+    var ucs2length = util.ucs2length;
+    var equal = require_fast_deep_equal();
+    var ValidationError = errorClasses.Validation;
+    module.exports = compile;
+    function compile(schema, root, localRefs, baseId) {
+      var self2 = this, opts = this._opts, refVal = [void 0], refs = {}, patterns = [], patternsHash = {}, defaults = [], defaultsHash = {}, customRules = [];
+      root = root || { schema, refVal, refs };
+      var c = checkCompiling.call(this, schema, root, baseId);
+      var compilation = this._compilations[c.index];
+      if (c.compiling) return compilation.callValidate = callValidate;
+      var formats = this._formats;
+      var RULES = this.RULES;
+      try {
+        var v = localCompile(schema, root, localRefs, baseId);
+        compilation.validate = v;
+        var cv = compilation.callValidate;
+        if (cv) {
+          cv.schema = v.schema;
+          cv.errors = null;
+          cv.refs = v.refs;
+          cv.refVal = v.refVal;
+          cv.root = v.root;
+          cv.$async = v.$async;
+          if (opts.sourceCode) cv.source = v.source;
+        }
+        return v;
+      } finally {
+        endCompiling.call(this, schema, root, baseId);
+      }
+      function callValidate() {
+        var validate = compilation.validate;
+        var result = validate.apply(this, arguments);
+        callValidate.errors = validate.errors;
+        return result;
+      }
+      function localCompile(_schema, _root, localRefs2, baseId2) {
+        var isRoot = !_root || _root && _root.schema == _schema;
+        if (_root.schema != root.schema)
+          return compile.call(self2, _schema, _root, localRefs2, baseId2);
+        var $async = _schema.$async === true;
+        var sourceCode = validateGenerator({
+          isTop: true,
+          schema: _schema,
+          isRoot,
+          baseId: baseId2,
+          root: _root,
+          schemaPath: "",
+          errSchemaPath: "#",
+          errorPath: '""',
+          MissingRefError: errorClasses.MissingRef,
+          RULES,
+          validate: validateGenerator,
+          util,
+          resolve,
+          resolveRef,
+          usePattern,
+          useDefault,
+          useCustomRule,
+          opts,
+          formats,
+          logger: self2.logger,
+          self: self2
+        });
+        sourceCode = vars(refVal, refValCode) + vars(patterns, patternCode) + vars(defaults, defaultCode) + vars(customRules, customRuleCode) + sourceCode;
+        if (opts.processCode) sourceCode = opts.processCode(sourceCode, _schema);
+        var validate;
+        try {
+          var makeValidate = new Function(
+            "self",
+            "RULES",
+            "formats",
+            "root",
+            "refVal",
+            "defaults",
+            "customRules",
+            "equal",
+            "ucs2length",
+            "ValidationError",
+            sourceCode
+          );
+          validate = makeValidate(
+            self2,
+            RULES,
+            formats,
+            root,
+            refVal,
+            defaults,
+            customRules,
+            equal,
+            ucs2length,
+            ValidationError
+          );
+          refVal[0] = validate;
+        } catch (e) {
+          self2.logger.error("Error compiling schema, function code:", sourceCode);
+          throw e;
+        }
+        validate.schema = _schema;
+        validate.errors = null;
+        validate.refs = refs;
+        validate.refVal = refVal;
+        validate.root = isRoot ? validate : _root;
+        if ($async) validate.$async = true;
+        if (opts.sourceCode === true) {
+          validate.source = {
+            code: sourceCode,
+            patterns,
+            defaults
+          };
+        }
+        return validate;
+      }
+      function resolveRef(baseId2, ref2, isRoot) {
+        ref2 = resolve.url(baseId2, ref2);
+        var refIndex = refs[ref2];
+        var _refVal, refCode;
+        if (refIndex !== void 0) {
+          _refVal = refVal[refIndex];
+          refCode = "refVal[" + refIndex + "]";
+          return resolvedRef(_refVal, refCode);
+        }
+        if (!isRoot && root.refs) {
+          var rootRefId = root.refs[ref2];
+          if (rootRefId !== void 0) {
+            _refVal = root.refVal[rootRefId];
+            refCode = addLocalRef(ref2, _refVal);
+            return resolvedRef(_refVal, refCode);
+          }
+        }
+        refCode = addLocalRef(ref2);
+        var v2 = resolve.call(self2, localCompile, root, ref2);
+        if (v2 === void 0) {
+          var localSchema = localRefs && localRefs[ref2];
+          if (localSchema) {
+            v2 = resolve.inlineRef(localSchema, opts.inlineRefs) ? localSchema : compile.call(self2, localSchema, root, localRefs, baseId2);
+          }
+        }
+        if (v2 === void 0) {
+          removeLocalRef(ref2);
+        } else {
+          replaceLocalRef(ref2, v2);
+          return resolvedRef(v2, refCode);
+        }
+      }
+      function addLocalRef(ref2, v2) {
+        var refId = refVal.length;
+        refVal[refId] = v2;
+        refs[ref2] = refId;
+        return "refVal" + refId;
+      }
+      function removeLocalRef(ref2) {
+        delete refs[ref2];
+      }
+      function replaceLocalRef(ref2, v2) {
+        var refId = refs[ref2];
+        refVal[refId] = v2;
+      }
+      function resolvedRef(refVal2, code) {
+        return typeof refVal2 == "object" || typeof refVal2 == "boolean" ? { code, schema: refVal2, inline: true } : { code, $async: refVal2 && !!refVal2.$async };
+      }
+      function usePattern(regexStr) {
+        var index = patternsHash[regexStr];
+        if (index === void 0) {
+          index = patternsHash[regexStr] = patterns.length;
+          patterns[index] = regexStr;
+        }
+        return "pattern" + index;
+      }
+      function useDefault(value) {
+        switch (typeof value) {
+          case "boolean":
+          case "number":
+            return "" + value;
+          case "string":
+            return util.toQuotedString(value);
+          case "object":
+            if (value === null) return "null";
+            var valueStr = stableStringify(value);
+            var index = defaultsHash[valueStr];
+            if (index === void 0) {
+              index = defaultsHash[valueStr] = defaults.length;
+              defaults[index] = value;
+            }
+            return "default" + index;
+        }
+      }
+      function useCustomRule(rule, schema2, parentSchema, it) {
+        if (self2._opts.validateSchema !== false) {
+          var deps = rule.definition.dependencies;
+          if (deps && !deps.every(function(keyword) {
+            return Object.prototype.hasOwnProperty.call(parentSchema, keyword);
+          }))
+            throw new Error("parent schema must have all required keywords: " + deps.join(","));
+          var validateSchema = rule.definition.validateSchema;
+          if (validateSchema) {
+            var valid = validateSchema(schema2);
+            if (!valid) {
+              var message = "keyword schema is invalid: " + self2.errorsText(validateSchema.errors);
+              if (self2._opts.validateSchema == "log") self2.logger.error(message);
+              else throw new Error(message);
+            }
+          }
+        }
+        var compile2 = rule.definition.compile, inline = rule.definition.inline, macro = rule.definition.macro;
+        var validate;
+        if (compile2) {
+          validate = compile2.call(self2, schema2, parentSchema, it);
+        } else if (macro) {
+          validate = macro.call(self2, schema2, parentSchema, it);
+          if (opts.validateSchema !== false) self2.validateSchema(validate, true);
+        } else if (inline) {
+          validate = inline.call(self2, it, rule.keyword, schema2, parentSchema);
+        } else {
+          validate = rule.definition.validate;
+          if (!validate) return;
+        }
+        if (validate === void 0)
+          throw new Error('custom keyword "' + rule.keyword + '"failed to compile');
+        var index = customRules.length;
+        customRules[index] = validate;
+        return {
+          code: "customRule" + index,
+          validate
+        };
+      }
+    }
+    function checkCompiling(schema, root, baseId) {
+      var index = compIndex.call(this, schema, root, baseId);
+      if (index >= 0) return { index, compiling: true };
+      index = this._compilations.length;
+      this._compilations[index] = {
+        schema,
+        root,
+        baseId
+      };
+      return { index, compiling: false };
+    }
+    function endCompiling(schema, root, baseId) {
+      var i = compIndex.call(this, schema, root, baseId);
+      if (i >= 0) this._compilations.splice(i, 1);
+    }
+    function compIndex(schema, root, baseId) {
+      for (var i = 0; i < this._compilations.length; i++) {
+        var c = this._compilations[i];
+        if (c.schema == schema && c.root == root && c.baseId == baseId) return i;
+      }
+      return -1;
+    }
+    function patternCode(i, patterns) {
+      return "var pattern" + i + " = new RegExp(" + util.toQuotedString(patterns[i]) + ");";
+    }
+    function defaultCode(i) {
+      return "var default" + i + " = defaults[" + i + "];";
+    }
+    function refValCode(i, refVal) {
+      return refVal[i] === void 0 ? "" : "var refVal" + i + " = refVal[" + i + "];";
+    }
+    function customRuleCode(i) {
+      return "var customRule" + i + " = customRules[" + i + "];";
+    }
+    function vars(arr, statement) {
+      if (!arr.length) return "";
+      var code = "";
+      for (var i = 0; i < arr.length; i++)
+        code += statement(i, arr);
+      return code;
+    }
+  }
+});
+
+// node_modules/ajv/lib/cache.js
+var require_cache = __commonJS({
+  "node_modules/ajv/lib/cache.js"(exports, module) {
+    "use strict";
+    var Cache = module.exports = function Cache2() {
+      this._cache = {};
+    };
+    Cache.prototype.put = function Cache_put(key, value) {
+      this._cache[key] = value;
+    };
+    Cache.prototype.get = function Cache_get(key) {
+      return this._cache[key];
+    };
+    Cache.prototype.del = function Cache_del(key) {
+      delete this._cache[key];
+    };
+    Cache.prototype.clear = function Cache_clear() {
+      this._cache = {};
+    };
+  }
+});
+
+// node_modules/ajv/lib/compile/formats.js
+var require_formats = __commonJS({
+  "node_modules/ajv/lib/compile/formats.js"(exports, module) {
+    "use strict";
+    var util = require_util();
+    var DATE = /^(\d\d\d\d)-(\d\d)-(\d\d)$/;
+    var DAYS = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    var TIME = /^(\d\d):(\d\d):(\d\d)(\.\d+)?(z|[+-]\d\d(?::?\d\d)?)?$/i;
+    var HOSTNAME = /^(?=.{1,253}\.?$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[-0-9a-z]{0,61}[0-9a-z])?)*\.?$/i;
+    var URI = /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)(?:\?(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i;
+    var URIREF = /^(?:[a-z][a-z0-9+\-.]*:)?(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'"()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?(?:\?(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i;
+    var URITEMPLATE = /^(?:(?:[^\x00-\x20"'<>%\\^`{|}]|%[0-9a-f]{2})|\{[+#./;?&=,!@|]?(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?(?:,(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?)*\})*$/i;
+    var URL = /^(?:(?:http[s\u017F]?|ftp):\/\/)(?:(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+(?::(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*)?@)?(?:(?!10(?:\.[0-9]{1,3}){3})(?!127(?:\.[0-9]{1,3}){3})(?!169\.254(?:\.[0-9]{1,3}){2})(?!192\.168(?:\.[0-9]{1,3}){2})(?!172\.(?:1[6-9]|2[0-9]|3[01])(?:\.[0-9]{1,3}){2})(?:[1-9][0-9]?|1[0-9][0-9]|2[01][0-9]|22[0-3])(?:\.(?:1?[0-9]{1,2}|2[0-4][0-9]|25[0-5])){2}(?:\.(?:[1-9][0-9]?|1[0-9][0-9]|2[0-4][0-9]|25[0-4]))|(?:(?:(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+-)*(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)(?:\.(?:(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+-)*(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)*(?:\.(?:(?:[a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]){2,})))(?::[0-9]{2,5})?(?:\/(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*)?$/i;
+    var UUID = /^(?:urn:uuid:)?[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+    var JSON_POINTER = /^(?:\/(?:[^~/]|~0|~1)*)*$/;
+    var JSON_POINTER_URI_FRAGMENT = /^#(?:\/(?:[a-z0-9_\-.!$&'()*+,;:=@]|%[0-9a-f]{2}|~0|~1)*)*$/i;
+    var RELATIVE_JSON_POINTER = /^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)$/;
+    module.exports = formats;
+    function formats(mode) {
+      mode = mode == "full" ? "full" : "fast";
+      return util.copy(formats[mode]);
+    }
+    formats.fast = {
+      // date: http://tools.ietf.org/html/rfc3339#section-5.6
+      date: /^\d\d\d\d-[0-1]\d-[0-3]\d$/,
+      // date-time: http://tools.ietf.org/html/rfc3339#section-5.6
+      time: /^(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)?$/i,
+      "date-time": /^\d\d\d\d-[0-1]\d-[0-3]\d[t\s](?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)$/i,
+      // uri: https://github.com/mafintosh/is-my-json-valid/blob/master/formats.js
+      uri: /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/)?[^\s]*$/i,
+      "uri-reference": /^(?:(?:[a-z][a-z0-9+\-.]*:)?\/?\/)?(?:[^\\\s#][^\s#]*)?(?:#[^\\\s]*)?$/i,
+      "uri-template": URITEMPLATE,
+      url: URL,
+      // email (sources from jsen validator):
+      // http://stackoverflow.com/questions/201323/using-a-regular-expression-to-validate-an-email-address#answer-8829363
+      // http://www.w3.org/TR/html5/forms.html#valid-e-mail-address (search for 'willful violation')
+      email: /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/i,
+      hostname: HOSTNAME,
+      // optimized https://www.safaribooksonline.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
+      ipv4: /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/,
+      // optimized http://stackoverflow.com/questions/53497/regular-expression-that-matches-valid-ipv6-addresses
+      ipv6: /^\s*(?:(?:(?:[0-9a-f]{1,4}:){7}(?:[0-9a-f]{1,4}|:))|(?:(?:[0-9a-f]{1,4}:){6}(?::[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(?:(?:[0-9a-f]{1,4}:){5}(?:(?:(?::[0-9a-f]{1,4}){1,2})|:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(?:(?:[0-9a-f]{1,4}:){4}(?:(?:(?::[0-9a-f]{1,4}){1,3})|(?:(?::[0-9a-f]{1,4})?:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){3}(?:(?:(?::[0-9a-f]{1,4}){1,4})|(?:(?::[0-9a-f]{1,4}){0,2}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){2}(?:(?:(?::[0-9a-f]{1,4}){1,5})|(?:(?::[0-9a-f]{1,4}){0,3}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){1}(?:(?:(?::[0-9a-f]{1,4}){1,6})|(?:(?::[0-9a-f]{1,4}){0,4}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?::(?:(?:(?::[0-9a-f]{1,4}){1,7})|(?:(?::[0-9a-f]{1,4}){0,5}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(?:%.+)?\s*$/i,
+      regex,
+      // uuid: http://tools.ietf.org/html/rfc4122
+      uuid: UUID,
+      // JSON-pointer: https://tools.ietf.org/html/rfc6901
+      // uri fragment: https://tools.ietf.org/html/rfc3986#appendix-A
+      "json-pointer": JSON_POINTER,
+      "json-pointer-uri-fragment": JSON_POINTER_URI_FRAGMENT,
+      // relative JSON-pointer: http://tools.ietf.org/html/draft-luff-relative-json-pointer-00
+      "relative-json-pointer": RELATIVE_JSON_POINTER
+    };
+    formats.full = {
+      date,
+      time,
+      "date-time": date_time,
+      uri,
+      "uri-reference": URIREF,
+      "uri-template": URITEMPLATE,
+      url: URL,
+      email: /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i,
+      hostname: HOSTNAME,
+      ipv4: /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/,
+      ipv6: /^\s*(?:(?:(?:[0-9a-f]{1,4}:){7}(?:[0-9a-f]{1,4}|:))|(?:(?:[0-9a-f]{1,4}:){6}(?::[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(?:(?:[0-9a-f]{1,4}:){5}(?:(?:(?::[0-9a-f]{1,4}){1,2})|:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(?:(?:[0-9a-f]{1,4}:){4}(?:(?:(?::[0-9a-f]{1,4}){1,3})|(?:(?::[0-9a-f]{1,4})?:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){3}(?:(?:(?::[0-9a-f]{1,4}){1,4})|(?:(?::[0-9a-f]{1,4}){0,2}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){2}(?:(?:(?::[0-9a-f]{1,4}){1,5})|(?:(?::[0-9a-f]{1,4}){0,3}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){1}(?:(?:(?::[0-9a-f]{1,4}){1,6})|(?:(?::[0-9a-f]{1,4}){0,4}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?::(?:(?:(?::[0-9a-f]{1,4}){1,7})|(?:(?::[0-9a-f]{1,4}){0,5}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(?:%.+)?\s*$/i,
+      regex,
+      uuid: UUID,
+      "json-pointer": JSON_POINTER,
+      "json-pointer-uri-fragment": JSON_POINTER_URI_FRAGMENT,
+      "relative-json-pointer": RELATIVE_JSON_POINTER
+    };
+    function isLeapYear(year) {
+      return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+    }
+    function date(str) {
+      var matches = str.match(DATE);
+      if (!matches) return false;
+      var year = +matches[1];
+      var month = +matches[2];
+      var day = +matches[3];
+      return month >= 1 && month <= 12 && day >= 1 && day <= (month == 2 && isLeapYear(year) ? 29 : DAYS[month]);
+    }
+    function time(str, full) {
+      var matches = str.match(TIME);
+      if (!matches) return false;
+      var hour = matches[1];
+      var minute = matches[2];
+      var second = matches[3];
+      var timeZone = matches[5];
+      return (hour <= 23 && minute <= 59 && second <= 59 || hour == 23 && minute == 59 && second == 60) && (!full || timeZone);
+    }
+    var DATE_TIME_SEPARATOR = /t|\s/i;
+    function date_time(str) {
+      var dateTime = str.split(DATE_TIME_SEPARATOR);
+      return dateTime.length == 2 && date(dateTime[0]) && time(dateTime[1], true);
+    }
+    var NOT_URI_FRAGMENT = /\/|:/;
+    function uri(str) {
+      return NOT_URI_FRAGMENT.test(str) && URI.test(str);
+    }
+    var Z_ANCHOR = /[^\\]\\Z/;
+    function regex(str) {
+      if (Z_ANCHOR.test(str)) return false;
+      try {
+        new RegExp(str);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+  }
+});
+
+// node_modules/ajv/lib/dotjs/ref.js
+var require_ref = __commonJS({
+  "node_modules/ajv/lib/dotjs/ref.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_ref(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $valid = "valid" + $lvl;
+      var $async, $refCode;
+      if ($schema == "#" || $schema == "#/") {
+        if (it.isRoot) {
+          $async = it.async;
+          $refCode = "validate";
+        } else {
+          $async = it.root.schema.$async === true;
+          $refCode = "root.refVal[0]";
+        }
+      } else {
+        var $refVal = it.resolveRef(it.baseId, $schema, it.isRoot);
+        if ($refVal === void 0) {
+          var $message = it.MissingRefError.message(it.baseId, $schema);
+          if (it.opts.missingRefs == "fail") {
+            it.logger.error($message);
+            var $$outStack = $$outStack || [];
+            $$outStack.push(out);
+            out = "";
+            if (it.createErrors !== false) {
+              out += " { keyword: '$ref' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { ref: '" + it.util.escapeQuotes($schema) + "' } ";
+              if (it.opts.messages !== false) {
+                out += " , message: 'can\\'t resolve reference " + it.util.escapeQuotes($schema) + "' ";
+              }
+              if (it.opts.verbose) {
+                out += " , schema: " + it.util.toQuotedString($schema) + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+              }
+              out += " } ";
+            } else {
+              out += " {} ";
+            }
+            var __err = out;
+            out = $$outStack.pop();
+            if (!it.compositeRule && $breakOnError) {
+              if (it.async) {
+                out += " throw new ValidationError([" + __err + "]); ";
+              } else {
+                out += " validate.errors = [" + __err + "]; return false; ";
+              }
+            } else {
+              out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+            }
+            if ($breakOnError) {
+              out += " if (false) { ";
+            }
+          } else if (it.opts.missingRefs == "ignore") {
+            it.logger.warn($message);
+            if ($breakOnError) {
+              out += " if (true) { ";
+            }
+          } else {
+            throw new it.MissingRefError(it.baseId, $schema, $message);
+          }
+        } else if ($refVal.inline) {
+          var $it = it.util.copy(it);
+          $it.level++;
+          var $nextValid = "valid" + $it.level;
+          $it.schema = $refVal.schema;
+          $it.schemaPath = "";
+          $it.errSchemaPath = $schema;
+          var $code = it.validate($it).replace(/validate\.schema/g, $refVal.code);
+          out += " " + $code + " ";
+          if ($breakOnError) {
+            out += " if (" + $nextValid + ") { ";
+          }
+        } else {
+          $async = $refVal.$async === true || it.async && $refVal.$async !== false;
+          $refCode = $refVal.code;
+        }
+      }
+      if ($refCode) {
+        var $$outStack = $$outStack || [];
+        $$outStack.push(out);
+        out = "";
+        if (it.opts.passContext) {
+          out += " " + $refCode + ".call(this, ";
+        } else {
+          out += " " + $refCode + "( ";
+        }
+        out += " " + $data + ", (dataPath || '')";
+        if (it.errorPath != '""') {
+          out += " + " + it.errorPath;
+        }
+        var $parentData = $dataLvl ? "data" + ($dataLvl - 1 || "") : "parentData", $parentDataProperty = $dataLvl ? it.dataPathArr[$dataLvl] : "parentDataProperty";
+        out += " , " + $parentData + " , " + $parentDataProperty + ", rootData)  ";
+        var __callValidate = out;
+        out = $$outStack.pop();
+        if ($async) {
+          if (!it.async) throw new Error("async schema referenced by sync schema");
+          if ($breakOnError) {
+            out += " var " + $valid + "; ";
+          }
+          out += " try { await " + __callValidate + "; ";
+          if ($breakOnError) {
+            out += " " + $valid + " = true; ";
+          }
+          out += " } catch (e) { if (!(e instanceof ValidationError)) throw e; if (vErrors === null) vErrors = e.errors; else vErrors = vErrors.concat(e.errors); errors = vErrors.length; ";
+          if ($breakOnError) {
+            out += " " + $valid + " = false; ";
+          }
+          out += " } ";
+          if ($breakOnError) {
+            out += " if (" + $valid + ") { ";
+          }
+        } else {
+          out += " if (!" + __callValidate + ") { if (vErrors === null) vErrors = " + $refCode + ".errors; else vErrors = vErrors.concat(" + $refCode + ".errors); errors = vErrors.length; } ";
+          if ($breakOnError) {
+            out += " else { ";
+          }
+        }
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/allOf.js
+var require_allOf = __commonJS({
+  "node_modules/ajv/lib/dotjs/allOf.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_allOf(it, $keyword, $ruleType) {
+      var out = " ";
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $it = it.util.copy(it);
+      var $closingBraces = "";
+      $it.level++;
+      var $nextValid = "valid" + $it.level;
+      var $currentBaseId = $it.baseId, $allSchemasEmpty = true;
+      var arr1 = $schema;
+      if (arr1) {
+        var $sch, $i = -1, l1 = arr1.length - 1;
+        while ($i < l1) {
+          $sch = arr1[$i += 1];
+          if (it.opts.strictKeywords ? typeof $sch == "object" && Object.keys($sch).length > 0 || $sch === false : it.util.schemaHasRules($sch, it.RULES.all)) {
+            $allSchemasEmpty = false;
+            $it.schema = $sch;
+            $it.schemaPath = $schemaPath + "[" + $i + "]";
+            $it.errSchemaPath = $errSchemaPath + "/" + $i;
+            out += "  " + it.validate($it) + " ";
+            $it.baseId = $currentBaseId;
+            if ($breakOnError) {
+              out += " if (" + $nextValid + ") { ";
+              $closingBraces += "}";
+            }
+          }
+        }
+      }
+      if ($breakOnError) {
+        if ($allSchemasEmpty) {
+          out += " if (true) { ";
+        } else {
+          out += " " + $closingBraces.slice(0, -1) + " ";
+        }
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/anyOf.js
+var require_anyOf = __commonJS({
+  "node_modules/ajv/lib/dotjs/anyOf.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_anyOf(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $valid = "valid" + $lvl;
+      var $errs = "errs__" + $lvl;
+      var $it = it.util.copy(it);
+      var $closingBraces = "";
+      $it.level++;
+      var $nextValid = "valid" + $it.level;
+      var $noEmptySchema = $schema.every(function($sch2) {
+        return it.opts.strictKeywords ? typeof $sch2 == "object" && Object.keys($sch2).length > 0 || $sch2 === false : it.util.schemaHasRules($sch2, it.RULES.all);
+      });
+      if ($noEmptySchema) {
+        var $currentBaseId = $it.baseId;
+        out += " var " + $errs + " = errors; var " + $valid + " = false;  ";
+        var $wasComposite = it.compositeRule;
+        it.compositeRule = $it.compositeRule = true;
+        var arr1 = $schema;
+        if (arr1) {
+          var $sch, $i = -1, l1 = arr1.length - 1;
+          while ($i < l1) {
+            $sch = arr1[$i += 1];
+            $it.schema = $sch;
+            $it.schemaPath = $schemaPath + "[" + $i + "]";
+            $it.errSchemaPath = $errSchemaPath + "/" + $i;
+            out += "  " + it.validate($it) + " ";
+            $it.baseId = $currentBaseId;
+            out += " " + $valid + " = " + $valid + " || " + $nextValid + "; if (!" + $valid + ") { ";
+            $closingBraces += "}";
+          }
+        }
+        it.compositeRule = $it.compositeRule = $wasComposite;
+        out += " " + $closingBraces + " if (!" + $valid + ") {   var err =   ";
+        if (it.createErrors !== false) {
+          out += " { keyword: 'anyOf' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: {} ";
+          if (it.opts.messages !== false) {
+            out += " , message: 'should match some schema in anyOf' ";
+          }
+          if (it.opts.verbose) {
+            out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+          }
+          out += " } ";
+        } else {
+          out += " {} ";
+        }
+        out += ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+        if (!it.compositeRule && $breakOnError) {
+          if (it.async) {
+            out += " throw new ValidationError(vErrors); ";
+          } else {
+            out += " validate.errors = vErrors; return false; ";
+          }
+        }
+        out += " } else {  errors = " + $errs + "; if (vErrors !== null) { if (" + $errs + ") vErrors.length = " + $errs + "; else vErrors = null; } ";
+        if (it.opts.allErrors) {
+          out += " } ";
+        }
+      } else {
+        if ($breakOnError) {
+          out += " if (true) { ";
+        }
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/comment.js
+var require_comment = __commonJS({
+  "node_modules/ajv/lib/dotjs/comment.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_comment(it, $keyword, $ruleType) {
+      var out = " ";
+      var $schema = it.schema[$keyword];
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $comment = it.util.toQuotedString($schema);
+      if (it.opts.$comment === true) {
+        out += " console.log(" + $comment + ");";
+      } else if (typeof it.opts.$comment == "function") {
+        out += " self._opts.$comment(" + $comment + ", " + it.util.toQuotedString($errSchemaPath) + ", validate.root.schema);";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/const.js
+var require_const = __commonJS({
+  "node_modules/ajv/lib/dotjs/const.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_const(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $valid = "valid" + $lvl;
+      var $isData = it.opts.$data && $schema && $schema.$data, $schemaValue;
+      if ($isData) {
+        out += " var schema" + $lvl + " = " + it.util.getData($schema.$data, $dataLvl, it.dataPathArr) + "; ";
+        $schemaValue = "schema" + $lvl;
+      } else {
+        $schemaValue = $schema;
+      }
+      if (!$isData) {
+        out += " var schema" + $lvl + " = validate.schema" + $schemaPath + ";";
+      }
+      out += "var " + $valid + " = equal(" + $data + ", schema" + $lvl + "); if (!" + $valid + ") {   ";
+      var $$outStack = $$outStack || [];
+      $$outStack.push(out);
+      out = "";
+      if (it.createErrors !== false) {
+        out += " { keyword: 'const' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { allowedValue: schema" + $lvl + " } ";
+        if (it.opts.messages !== false) {
+          out += " , message: 'should be equal to constant' ";
+        }
+        if (it.opts.verbose) {
+          out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+        }
+        out += " } ";
+      } else {
+        out += " {} ";
+      }
+      var __err = out;
+      out = $$outStack.pop();
+      if (!it.compositeRule && $breakOnError) {
+        if (it.async) {
+          out += " throw new ValidationError([" + __err + "]); ";
+        } else {
+          out += " validate.errors = [" + __err + "]; return false; ";
+        }
+      } else {
+        out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+      }
+      out += " }";
+      if ($breakOnError) {
+        out += " else { ";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/contains.js
+var require_contains = __commonJS({
+  "node_modules/ajv/lib/dotjs/contains.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_contains(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $valid = "valid" + $lvl;
+      var $errs = "errs__" + $lvl;
+      var $it = it.util.copy(it);
+      var $closingBraces = "";
+      $it.level++;
+      var $nextValid = "valid" + $it.level;
+      var $idx = "i" + $lvl, $dataNxt = $it.dataLevel = it.dataLevel + 1, $nextData = "data" + $dataNxt, $currentBaseId = it.baseId, $nonEmptySchema = it.opts.strictKeywords ? typeof $schema == "object" && Object.keys($schema).length > 0 || $schema === false : it.util.schemaHasRules($schema, it.RULES.all);
+      out += "var " + $errs + " = errors;var " + $valid + ";";
+      if ($nonEmptySchema) {
+        var $wasComposite = it.compositeRule;
+        it.compositeRule = $it.compositeRule = true;
+        $it.schema = $schema;
+        $it.schemaPath = $schemaPath;
+        $it.errSchemaPath = $errSchemaPath;
+        out += " var " + $nextValid + " = false; for (var " + $idx + " = 0; " + $idx + " < " + $data + ".length; " + $idx + "++) { ";
+        $it.errorPath = it.util.getPathExpr(it.errorPath, $idx, it.opts.jsonPointers, true);
+        var $passData = $data + "[" + $idx + "]";
+        $it.dataPathArr[$dataNxt] = $idx;
+        var $code = it.validate($it);
+        $it.baseId = $currentBaseId;
+        if (it.util.varOccurences($code, $nextData) < 2) {
+          out += " " + it.util.varReplace($code, $nextData, $passData) + " ";
+        } else {
+          out += " var " + $nextData + " = " + $passData + "; " + $code + " ";
+        }
+        out += " if (" + $nextValid + ") break; }  ";
+        it.compositeRule = $it.compositeRule = $wasComposite;
+        out += " " + $closingBraces + " if (!" + $nextValid + ") {";
+      } else {
+        out += " if (" + $data + ".length == 0) {";
+      }
+      var $$outStack = $$outStack || [];
+      $$outStack.push(out);
+      out = "";
+      if (it.createErrors !== false) {
+        out += " { keyword: 'contains' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: {} ";
+        if (it.opts.messages !== false) {
+          out += " , message: 'should contain a valid item' ";
+        }
+        if (it.opts.verbose) {
+          out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+        }
+        out += " } ";
+      } else {
+        out += " {} ";
+      }
+      var __err = out;
+      out = $$outStack.pop();
+      if (!it.compositeRule && $breakOnError) {
+        if (it.async) {
+          out += " throw new ValidationError([" + __err + "]); ";
+        } else {
+          out += " validate.errors = [" + __err + "]; return false; ";
+        }
+      } else {
+        out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+      }
+      out += " } else { ";
+      if ($nonEmptySchema) {
+        out += "  errors = " + $errs + "; if (vErrors !== null) { if (" + $errs + ") vErrors.length = " + $errs + "; else vErrors = null; } ";
+      }
+      if (it.opts.allErrors) {
+        out += " } ";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/dependencies.js
+var require_dependencies = __commonJS({
+  "node_modules/ajv/lib/dotjs/dependencies.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_dependencies(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $errs = "errs__" + $lvl;
+      var $it = it.util.copy(it);
+      var $closingBraces = "";
+      $it.level++;
+      var $nextValid = "valid" + $it.level;
+      var $schemaDeps = {}, $propertyDeps = {}, $ownProperties = it.opts.ownProperties;
+      for ($property in $schema) {
+        if ($property == "__proto__") continue;
+        var $sch = $schema[$property];
+        var $deps = Array.isArray($sch) ? $propertyDeps : $schemaDeps;
+        $deps[$property] = $sch;
+      }
+      out += "var " + $errs + " = errors;";
+      var $currentErrorPath = it.errorPath;
+      out += "var missing" + $lvl + ";";
+      for (var $property in $propertyDeps) {
+        $deps = $propertyDeps[$property];
+        if ($deps.length) {
+          out += " if ( " + $data + it.util.getProperty($property) + " !== undefined ";
+          if ($ownProperties) {
+            out += " && Object.prototype.hasOwnProperty.call(" + $data + ", '" + it.util.escapeQuotes($property) + "') ";
+          }
+          if ($breakOnError) {
+            out += " && ( ";
+            var arr1 = $deps;
+            if (arr1) {
+              var $propertyKey, $i = -1, l1 = arr1.length - 1;
+              while ($i < l1) {
+                $propertyKey = arr1[$i += 1];
+                if ($i) {
+                  out += " || ";
+                }
+                var $prop = it.util.getProperty($propertyKey), $useData = $data + $prop;
+                out += " ( ( " + $useData + " === undefined ";
+                if ($ownProperties) {
+                  out += " || ! Object.prototype.hasOwnProperty.call(" + $data + ", '" + it.util.escapeQuotes($propertyKey) + "') ";
+                }
+                out += ") && (missing" + $lvl + " = " + it.util.toQuotedString(it.opts.jsonPointers ? $propertyKey : $prop) + ") ) ";
+              }
+            }
+            out += ")) {  ";
+            var $propertyPath = "missing" + $lvl, $missingProperty = "' + " + $propertyPath + " + '";
+            if (it.opts._errorDataPathProperty) {
+              it.errorPath = it.opts.jsonPointers ? it.util.getPathExpr($currentErrorPath, $propertyPath, true) : $currentErrorPath + " + " + $propertyPath;
+            }
+            var $$outStack = $$outStack || [];
+            $$outStack.push(out);
+            out = "";
+            if (it.createErrors !== false) {
+              out += " { keyword: 'dependencies' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { property: '" + it.util.escapeQuotes($property) + "', missingProperty: '" + $missingProperty + "', depsCount: " + $deps.length + ", deps: '" + it.util.escapeQuotes($deps.length == 1 ? $deps[0] : $deps.join(", ")) + "' } ";
+              if (it.opts.messages !== false) {
+                out += " , message: 'should have ";
+                if ($deps.length == 1) {
+                  out += "property " + it.util.escapeQuotes($deps[0]);
+                } else {
+                  out += "properties " + it.util.escapeQuotes($deps.join(", "));
+                }
+                out += " when property " + it.util.escapeQuotes($property) + " is present' ";
+              }
+              if (it.opts.verbose) {
+                out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+              }
+              out += " } ";
+            } else {
+              out += " {} ";
+            }
+            var __err = out;
+            out = $$outStack.pop();
+            if (!it.compositeRule && $breakOnError) {
+              if (it.async) {
+                out += " throw new ValidationError([" + __err + "]); ";
+              } else {
+                out += " validate.errors = [" + __err + "]; return false; ";
+              }
+            } else {
+              out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+            }
+          } else {
+            out += " ) { ";
+            var arr2 = $deps;
+            if (arr2) {
+              var $propertyKey, i2 = -1, l2 = arr2.length - 1;
+              while (i2 < l2) {
+                $propertyKey = arr2[i2 += 1];
+                var $prop = it.util.getProperty($propertyKey), $missingProperty = it.util.escapeQuotes($propertyKey), $useData = $data + $prop;
+                if (it.opts._errorDataPathProperty) {
+                  it.errorPath = it.util.getPath($currentErrorPath, $propertyKey, it.opts.jsonPointers);
+                }
+                out += " if ( " + $useData + " === undefined ";
+                if ($ownProperties) {
+                  out += " || ! Object.prototype.hasOwnProperty.call(" + $data + ", '" + it.util.escapeQuotes($propertyKey) + "') ";
+                }
+                out += ") {  var err =   ";
+                if (it.createErrors !== false) {
+                  out += " { keyword: 'dependencies' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { property: '" + it.util.escapeQuotes($property) + "', missingProperty: '" + $missingProperty + "', depsCount: " + $deps.length + ", deps: '" + it.util.escapeQuotes($deps.length == 1 ? $deps[0] : $deps.join(", ")) + "' } ";
+                  if (it.opts.messages !== false) {
+                    out += " , message: 'should have ";
+                    if ($deps.length == 1) {
+                      out += "property " + it.util.escapeQuotes($deps[0]);
+                    } else {
+                      out += "properties " + it.util.escapeQuotes($deps.join(", "));
+                    }
+                    out += " when property " + it.util.escapeQuotes($property) + " is present' ";
+                  }
+                  if (it.opts.verbose) {
+                    out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+                  }
+                  out += " } ";
+                } else {
+                  out += " {} ";
+                }
+                out += ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; } ";
+              }
+            }
+          }
+          out += " }   ";
+          if ($breakOnError) {
+            $closingBraces += "}";
+            out += " else { ";
+          }
+        }
+      }
+      it.errorPath = $currentErrorPath;
+      var $currentBaseId = $it.baseId;
+      for (var $property in $schemaDeps) {
+        var $sch = $schemaDeps[$property];
+        if (it.opts.strictKeywords ? typeof $sch == "object" && Object.keys($sch).length > 0 || $sch === false : it.util.schemaHasRules($sch, it.RULES.all)) {
+          out += " " + $nextValid + " = true; if ( " + $data + it.util.getProperty($property) + " !== undefined ";
+          if ($ownProperties) {
+            out += " && Object.prototype.hasOwnProperty.call(" + $data + ", '" + it.util.escapeQuotes($property) + "') ";
+          }
+          out += ") { ";
+          $it.schema = $sch;
+          $it.schemaPath = $schemaPath + it.util.getProperty($property);
+          $it.errSchemaPath = $errSchemaPath + "/" + it.util.escapeFragment($property);
+          out += "  " + it.validate($it) + " ";
+          $it.baseId = $currentBaseId;
+          out += " }  ";
+          if ($breakOnError) {
+            out += " if (" + $nextValid + ") { ";
+            $closingBraces += "}";
+          }
+        }
+      }
+      if ($breakOnError) {
+        out += "   " + $closingBraces + " if (" + $errs + " == errors) {";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/enum.js
+var require_enum = __commonJS({
+  "node_modules/ajv/lib/dotjs/enum.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_enum(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $valid = "valid" + $lvl;
+      var $isData = it.opts.$data && $schema && $schema.$data, $schemaValue;
+      if ($isData) {
+        out += " var schema" + $lvl + " = " + it.util.getData($schema.$data, $dataLvl, it.dataPathArr) + "; ";
+        $schemaValue = "schema" + $lvl;
+      } else {
+        $schemaValue = $schema;
+      }
+      var $i = "i" + $lvl, $vSchema = "schema" + $lvl;
+      if (!$isData) {
+        out += " var " + $vSchema + " = validate.schema" + $schemaPath + ";";
+      }
+      out += "var " + $valid + ";";
+      if ($isData) {
+        out += " if (schema" + $lvl + " === undefined) " + $valid + " = true; else if (!Array.isArray(schema" + $lvl + ")) " + $valid + " = false; else {";
+      }
+      out += "" + $valid + " = false;for (var " + $i + "=0; " + $i + "<" + $vSchema + ".length; " + $i + "++) if (equal(" + $data + ", " + $vSchema + "[" + $i + "])) { " + $valid + " = true; break; }";
+      if ($isData) {
+        out += "  }  ";
+      }
+      out += " if (!" + $valid + ") {   ";
+      var $$outStack = $$outStack || [];
+      $$outStack.push(out);
+      out = "";
+      if (it.createErrors !== false) {
+        out += " { keyword: 'enum' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { allowedValues: schema" + $lvl + " } ";
+        if (it.opts.messages !== false) {
+          out += " , message: 'should be equal to one of the allowed values' ";
+        }
+        if (it.opts.verbose) {
+          out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+        }
+        out += " } ";
+      } else {
+        out += " {} ";
+      }
+      var __err = out;
+      out = $$outStack.pop();
+      if (!it.compositeRule && $breakOnError) {
+        if (it.async) {
+          out += " throw new ValidationError([" + __err + "]); ";
+        } else {
+          out += " validate.errors = [" + __err + "]; return false; ";
+        }
+      } else {
+        out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+      }
+      out += " }";
+      if ($breakOnError) {
+        out += " else { ";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/format.js
+var require_format = __commonJS({
+  "node_modules/ajv/lib/dotjs/format.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_format(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      if (it.opts.format === false) {
+        if ($breakOnError) {
+          out += " if (true) { ";
+        }
+        return out;
+      }
+      var $isData = it.opts.$data && $schema && $schema.$data, $schemaValue;
+      if ($isData) {
+        out += " var schema" + $lvl + " = " + it.util.getData($schema.$data, $dataLvl, it.dataPathArr) + "; ";
+        $schemaValue = "schema" + $lvl;
+      } else {
+        $schemaValue = $schema;
+      }
+      var $unknownFormats = it.opts.unknownFormats, $allowUnknown = Array.isArray($unknownFormats);
+      if ($isData) {
+        var $format = "format" + $lvl, $isObject = "isObject" + $lvl, $formatType = "formatType" + $lvl;
+        out += " var " + $format + " = formats[" + $schemaValue + "]; var " + $isObject + " = typeof " + $format + " == 'object' && !(" + $format + " instanceof RegExp) && " + $format + ".validate; var " + $formatType + " = " + $isObject + " && " + $format + ".type || 'string'; if (" + $isObject + ") { ";
+        if (it.async) {
+          out += " var async" + $lvl + " = " + $format + ".async; ";
+        }
+        out += " " + $format + " = " + $format + ".validate; } if (  ";
+        if ($isData) {
+          out += " (" + $schemaValue + " !== undefined && typeof " + $schemaValue + " != 'string') || ";
+        }
+        out += " (";
+        if ($unknownFormats != "ignore") {
+          out += " (" + $schemaValue + " && !" + $format + " ";
+          if ($allowUnknown) {
+            out += " && self._opts.unknownFormats.indexOf(" + $schemaValue + ") == -1 ";
+          }
+          out += ") || ";
+        }
+        out += " (" + $format + " && " + $formatType + " == '" + $ruleType + "' && !(typeof " + $format + " == 'function' ? ";
+        if (it.async) {
+          out += " (async" + $lvl + " ? await " + $format + "(" + $data + ") : " + $format + "(" + $data + ")) ";
+        } else {
+          out += " " + $format + "(" + $data + ") ";
+        }
+        out += " : " + $format + ".test(" + $data + "))))) {";
+      } else {
+        var $format = it.formats[$schema];
+        if (!$format) {
+          if ($unknownFormats == "ignore") {
+            it.logger.warn('unknown format "' + $schema + '" ignored in schema at path "' + it.errSchemaPath + '"');
+            if ($breakOnError) {
+              out += " if (true) { ";
+            }
+            return out;
+          } else if ($allowUnknown && $unknownFormats.indexOf($schema) >= 0) {
+            if ($breakOnError) {
+              out += " if (true) { ";
+            }
+            return out;
+          } else {
+            throw new Error('unknown format "' + $schema + '" is used in schema at path "' + it.errSchemaPath + '"');
+          }
+        }
+        var $isObject = typeof $format == "object" && !($format instanceof RegExp) && $format.validate;
+        var $formatType = $isObject && $format.type || "string";
+        if ($isObject) {
+          var $async = $format.async === true;
+          $format = $format.validate;
+        }
+        if ($formatType != $ruleType) {
+          if ($breakOnError) {
+            out += " if (true) { ";
+          }
+          return out;
+        }
+        if ($async) {
+          if (!it.async) throw new Error("async format in sync schema");
+          var $formatRef = "formats" + it.util.getProperty($schema) + ".validate";
+          out += " if (!(await " + $formatRef + "(" + $data + "))) { ";
+        } else {
+          out += " if (! ";
+          var $formatRef = "formats" + it.util.getProperty($schema);
+          if ($isObject) $formatRef += ".validate";
+          if (typeof $format == "function") {
+            out += " " + $formatRef + "(" + $data + ") ";
+          } else {
+            out += " " + $formatRef + ".test(" + $data + ") ";
+          }
+          out += ") { ";
+        }
+      }
+      var $$outStack = $$outStack || [];
+      $$outStack.push(out);
+      out = "";
+      if (it.createErrors !== false) {
+        out += " { keyword: 'format' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { format:  ";
+        if ($isData) {
+          out += "" + $schemaValue;
+        } else {
+          out += "" + it.util.toQuotedString($schema);
+        }
+        out += "  } ";
+        if (it.opts.messages !== false) {
+          out += ` , message: 'should match format "`;
+          if ($isData) {
+            out += "' + " + $schemaValue + " + '";
+          } else {
+            out += "" + it.util.escapeQuotes($schema);
+          }
+          out += `"' `;
+        }
+        if (it.opts.verbose) {
+          out += " , schema:  ";
+          if ($isData) {
+            out += "validate.schema" + $schemaPath;
+          } else {
+            out += "" + it.util.toQuotedString($schema);
+          }
+          out += "         , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+        }
+        out += " } ";
+      } else {
+        out += " {} ";
+      }
+      var __err = out;
+      out = $$outStack.pop();
+      if (!it.compositeRule && $breakOnError) {
+        if (it.async) {
+          out += " throw new ValidationError([" + __err + "]); ";
+        } else {
+          out += " validate.errors = [" + __err + "]; return false; ";
+        }
+      } else {
+        out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+      }
+      out += " } ";
+      if ($breakOnError) {
+        out += " else { ";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/if.js
+var require_if = __commonJS({
+  "node_modules/ajv/lib/dotjs/if.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_if(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $valid = "valid" + $lvl;
+      var $errs = "errs__" + $lvl;
+      var $it = it.util.copy(it);
+      $it.level++;
+      var $nextValid = "valid" + $it.level;
+      var $thenSch = it.schema["then"], $elseSch = it.schema["else"], $thenPresent = $thenSch !== void 0 && (it.opts.strictKeywords ? typeof $thenSch == "object" && Object.keys($thenSch).length > 0 || $thenSch === false : it.util.schemaHasRules($thenSch, it.RULES.all)), $elsePresent = $elseSch !== void 0 && (it.opts.strictKeywords ? typeof $elseSch == "object" && Object.keys($elseSch).length > 0 || $elseSch === false : it.util.schemaHasRules($elseSch, it.RULES.all)), $currentBaseId = $it.baseId;
+      if ($thenPresent || $elsePresent) {
+        var $ifClause;
+        $it.createErrors = false;
+        $it.schema = $schema;
+        $it.schemaPath = $schemaPath;
+        $it.errSchemaPath = $errSchemaPath;
+        out += " var " + $errs + " = errors; var " + $valid + " = true;  ";
+        var $wasComposite = it.compositeRule;
+        it.compositeRule = $it.compositeRule = true;
+        out += "  " + it.validate($it) + " ";
+        $it.baseId = $currentBaseId;
+        $it.createErrors = true;
+        out += "  errors = " + $errs + "; if (vErrors !== null) { if (" + $errs + ") vErrors.length = " + $errs + "; else vErrors = null; }  ";
+        it.compositeRule = $it.compositeRule = $wasComposite;
+        if ($thenPresent) {
+          out += " if (" + $nextValid + ") {  ";
+          $it.schema = it.schema["then"];
+          $it.schemaPath = it.schemaPath + ".then";
+          $it.errSchemaPath = it.errSchemaPath + "/then";
+          out += "  " + it.validate($it) + " ";
+          $it.baseId = $currentBaseId;
+          out += " " + $valid + " = " + $nextValid + "; ";
+          if ($thenPresent && $elsePresent) {
+            $ifClause = "ifClause" + $lvl;
+            out += " var " + $ifClause + " = 'then'; ";
+          } else {
+            $ifClause = "'then'";
+          }
+          out += " } ";
+          if ($elsePresent) {
+            out += " else { ";
+          }
+        } else {
+          out += " if (!" + $nextValid + ") { ";
+        }
+        if ($elsePresent) {
+          $it.schema = it.schema["else"];
+          $it.schemaPath = it.schemaPath + ".else";
+          $it.errSchemaPath = it.errSchemaPath + "/else";
+          out += "  " + it.validate($it) + " ";
+          $it.baseId = $currentBaseId;
+          out += " " + $valid + " = " + $nextValid + "; ";
+          if ($thenPresent && $elsePresent) {
+            $ifClause = "ifClause" + $lvl;
+            out += " var " + $ifClause + " = 'else'; ";
+          } else {
+            $ifClause = "'else'";
+          }
+          out += " } ";
+        }
+        out += " if (!" + $valid + ") {   var err =   ";
+        if (it.createErrors !== false) {
+          out += " { keyword: 'if' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { failingKeyword: " + $ifClause + " } ";
+          if (it.opts.messages !== false) {
+            out += ` , message: 'should match "' + ` + $ifClause + ` + '" schema' `;
+          }
+          if (it.opts.verbose) {
+            out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+          }
+          out += " } ";
+        } else {
+          out += " {} ";
+        }
+        out += ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+        if (!it.compositeRule && $breakOnError) {
+          if (it.async) {
+            out += " throw new ValidationError(vErrors); ";
+          } else {
+            out += " validate.errors = vErrors; return false; ";
+          }
+        }
+        out += " }   ";
+        if ($breakOnError) {
+          out += " else { ";
+        }
+      } else {
+        if ($breakOnError) {
+          out += " if (true) { ";
+        }
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/items.js
+var require_items = __commonJS({
+  "node_modules/ajv/lib/dotjs/items.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_items(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $valid = "valid" + $lvl;
+      var $errs = "errs__" + $lvl;
+      var $it = it.util.copy(it);
+      var $closingBraces = "";
+      $it.level++;
+      var $nextValid = "valid" + $it.level;
+      var $idx = "i" + $lvl, $dataNxt = $it.dataLevel = it.dataLevel + 1, $nextData = "data" + $dataNxt, $currentBaseId = it.baseId;
+      out += "var " + $errs + " = errors;var " + $valid + ";";
+      if (Array.isArray($schema)) {
+        var $additionalItems = it.schema.additionalItems;
+        if ($additionalItems === false) {
+          out += " " + $valid + " = " + $data + ".length <= " + $schema.length + "; ";
+          var $currErrSchemaPath = $errSchemaPath;
+          $errSchemaPath = it.errSchemaPath + "/additionalItems";
+          out += "  if (!" + $valid + ") {   ";
+          var $$outStack = $$outStack || [];
+          $$outStack.push(out);
+          out = "";
+          if (it.createErrors !== false) {
+            out += " { keyword: 'additionalItems' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { limit: " + $schema.length + " } ";
+            if (it.opts.messages !== false) {
+              out += " , message: 'should NOT have more than " + $schema.length + " items' ";
+            }
+            if (it.opts.verbose) {
+              out += " , schema: false , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+            }
+            out += " } ";
+          } else {
+            out += " {} ";
+          }
+          var __err = out;
+          out = $$outStack.pop();
+          if (!it.compositeRule && $breakOnError) {
+            if (it.async) {
+              out += " throw new ValidationError([" + __err + "]); ";
+            } else {
+              out += " validate.errors = [" + __err + "]; return false; ";
+            }
+          } else {
+            out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+          }
+          out += " } ";
+          $errSchemaPath = $currErrSchemaPath;
+          if ($breakOnError) {
+            $closingBraces += "}";
+            out += " else { ";
+          }
+        }
+        var arr1 = $schema;
+        if (arr1) {
+          var $sch, $i = -1, l1 = arr1.length - 1;
+          while ($i < l1) {
+            $sch = arr1[$i += 1];
+            if (it.opts.strictKeywords ? typeof $sch == "object" && Object.keys($sch).length > 0 || $sch === false : it.util.schemaHasRules($sch, it.RULES.all)) {
+              out += " " + $nextValid + " = true; if (" + $data + ".length > " + $i + ") { ";
+              var $passData = $data + "[" + $i + "]";
+              $it.schema = $sch;
+              $it.schemaPath = $schemaPath + "[" + $i + "]";
+              $it.errSchemaPath = $errSchemaPath + "/" + $i;
+              $it.errorPath = it.util.getPathExpr(it.errorPath, $i, it.opts.jsonPointers, true);
+              $it.dataPathArr[$dataNxt] = $i;
+              var $code = it.validate($it);
+              $it.baseId = $currentBaseId;
+              if (it.util.varOccurences($code, $nextData) < 2) {
+                out += " " + it.util.varReplace($code, $nextData, $passData) + " ";
+              } else {
+                out += " var " + $nextData + " = " + $passData + "; " + $code + " ";
+              }
+              out += " }  ";
+              if ($breakOnError) {
+                out += " if (" + $nextValid + ") { ";
+                $closingBraces += "}";
+              }
+            }
+          }
+        }
+        if (typeof $additionalItems == "object" && (it.opts.strictKeywords ? typeof $additionalItems == "object" && Object.keys($additionalItems).length > 0 || $additionalItems === false : it.util.schemaHasRules($additionalItems, it.RULES.all))) {
+          $it.schema = $additionalItems;
+          $it.schemaPath = it.schemaPath + ".additionalItems";
+          $it.errSchemaPath = it.errSchemaPath + "/additionalItems";
+          out += " " + $nextValid + " = true; if (" + $data + ".length > " + $schema.length + ") {  for (var " + $idx + " = " + $schema.length + "; " + $idx + " < " + $data + ".length; " + $idx + "++) { ";
+          $it.errorPath = it.util.getPathExpr(it.errorPath, $idx, it.opts.jsonPointers, true);
+          var $passData = $data + "[" + $idx + "]";
+          $it.dataPathArr[$dataNxt] = $idx;
+          var $code = it.validate($it);
+          $it.baseId = $currentBaseId;
+          if (it.util.varOccurences($code, $nextData) < 2) {
+            out += " " + it.util.varReplace($code, $nextData, $passData) + " ";
+          } else {
+            out += " var " + $nextData + " = " + $passData + "; " + $code + " ";
+          }
+          if ($breakOnError) {
+            out += " if (!" + $nextValid + ") break; ";
+          }
+          out += " } }  ";
+          if ($breakOnError) {
+            out += " if (" + $nextValid + ") { ";
+            $closingBraces += "}";
+          }
+        }
+      } else if (it.opts.strictKeywords ? typeof $schema == "object" && Object.keys($schema).length > 0 || $schema === false : it.util.schemaHasRules($schema, it.RULES.all)) {
+        $it.schema = $schema;
+        $it.schemaPath = $schemaPath;
+        $it.errSchemaPath = $errSchemaPath;
+        out += "  for (var " + $idx + " = 0; " + $idx + " < " + $data + ".length; " + $idx + "++) { ";
+        $it.errorPath = it.util.getPathExpr(it.errorPath, $idx, it.opts.jsonPointers, true);
+        var $passData = $data + "[" + $idx + "]";
+        $it.dataPathArr[$dataNxt] = $idx;
+        var $code = it.validate($it);
+        $it.baseId = $currentBaseId;
+        if (it.util.varOccurences($code, $nextData) < 2) {
+          out += " " + it.util.varReplace($code, $nextData, $passData) + " ";
+        } else {
+          out += " var " + $nextData + " = " + $passData + "; " + $code + " ";
+        }
+        if ($breakOnError) {
+          out += " if (!" + $nextValid + ") break; ";
+        }
+        out += " }";
+      }
+      if ($breakOnError) {
+        out += " " + $closingBraces + " if (" + $errs + " == errors) {";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/_limit.js
+var require_limit = __commonJS({
+  "node_modules/ajv/lib/dotjs/_limit.js"(exports, module) {
+    "use strict";
+    module.exports = function generate__limit(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $errorKeyword;
+      var $data = "data" + ($dataLvl || "");
+      var $isData = it.opts.$data && $schema && $schema.$data, $schemaValue;
+      if ($isData) {
+        out += " var schema" + $lvl + " = " + it.util.getData($schema.$data, $dataLvl, it.dataPathArr) + "; ";
+        $schemaValue = "schema" + $lvl;
+      } else {
+        $schemaValue = $schema;
+      }
+      var $isMax = $keyword == "maximum", $exclusiveKeyword = $isMax ? "exclusiveMaximum" : "exclusiveMinimum", $schemaExcl = it.schema[$exclusiveKeyword], $isDataExcl = it.opts.$data && $schemaExcl && $schemaExcl.$data, $op = $isMax ? "<" : ">", $notOp = $isMax ? ">" : "<", $errorKeyword = void 0;
+      if (!($isData || typeof $schema == "number" || $schema === void 0)) {
+        throw new Error($keyword + " must be number");
+      }
+      if (!($isDataExcl || $schemaExcl === void 0 || typeof $schemaExcl == "number" || typeof $schemaExcl == "boolean")) {
+        throw new Error($exclusiveKeyword + " must be number or boolean");
+      }
+      if ($isDataExcl) {
+        var $schemaValueExcl = it.util.getData($schemaExcl.$data, $dataLvl, it.dataPathArr), $exclusive = "exclusive" + $lvl, $exclType = "exclType" + $lvl, $exclIsNumber = "exclIsNumber" + $lvl, $opExpr = "op" + $lvl, $opStr = "' + " + $opExpr + " + '";
+        out += " var schemaExcl" + $lvl + " = " + $schemaValueExcl + "; ";
+        $schemaValueExcl = "schemaExcl" + $lvl;
+        out += " var " + $exclusive + "; var " + $exclType + " = typeof " + $schemaValueExcl + "; if (" + $exclType + " != 'boolean' && " + $exclType + " != 'undefined' && " + $exclType + " != 'number') { ";
+        var $errorKeyword = $exclusiveKeyword;
+        var $$outStack = $$outStack || [];
+        $$outStack.push(out);
+        out = "";
+        if (it.createErrors !== false) {
+          out += " { keyword: '" + ($errorKeyword || "_exclusiveLimit") + "' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: {} ";
+          if (it.opts.messages !== false) {
+            out += " , message: '" + $exclusiveKeyword + " should be boolean' ";
+          }
+          if (it.opts.verbose) {
+            out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+          }
+          out += " } ";
+        } else {
+          out += " {} ";
+        }
+        var __err = out;
+        out = $$outStack.pop();
+        if (!it.compositeRule && $breakOnError) {
+          if (it.async) {
+            out += " throw new ValidationError([" + __err + "]); ";
+          } else {
+            out += " validate.errors = [" + __err + "]; return false; ";
+          }
+        } else {
+          out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+        }
+        out += " } else if ( ";
+        if ($isData) {
+          out += " (" + $schemaValue + " !== undefined && typeof " + $schemaValue + " != 'number') || ";
+        }
+        out += " " + $exclType + " == 'number' ? ( (" + $exclusive + " = " + $schemaValue + " === undefined || " + $schemaValueExcl + " " + $op + "= " + $schemaValue + ") ? " + $data + " " + $notOp + "= " + $schemaValueExcl + " : " + $data + " " + $notOp + " " + $schemaValue + " ) : ( (" + $exclusive + " = " + $schemaValueExcl + " === true) ? " + $data + " " + $notOp + "= " + $schemaValue + " : " + $data + " " + $notOp + " " + $schemaValue + " ) || " + $data + " !== " + $data + ") { var op" + $lvl + " = " + $exclusive + " ? '" + $op + "' : '" + $op + "='; ";
+        if ($schema === void 0) {
+          $errorKeyword = $exclusiveKeyword;
+          $errSchemaPath = it.errSchemaPath + "/" + $exclusiveKeyword;
+          $schemaValue = $schemaValueExcl;
+          $isData = $isDataExcl;
+        }
+      } else {
+        var $exclIsNumber = typeof $schemaExcl == "number", $opStr = $op;
+        if ($exclIsNumber && $isData) {
+          var $opExpr = "'" + $opStr + "'";
+          out += " if ( ";
+          if ($isData) {
+            out += " (" + $schemaValue + " !== undefined && typeof " + $schemaValue + " != 'number') || ";
+          }
+          out += " ( " + $schemaValue + " === undefined || " + $schemaExcl + " " + $op + "= " + $schemaValue + " ? " + $data + " " + $notOp + "= " + $schemaExcl + " : " + $data + " " + $notOp + " " + $schemaValue + " ) || " + $data + " !== " + $data + ") { ";
+        } else {
+          if ($exclIsNumber && $schema === void 0) {
+            $exclusive = true;
+            $errorKeyword = $exclusiveKeyword;
+            $errSchemaPath = it.errSchemaPath + "/" + $exclusiveKeyword;
+            $schemaValue = $schemaExcl;
+            $notOp += "=";
+          } else {
+            if ($exclIsNumber) $schemaValue = Math[$isMax ? "min" : "max"]($schemaExcl, $schema);
+            if ($schemaExcl === ($exclIsNumber ? $schemaValue : true)) {
+              $exclusive = true;
+              $errorKeyword = $exclusiveKeyword;
+              $errSchemaPath = it.errSchemaPath + "/" + $exclusiveKeyword;
+              $notOp += "=";
+            } else {
+              $exclusive = false;
+              $opStr += "=";
+            }
+          }
+          var $opExpr = "'" + $opStr + "'";
+          out += " if ( ";
+          if ($isData) {
+            out += " (" + $schemaValue + " !== undefined && typeof " + $schemaValue + " != 'number') || ";
+          }
+          out += " " + $data + " " + $notOp + " " + $schemaValue + " || " + $data + " !== " + $data + ") { ";
+        }
+      }
+      $errorKeyword = $errorKeyword || $keyword;
+      var $$outStack = $$outStack || [];
+      $$outStack.push(out);
+      out = "";
+      if (it.createErrors !== false) {
+        out += " { keyword: '" + ($errorKeyword || "_limit") + "' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { comparison: " + $opExpr + ", limit: " + $schemaValue + ", exclusive: " + $exclusive + " } ";
+        if (it.opts.messages !== false) {
+          out += " , message: 'should be " + $opStr + " ";
+          if ($isData) {
+            out += "' + " + $schemaValue;
+          } else {
+            out += "" + $schemaValue + "'";
+          }
+        }
+        if (it.opts.verbose) {
+          out += " , schema:  ";
+          if ($isData) {
+            out += "validate.schema" + $schemaPath;
+          } else {
+            out += "" + $schema;
+          }
+          out += "         , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+        }
+        out += " } ";
+      } else {
+        out += " {} ";
+      }
+      var __err = out;
+      out = $$outStack.pop();
+      if (!it.compositeRule && $breakOnError) {
+        if (it.async) {
+          out += " throw new ValidationError([" + __err + "]); ";
+        } else {
+          out += " validate.errors = [" + __err + "]; return false; ";
+        }
+      } else {
+        out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+      }
+      out += " } ";
+      if ($breakOnError) {
+        out += " else { ";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/_limitItems.js
+var require_limitItems = __commonJS({
+  "node_modules/ajv/lib/dotjs/_limitItems.js"(exports, module) {
+    "use strict";
+    module.exports = function generate__limitItems(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $errorKeyword;
+      var $data = "data" + ($dataLvl || "");
+      var $isData = it.opts.$data && $schema && $schema.$data, $schemaValue;
+      if ($isData) {
+        out += " var schema" + $lvl + " = " + it.util.getData($schema.$data, $dataLvl, it.dataPathArr) + "; ";
+        $schemaValue = "schema" + $lvl;
+      } else {
+        $schemaValue = $schema;
+      }
+      if (!($isData || typeof $schema == "number")) {
+        throw new Error($keyword + " must be number");
+      }
+      var $op = $keyword == "maxItems" ? ">" : "<";
+      out += "if ( ";
+      if ($isData) {
+        out += " (" + $schemaValue + " !== undefined && typeof " + $schemaValue + " != 'number') || ";
+      }
+      out += " " + $data + ".length " + $op + " " + $schemaValue + ") { ";
+      var $errorKeyword = $keyword;
+      var $$outStack = $$outStack || [];
+      $$outStack.push(out);
+      out = "";
+      if (it.createErrors !== false) {
+        out += " { keyword: '" + ($errorKeyword || "_limitItems") + "' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { limit: " + $schemaValue + " } ";
+        if (it.opts.messages !== false) {
+          out += " , message: 'should NOT have ";
+          if ($keyword == "maxItems") {
+            out += "more";
+          } else {
+            out += "fewer";
+          }
+          out += " than ";
+          if ($isData) {
+            out += "' + " + $schemaValue + " + '";
+          } else {
+            out += "" + $schema;
+          }
+          out += " items' ";
+        }
+        if (it.opts.verbose) {
+          out += " , schema:  ";
+          if ($isData) {
+            out += "validate.schema" + $schemaPath;
+          } else {
+            out += "" + $schema;
+          }
+          out += "         , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+        }
+        out += " } ";
+      } else {
+        out += " {} ";
+      }
+      var __err = out;
+      out = $$outStack.pop();
+      if (!it.compositeRule && $breakOnError) {
+        if (it.async) {
+          out += " throw new ValidationError([" + __err + "]); ";
+        } else {
+          out += " validate.errors = [" + __err + "]; return false; ";
+        }
+      } else {
+        out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+      }
+      out += "} ";
+      if ($breakOnError) {
+        out += " else { ";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/_limitLength.js
+var require_limitLength = __commonJS({
+  "node_modules/ajv/lib/dotjs/_limitLength.js"(exports, module) {
+    "use strict";
+    module.exports = function generate__limitLength(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $errorKeyword;
+      var $data = "data" + ($dataLvl || "");
+      var $isData = it.opts.$data && $schema && $schema.$data, $schemaValue;
+      if ($isData) {
+        out += " var schema" + $lvl + " = " + it.util.getData($schema.$data, $dataLvl, it.dataPathArr) + "; ";
+        $schemaValue = "schema" + $lvl;
+      } else {
+        $schemaValue = $schema;
+      }
+      if (!($isData || typeof $schema == "number")) {
+        throw new Error($keyword + " must be number");
+      }
+      var $op = $keyword == "maxLength" ? ">" : "<";
+      out += "if ( ";
+      if ($isData) {
+        out += " (" + $schemaValue + " !== undefined && typeof " + $schemaValue + " != 'number') || ";
+      }
+      if (it.opts.unicode === false) {
+        out += " " + $data + ".length ";
+      } else {
+        out += " ucs2length(" + $data + ") ";
+      }
+      out += " " + $op + " " + $schemaValue + ") { ";
+      var $errorKeyword = $keyword;
+      var $$outStack = $$outStack || [];
+      $$outStack.push(out);
+      out = "";
+      if (it.createErrors !== false) {
+        out += " { keyword: '" + ($errorKeyword || "_limitLength") + "' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { limit: " + $schemaValue + " } ";
+        if (it.opts.messages !== false) {
+          out += " , message: 'should NOT be ";
+          if ($keyword == "maxLength") {
+            out += "longer";
+          } else {
+            out += "shorter";
+          }
+          out += " than ";
+          if ($isData) {
+            out += "' + " + $schemaValue + " + '";
+          } else {
+            out += "" + $schema;
+          }
+          out += " characters' ";
+        }
+        if (it.opts.verbose) {
+          out += " , schema:  ";
+          if ($isData) {
+            out += "validate.schema" + $schemaPath;
+          } else {
+            out += "" + $schema;
+          }
+          out += "         , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+        }
+        out += " } ";
+      } else {
+        out += " {} ";
+      }
+      var __err = out;
+      out = $$outStack.pop();
+      if (!it.compositeRule && $breakOnError) {
+        if (it.async) {
+          out += " throw new ValidationError([" + __err + "]); ";
+        } else {
+          out += " validate.errors = [" + __err + "]; return false; ";
+        }
+      } else {
+        out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+      }
+      out += "} ";
+      if ($breakOnError) {
+        out += " else { ";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/_limitProperties.js
+var require_limitProperties = __commonJS({
+  "node_modules/ajv/lib/dotjs/_limitProperties.js"(exports, module) {
+    "use strict";
+    module.exports = function generate__limitProperties(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $errorKeyword;
+      var $data = "data" + ($dataLvl || "");
+      var $isData = it.opts.$data && $schema && $schema.$data, $schemaValue;
+      if ($isData) {
+        out += " var schema" + $lvl + " = " + it.util.getData($schema.$data, $dataLvl, it.dataPathArr) + "; ";
+        $schemaValue = "schema" + $lvl;
+      } else {
+        $schemaValue = $schema;
+      }
+      if (!($isData || typeof $schema == "number")) {
+        throw new Error($keyword + " must be number");
+      }
+      var $op = $keyword == "maxProperties" ? ">" : "<";
+      out += "if ( ";
+      if ($isData) {
+        out += " (" + $schemaValue + " !== undefined && typeof " + $schemaValue + " != 'number') || ";
+      }
+      out += " Object.keys(" + $data + ").length " + $op + " " + $schemaValue + ") { ";
+      var $errorKeyword = $keyword;
+      var $$outStack = $$outStack || [];
+      $$outStack.push(out);
+      out = "";
+      if (it.createErrors !== false) {
+        out += " { keyword: '" + ($errorKeyword || "_limitProperties") + "' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { limit: " + $schemaValue + " } ";
+        if (it.opts.messages !== false) {
+          out += " , message: 'should NOT have ";
+          if ($keyword == "maxProperties") {
+            out += "more";
+          } else {
+            out += "fewer";
+          }
+          out += " than ";
+          if ($isData) {
+            out += "' + " + $schemaValue + " + '";
+          } else {
+            out += "" + $schema;
+          }
+          out += " properties' ";
+        }
+        if (it.opts.verbose) {
+          out += " , schema:  ";
+          if ($isData) {
+            out += "validate.schema" + $schemaPath;
+          } else {
+            out += "" + $schema;
+          }
+          out += "         , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+        }
+        out += " } ";
+      } else {
+        out += " {} ";
+      }
+      var __err = out;
+      out = $$outStack.pop();
+      if (!it.compositeRule && $breakOnError) {
+        if (it.async) {
+          out += " throw new ValidationError([" + __err + "]); ";
+        } else {
+          out += " validate.errors = [" + __err + "]; return false; ";
+        }
+      } else {
+        out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+      }
+      out += "} ";
+      if ($breakOnError) {
+        out += " else { ";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/multipleOf.js
+var require_multipleOf = __commonJS({
+  "node_modules/ajv/lib/dotjs/multipleOf.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_multipleOf(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $isData = it.opts.$data && $schema && $schema.$data, $schemaValue;
+      if ($isData) {
+        out += " var schema" + $lvl + " = " + it.util.getData($schema.$data, $dataLvl, it.dataPathArr) + "; ";
+        $schemaValue = "schema" + $lvl;
+      } else {
+        $schemaValue = $schema;
+      }
+      if (!($isData || typeof $schema == "number")) {
+        throw new Error($keyword + " must be number");
+      }
+      out += "var division" + $lvl + ";if (";
+      if ($isData) {
+        out += " " + $schemaValue + " !== undefined && ( typeof " + $schemaValue + " != 'number' || ";
+      }
+      out += " (division" + $lvl + " = " + $data + " / " + $schemaValue + ", ";
+      if (it.opts.multipleOfPrecision) {
+        out += " Math.abs(Math.round(division" + $lvl + ") - division" + $lvl + ") > 1e-" + it.opts.multipleOfPrecision + " ";
+      } else {
+        out += " division" + $lvl + " !== parseInt(division" + $lvl + ") ";
+      }
+      out += " ) ";
+      if ($isData) {
+        out += "  )  ";
+      }
+      out += " ) {   ";
+      var $$outStack = $$outStack || [];
+      $$outStack.push(out);
+      out = "";
+      if (it.createErrors !== false) {
+        out += " { keyword: 'multipleOf' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { multipleOf: " + $schemaValue + " } ";
+        if (it.opts.messages !== false) {
+          out += " , message: 'should be multiple of ";
+          if ($isData) {
+            out += "' + " + $schemaValue;
+          } else {
+            out += "" + $schemaValue + "'";
+          }
+        }
+        if (it.opts.verbose) {
+          out += " , schema:  ";
+          if ($isData) {
+            out += "validate.schema" + $schemaPath;
+          } else {
+            out += "" + $schema;
+          }
+          out += "         , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+        }
+        out += " } ";
+      } else {
+        out += " {} ";
+      }
+      var __err = out;
+      out = $$outStack.pop();
+      if (!it.compositeRule && $breakOnError) {
+        if (it.async) {
+          out += " throw new ValidationError([" + __err + "]); ";
+        } else {
+          out += " validate.errors = [" + __err + "]; return false; ";
+        }
+      } else {
+        out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+      }
+      out += "} ";
+      if ($breakOnError) {
+        out += " else { ";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/not.js
+var require_not = __commonJS({
+  "node_modules/ajv/lib/dotjs/not.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_not(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $errs = "errs__" + $lvl;
+      var $it = it.util.copy(it);
+      $it.level++;
+      var $nextValid = "valid" + $it.level;
+      if (it.opts.strictKeywords ? typeof $schema == "object" && Object.keys($schema).length > 0 || $schema === false : it.util.schemaHasRules($schema, it.RULES.all)) {
+        $it.schema = $schema;
+        $it.schemaPath = $schemaPath;
+        $it.errSchemaPath = $errSchemaPath;
+        out += " var " + $errs + " = errors;  ";
+        var $wasComposite = it.compositeRule;
+        it.compositeRule = $it.compositeRule = true;
+        $it.createErrors = false;
+        var $allErrorsOption;
+        if ($it.opts.allErrors) {
+          $allErrorsOption = $it.opts.allErrors;
+          $it.opts.allErrors = false;
+        }
+        out += " " + it.validate($it) + " ";
+        $it.createErrors = true;
+        if ($allErrorsOption) $it.opts.allErrors = $allErrorsOption;
+        it.compositeRule = $it.compositeRule = $wasComposite;
+        out += " if (" + $nextValid + ") {   ";
+        var $$outStack = $$outStack || [];
+        $$outStack.push(out);
+        out = "";
+        if (it.createErrors !== false) {
+          out += " { keyword: 'not' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: {} ";
+          if (it.opts.messages !== false) {
+            out += " , message: 'should NOT be valid' ";
+          }
+          if (it.opts.verbose) {
+            out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+          }
+          out += " } ";
+        } else {
+          out += " {} ";
+        }
+        var __err = out;
+        out = $$outStack.pop();
+        if (!it.compositeRule && $breakOnError) {
+          if (it.async) {
+            out += " throw new ValidationError([" + __err + "]); ";
+          } else {
+            out += " validate.errors = [" + __err + "]; return false; ";
+          }
+        } else {
+          out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+        }
+        out += " } else {  errors = " + $errs + "; if (vErrors !== null) { if (" + $errs + ") vErrors.length = " + $errs + "; else vErrors = null; } ";
+        if (it.opts.allErrors) {
+          out += " } ";
+        }
+      } else {
+        out += "  var err =   ";
+        if (it.createErrors !== false) {
+          out += " { keyword: 'not' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: {} ";
+          if (it.opts.messages !== false) {
+            out += " , message: 'should NOT be valid' ";
+          }
+          if (it.opts.verbose) {
+            out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+          }
+          out += " } ";
+        } else {
+          out += " {} ";
+        }
+        out += ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+        if ($breakOnError) {
+          out += " if (false) { ";
+        }
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/oneOf.js
+var require_oneOf = __commonJS({
+  "node_modules/ajv/lib/dotjs/oneOf.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_oneOf(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $valid = "valid" + $lvl;
+      var $errs = "errs__" + $lvl;
+      var $it = it.util.copy(it);
+      var $closingBraces = "";
+      $it.level++;
+      var $nextValid = "valid" + $it.level;
+      var $currentBaseId = $it.baseId, $prevValid = "prevValid" + $lvl, $passingSchemas = "passingSchemas" + $lvl;
+      out += "var " + $errs + " = errors , " + $prevValid + " = false , " + $valid + " = false , " + $passingSchemas + " = null; ";
+      var $wasComposite = it.compositeRule;
+      it.compositeRule = $it.compositeRule = true;
+      var arr1 = $schema;
+      if (arr1) {
+        var $sch, $i = -1, l1 = arr1.length - 1;
+        while ($i < l1) {
+          $sch = arr1[$i += 1];
+          if (it.opts.strictKeywords ? typeof $sch == "object" && Object.keys($sch).length > 0 || $sch === false : it.util.schemaHasRules($sch, it.RULES.all)) {
+            $it.schema = $sch;
+            $it.schemaPath = $schemaPath + "[" + $i + "]";
+            $it.errSchemaPath = $errSchemaPath + "/" + $i;
+            out += "  " + it.validate($it) + " ";
+            $it.baseId = $currentBaseId;
+          } else {
+            out += " var " + $nextValid + " = true; ";
+          }
+          if ($i) {
+            out += " if (" + $nextValid + " && " + $prevValid + ") { " + $valid + " = false; " + $passingSchemas + " = [" + $passingSchemas + ", " + $i + "]; } else { ";
+            $closingBraces += "}";
+          }
+          out += " if (" + $nextValid + ") { " + $valid + " = " + $prevValid + " = true; " + $passingSchemas + " = " + $i + "; }";
+        }
+      }
+      it.compositeRule = $it.compositeRule = $wasComposite;
+      out += "" + $closingBraces + "if (!" + $valid + ") {   var err =   ";
+      if (it.createErrors !== false) {
+        out += " { keyword: 'oneOf' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { passingSchemas: " + $passingSchemas + " } ";
+        if (it.opts.messages !== false) {
+          out += " , message: 'should match exactly one schema in oneOf' ";
+        }
+        if (it.opts.verbose) {
+          out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+        }
+        out += " } ";
+      } else {
+        out += " {} ";
+      }
+      out += ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+      if (!it.compositeRule && $breakOnError) {
+        if (it.async) {
+          out += " throw new ValidationError(vErrors); ";
+        } else {
+          out += " validate.errors = vErrors; return false; ";
+        }
+      }
+      out += "} else {  errors = " + $errs + "; if (vErrors !== null) { if (" + $errs + ") vErrors.length = " + $errs + "; else vErrors = null; }";
+      if (it.opts.allErrors) {
+        out += " } ";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/pattern.js
+var require_pattern = __commonJS({
+  "node_modules/ajv/lib/dotjs/pattern.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_pattern(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $isData = it.opts.$data && $schema && $schema.$data, $schemaValue;
+      if ($isData) {
+        out += " var schema" + $lvl + " = " + it.util.getData($schema.$data, $dataLvl, it.dataPathArr) + "; ";
+        $schemaValue = "schema" + $lvl;
+      } else {
+        $schemaValue = $schema;
+      }
+      var $regexp = $isData ? "(new RegExp(" + $schemaValue + "))" : it.usePattern($schema);
+      out += "if ( ";
+      if ($isData) {
+        out += " (" + $schemaValue + " !== undefined && typeof " + $schemaValue + " != 'string') || ";
+      }
+      out += " !" + $regexp + ".test(" + $data + ") ) {   ";
+      var $$outStack = $$outStack || [];
+      $$outStack.push(out);
+      out = "";
+      if (it.createErrors !== false) {
+        out += " { keyword: 'pattern' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { pattern:  ";
+        if ($isData) {
+          out += "" + $schemaValue;
+        } else {
+          out += "" + it.util.toQuotedString($schema);
+        }
+        out += "  } ";
+        if (it.opts.messages !== false) {
+          out += ` , message: 'should match pattern "`;
+          if ($isData) {
+            out += "' + " + $schemaValue + " + '";
+          } else {
+            out += "" + it.util.escapeQuotes($schema);
+          }
+          out += `"' `;
+        }
+        if (it.opts.verbose) {
+          out += " , schema:  ";
+          if ($isData) {
+            out += "validate.schema" + $schemaPath;
+          } else {
+            out += "" + it.util.toQuotedString($schema);
+          }
+          out += "         , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+        }
+        out += " } ";
+      } else {
+        out += " {} ";
+      }
+      var __err = out;
+      out = $$outStack.pop();
+      if (!it.compositeRule && $breakOnError) {
+        if (it.async) {
+          out += " throw new ValidationError([" + __err + "]); ";
+        } else {
+          out += " validate.errors = [" + __err + "]; return false; ";
+        }
+      } else {
+        out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+      }
+      out += "} ";
+      if ($breakOnError) {
+        out += " else { ";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/properties.js
+var require_properties = __commonJS({
+  "node_modules/ajv/lib/dotjs/properties.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_properties(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $errs = "errs__" + $lvl;
+      var $it = it.util.copy(it);
+      var $closingBraces = "";
+      $it.level++;
+      var $nextValid = "valid" + $it.level;
+      var $key = "key" + $lvl, $idx = "idx" + $lvl, $dataNxt = $it.dataLevel = it.dataLevel + 1, $nextData = "data" + $dataNxt, $dataProperties = "dataProperties" + $lvl;
+      var $schemaKeys = Object.keys($schema || {}).filter(notProto), $pProperties = it.schema.patternProperties || {}, $pPropertyKeys = Object.keys($pProperties).filter(notProto), $aProperties = it.schema.additionalProperties, $someProperties = $schemaKeys.length || $pPropertyKeys.length, $noAdditional = $aProperties === false, $additionalIsSchema = typeof $aProperties == "object" && Object.keys($aProperties).length, $removeAdditional = it.opts.removeAdditional, $checkAdditional = $noAdditional || $additionalIsSchema || $removeAdditional, $ownProperties = it.opts.ownProperties, $currentBaseId = it.baseId;
+      var $required = it.schema.required;
+      if ($required && !(it.opts.$data && $required.$data) && $required.length < it.opts.loopRequired) {
+        var $requiredHash = it.util.toHash($required);
+      }
+      function notProto(p) {
+        return p !== "__proto__";
+      }
+      out += "var " + $errs + " = errors;var " + $nextValid + " = true;";
+      if ($ownProperties) {
+        out += " var " + $dataProperties + " = undefined;";
+      }
+      if ($checkAdditional) {
+        if ($ownProperties) {
+          out += " " + $dataProperties + " = " + $dataProperties + " || Object.keys(" + $data + "); for (var " + $idx + "=0; " + $idx + "<" + $dataProperties + ".length; " + $idx + "++) { var " + $key + " = " + $dataProperties + "[" + $idx + "]; ";
+        } else {
+          out += " for (var " + $key + " in " + $data + ") { ";
+        }
+        if ($someProperties) {
+          out += " var isAdditional" + $lvl + " = !(false ";
+          if ($schemaKeys.length) {
+            if ($schemaKeys.length > 8) {
+              out += " || validate.schema" + $schemaPath + ".hasOwnProperty(" + $key + ") ";
+            } else {
+              var arr1 = $schemaKeys;
+              if (arr1) {
+                var $propertyKey, i1 = -1, l1 = arr1.length - 1;
+                while (i1 < l1) {
+                  $propertyKey = arr1[i1 += 1];
+                  out += " || " + $key + " == " + it.util.toQuotedString($propertyKey) + " ";
+                }
+              }
+            }
+          }
+          if ($pPropertyKeys.length) {
+            var arr2 = $pPropertyKeys;
+            if (arr2) {
+              var $pProperty, $i = -1, l2 = arr2.length - 1;
+              while ($i < l2) {
+                $pProperty = arr2[$i += 1];
+                out += " || " + it.usePattern($pProperty) + ".test(" + $key + ") ";
+              }
+            }
+          }
+          out += " ); if (isAdditional" + $lvl + ") { ";
+        }
+        if ($removeAdditional == "all") {
+          out += " delete " + $data + "[" + $key + "]; ";
+        } else {
+          var $currentErrorPath = it.errorPath;
+          var $additionalProperty = "' + " + $key + " + '";
+          if (it.opts._errorDataPathProperty) {
+            it.errorPath = it.util.getPathExpr(it.errorPath, $key, it.opts.jsonPointers);
+          }
+          if ($noAdditional) {
+            if ($removeAdditional) {
+              out += " delete " + $data + "[" + $key + "]; ";
+            } else {
+              out += " " + $nextValid + " = false; ";
+              var $currErrSchemaPath = $errSchemaPath;
+              $errSchemaPath = it.errSchemaPath + "/additionalProperties";
+              var $$outStack = $$outStack || [];
+              $$outStack.push(out);
+              out = "";
+              if (it.createErrors !== false) {
+                out += " { keyword: 'additionalProperties' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { additionalProperty: '" + $additionalProperty + "' } ";
+                if (it.opts.messages !== false) {
+                  out += " , message: '";
+                  if (it.opts._errorDataPathProperty) {
+                    out += "is an invalid additional property";
+                  } else {
+                    out += "should NOT have additional properties";
+                  }
+                  out += "' ";
+                }
+                if (it.opts.verbose) {
+                  out += " , schema: false , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+                }
+                out += " } ";
+              } else {
+                out += " {} ";
+              }
+              var __err = out;
+              out = $$outStack.pop();
+              if (!it.compositeRule && $breakOnError) {
+                if (it.async) {
+                  out += " throw new ValidationError([" + __err + "]); ";
+                } else {
+                  out += " validate.errors = [" + __err + "]; return false; ";
+                }
+              } else {
+                out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+              }
+              $errSchemaPath = $currErrSchemaPath;
+              if ($breakOnError) {
+                out += " break; ";
+              }
+            }
+          } else if ($additionalIsSchema) {
+            if ($removeAdditional == "failing") {
+              out += " var " + $errs + " = errors;  ";
+              var $wasComposite = it.compositeRule;
+              it.compositeRule = $it.compositeRule = true;
+              $it.schema = $aProperties;
+              $it.schemaPath = it.schemaPath + ".additionalProperties";
+              $it.errSchemaPath = it.errSchemaPath + "/additionalProperties";
+              $it.errorPath = it.opts._errorDataPathProperty ? it.errorPath : it.util.getPathExpr(it.errorPath, $key, it.opts.jsonPointers);
+              var $passData = $data + "[" + $key + "]";
+              $it.dataPathArr[$dataNxt] = $key;
+              var $code = it.validate($it);
+              $it.baseId = $currentBaseId;
+              if (it.util.varOccurences($code, $nextData) < 2) {
+                out += " " + it.util.varReplace($code, $nextData, $passData) + " ";
+              } else {
+                out += " var " + $nextData + " = " + $passData + "; " + $code + " ";
+              }
+              out += " if (!" + $nextValid + ") { errors = " + $errs + "; if (validate.errors !== null) { if (errors) validate.errors.length = errors; else validate.errors = null; } delete " + $data + "[" + $key + "]; }  ";
+              it.compositeRule = $it.compositeRule = $wasComposite;
+            } else {
+              $it.schema = $aProperties;
+              $it.schemaPath = it.schemaPath + ".additionalProperties";
+              $it.errSchemaPath = it.errSchemaPath + "/additionalProperties";
+              $it.errorPath = it.opts._errorDataPathProperty ? it.errorPath : it.util.getPathExpr(it.errorPath, $key, it.opts.jsonPointers);
+              var $passData = $data + "[" + $key + "]";
+              $it.dataPathArr[$dataNxt] = $key;
+              var $code = it.validate($it);
+              $it.baseId = $currentBaseId;
+              if (it.util.varOccurences($code, $nextData) < 2) {
+                out += " " + it.util.varReplace($code, $nextData, $passData) + " ";
+              } else {
+                out += " var " + $nextData + " = " + $passData + "; " + $code + " ";
+              }
+              if ($breakOnError) {
+                out += " if (!" + $nextValid + ") break; ";
+              }
+            }
+          }
+          it.errorPath = $currentErrorPath;
+        }
+        if ($someProperties) {
+          out += " } ";
+        }
+        out += " }  ";
+        if ($breakOnError) {
+          out += " if (" + $nextValid + ") { ";
+          $closingBraces += "}";
+        }
+      }
+      var $useDefaults = it.opts.useDefaults && !it.compositeRule;
+      if ($schemaKeys.length) {
+        var arr3 = $schemaKeys;
+        if (arr3) {
+          var $propertyKey, i3 = -1, l3 = arr3.length - 1;
+          while (i3 < l3) {
+            $propertyKey = arr3[i3 += 1];
+            var $sch = $schema[$propertyKey];
+            if (it.opts.strictKeywords ? typeof $sch == "object" && Object.keys($sch).length > 0 || $sch === false : it.util.schemaHasRules($sch, it.RULES.all)) {
+              var $prop = it.util.getProperty($propertyKey), $passData = $data + $prop, $hasDefault = $useDefaults && $sch.default !== void 0;
+              $it.schema = $sch;
+              $it.schemaPath = $schemaPath + $prop;
+              $it.errSchemaPath = $errSchemaPath + "/" + it.util.escapeFragment($propertyKey);
+              $it.errorPath = it.util.getPath(it.errorPath, $propertyKey, it.opts.jsonPointers);
+              $it.dataPathArr[$dataNxt] = it.util.toQuotedString($propertyKey);
+              var $code = it.validate($it);
+              $it.baseId = $currentBaseId;
+              if (it.util.varOccurences($code, $nextData) < 2) {
+                $code = it.util.varReplace($code, $nextData, $passData);
+                var $useData = $passData;
+              } else {
+                var $useData = $nextData;
+                out += " var " + $nextData + " = " + $passData + "; ";
+              }
+              if ($hasDefault) {
+                out += " " + $code + " ";
+              } else {
+                if ($requiredHash && $requiredHash[$propertyKey]) {
+                  out += " if ( " + $useData + " === undefined ";
+                  if ($ownProperties) {
+                    out += " || ! Object.prototype.hasOwnProperty.call(" + $data + ", '" + it.util.escapeQuotes($propertyKey) + "') ";
+                  }
+                  out += ") { " + $nextValid + " = false; ";
+                  var $currentErrorPath = it.errorPath, $currErrSchemaPath = $errSchemaPath, $missingProperty = it.util.escapeQuotes($propertyKey);
+                  if (it.opts._errorDataPathProperty) {
+                    it.errorPath = it.util.getPath($currentErrorPath, $propertyKey, it.opts.jsonPointers);
+                  }
+                  $errSchemaPath = it.errSchemaPath + "/required";
+                  var $$outStack = $$outStack || [];
+                  $$outStack.push(out);
+                  out = "";
+                  if (it.createErrors !== false) {
+                    out += " { keyword: 'required' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { missingProperty: '" + $missingProperty + "' } ";
+                    if (it.opts.messages !== false) {
+                      out += " , message: '";
+                      if (it.opts._errorDataPathProperty) {
+                        out += "is a required property";
+                      } else {
+                        out += "should have required property \\'" + $missingProperty + "\\'";
+                      }
+                      out += "' ";
+                    }
+                    if (it.opts.verbose) {
+                      out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+                    }
+                    out += " } ";
+                  } else {
+                    out += " {} ";
+                  }
+                  var __err = out;
+                  out = $$outStack.pop();
+                  if (!it.compositeRule && $breakOnError) {
+                    if (it.async) {
+                      out += " throw new ValidationError([" + __err + "]); ";
+                    } else {
+                      out += " validate.errors = [" + __err + "]; return false; ";
+                    }
+                  } else {
+                    out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+                  }
+                  $errSchemaPath = $currErrSchemaPath;
+                  it.errorPath = $currentErrorPath;
+                  out += " } else { ";
+                } else {
+                  if ($breakOnError) {
+                    out += " if ( " + $useData + " === undefined ";
+                    if ($ownProperties) {
+                      out += " || ! Object.prototype.hasOwnProperty.call(" + $data + ", '" + it.util.escapeQuotes($propertyKey) + "') ";
+                    }
+                    out += ") { " + $nextValid + " = true; } else { ";
+                  } else {
+                    out += " if (" + $useData + " !== undefined ";
+                    if ($ownProperties) {
+                      out += " &&   Object.prototype.hasOwnProperty.call(" + $data + ", '" + it.util.escapeQuotes($propertyKey) + "') ";
+                    }
+                    out += " ) { ";
+                  }
+                }
+                out += " " + $code + " } ";
+              }
+            }
+            if ($breakOnError) {
+              out += " if (" + $nextValid + ") { ";
+              $closingBraces += "}";
+            }
+          }
+        }
+      }
+      if ($pPropertyKeys.length) {
+        var arr4 = $pPropertyKeys;
+        if (arr4) {
+          var $pProperty, i4 = -1, l4 = arr4.length - 1;
+          while (i4 < l4) {
+            $pProperty = arr4[i4 += 1];
+            var $sch = $pProperties[$pProperty];
+            if (it.opts.strictKeywords ? typeof $sch == "object" && Object.keys($sch).length > 0 || $sch === false : it.util.schemaHasRules($sch, it.RULES.all)) {
+              $it.schema = $sch;
+              $it.schemaPath = it.schemaPath + ".patternProperties" + it.util.getProperty($pProperty);
+              $it.errSchemaPath = it.errSchemaPath + "/patternProperties/" + it.util.escapeFragment($pProperty);
+              if ($ownProperties) {
+                out += " " + $dataProperties + " = " + $dataProperties + " || Object.keys(" + $data + "); for (var " + $idx + "=0; " + $idx + "<" + $dataProperties + ".length; " + $idx + "++) { var " + $key + " = " + $dataProperties + "[" + $idx + "]; ";
+              } else {
+                out += " for (var " + $key + " in " + $data + ") { ";
+              }
+              out += " if (" + it.usePattern($pProperty) + ".test(" + $key + ")) { ";
+              $it.errorPath = it.util.getPathExpr(it.errorPath, $key, it.opts.jsonPointers);
+              var $passData = $data + "[" + $key + "]";
+              $it.dataPathArr[$dataNxt] = $key;
+              var $code = it.validate($it);
+              $it.baseId = $currentBaseId;
+              if (it.util.varOccurences($code, $nextData) < 2) {
+                out += " " + it.util.varReplace($code, $nextData, $passData) + " ";
+              } else {
+                out += " var " + $nextData + " = " + $passData + "; " + $code + " ";
+              }
+              if ($breakOnError) {
+                out += " if (!" + $nextValid + ") break; ";
+              }
+              out += " } ";
+              if ($breakOnError) {
+                out += " else " + $nextValid + " = true; ";
+              }
+              out += " }  ";
+              if ($breakOnError) {
+                out += " if (" + $nextValid + ") { ";
+                $closingBraces += "}";
+              }
+            }
+          }
+        }
+      }
+      if ($breakOnError) {
+        out += " " + $closingBraces + " if (" + $errs + " == errors) {";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/propertyNames.js
+var require_propertyNames = __commonJS({
+  "node_modules/ajv/lib/dotjs/propertyNames.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_propertyNames(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $errs = "errs__" + $lvl;
+      var $it = it.util.copy(it);
+      var $closingBraces = "";
+      $it.level++;
+      var $nextValid = "valid" + $it.level;
+      out += "var " + $errs + " = errors;";
+      if (it.opts.strictKeywords ? typeof $schema == "object" && Object.keys($schema).length > 0 || $schema === false : it.util.schemaHasRules($schema, it.RULES.all)) {
+        $it.schema = $schema;
+        $it.schemaPath = $schemaPath;
+        $it.errSchemaPath = $errSchemaPath;
+        var $key = "key" + $lvl, $idx = "idx" + $lvl, $i = "i" + $lvl, $invalidName = "' + " + $key + " + '", $dataNxt = $it.dataLevel = it.dataLevel + 1, $nextData = "data" + $dataNxt, $dataProperties = "dataProperties" + $lvl, $ownProperties = it.opts.ownProperties, $currentBaseId = it.baseId;
+        if ($ownProperties) {
+          out += " var " + $dataProperties + " = undefined; ";
+        }
+        if ($ownProperties) {
+          out += " " + $dataProperties + " = " + $dataProperties + " || Object.keys(" + $data + "); for (var " + $idx + "=0; " + $idx + "<" + $dataProperties + ".length; " + $idx + "++) { var " + $key + " = " + $dataProperties + "[" + $idx + "]; ";
+        } else {
+          out += " for (var " + $key + " in " + $data + ") { ";
+        }
+        out += " var startErrs" + $lvl + " = errors; ";
+        var $passData = $key;
+        var $wasComposite = it.compositeRule;
+        it.compositeRule = $it.compositeRule = true;
+        var $code = it.validate($it);
+        $it.baseId = $currentBaseId;
+        if (it.util.varOccurences($code, $nextData) < 2) {
+          out += " " + it.util.varReplace($code, $nextData, $passData) + " ";
+        } else {
+          out += " var " + $nextData + " = " + $passData + "; " + $code + " ";
+        }
+        it.compositeRule = $it.compositeRule = $wasComposite;
+        out += " if (!" + $nextValid + ") { for (var " + $i + "=startErrs" + $lvl + "; " + $i + "<errors; " + $i + "++) { vErrors[" + $i + "].propertyName = " + $key + "; }   var err =   ";
+        if (it.createErrors !== false) {
+          out += " { keyword: 'propertyNames' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { propertyName: '" + $invalidName + "' } ";
+          if (it.opts.messages !== false) {
+            out += " , message: 'property name \\'" + $invalidName + "\\' is invalid' ";
+          }
+          if (it.opts.verbose) {
+            out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+          }
+          out += " } ";
+        } else {
+          out += " {} ";
+        }
+        out += ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+        if (!it.compositeRule && $breakOnError) {
+          if (it.async) {
+            out += " throw new ValidationError(vErrors); ";
+          } else {
+            out += " validate.errors = vErrors; return false; ";
+          }
+        }
+        if ($breakOnError) {
+          out += " break; ";
+        }
+        out += " } }";
+      }
+      if ($breakOnError) {
+        out += " " + $closingBraces + " if (" + $errs + " == errors) {";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/required.js
+var require_required = __commonJS({
+  "node_modules/ajv/lib/dotjs/required.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_required(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $valid = "valid" + $lvl;
+      var $isData = it.opts.$data && $schema && $schema.$data, $schemaValue;
+      if ($isData) {
+        out += " var schema" + $lvl + " = " + it.util.getData($schema.$data, $dataLvl, it.dataPathArr) + "; ";
+        $schemaValue = "schema" + $lvl;
+      } else {
+        $schemaValue = $schema;
+      }
+      var $vSchema = "schema" + $lvl;
+      if (!$isData) {
+        if ($schema.length < it.opts.loopRequired && it.schema.properties && Object.keys(it.schema.properties).length) {
+          var $required = [];
+          var arr1 = $schema;
+          if (arr1) {
+            var $property, i1 = -1, l1 = arr1.length - 1;
+            while (i1 < l1) {
+              $property = arr1[i1 += 1];
+              var $propertySch = it.schema.properties[$property];
+              if (!($propertySch && (it.opts.strictKeywords ? typeof $propertySch == "object" && Object.keys($propertySch).length > 0 || $propertySch === false : it.util.schemaHasRules($propertySch, it.RULES.all)))) {
+                $required[$required.length] = $property;
+              }
+            }
+          }
+        } else {
+          var $required = $schema;
+        }
+      }
+      if ($isData || $required.length) {
+        var $currentErrorPath = it.errorPath, $loopRequired = $isData || $required.length >= it.opts.loopRequired, $ownProperties = it.opts.ownProperties;
+        if ($breakOnError) {
+          out += " var missing" + $lvl + "; ";
+          if ($loopRequired) {
+            if (!$isData) {
+              out += " var " + $vSchema + " = validate.schema" + $schemaPath + "; ";
+            }
+            var $i = "i" + $lvl, $propertyPath = "schema" + $lvl + "[" + $i + "]", $missingProperty = "' + " + $propertyPath + " + '";
+            if (it.opts._errorDataPathProperty) {
+              it.errorPath = it.util.getPathExpr($currentErrorPath, $propertyPath, it.opts.jsonPointers);
+            }
+            out += " var " + $valid + " = true; ";
+            if ($isData) {
+              out += " if (schema" + $lvl + " === undefined) " + $valid + " = true; else if (!Array.isArray(schema" + $lvl + ")) " + $valid + " = false; else {";
+            }
+            out += " for (var " + $i + " = 0; " + $i + " < " + $vSchema + ".length; " + $i + "++) { " + $valid + " = " + $data + "[" + $vSchema + "[" + $i + "]] !== undefined ";
+            if ($ownProperties) {
+              out += " &&   Object.prototype.hasOwnProperty.call(" + $data + ", " + $vSchema + "[" + $i + "]) ";
+            }
+            out += "; if (!" + $valid + ") break; } ";
+            if ($isData) {
+              out += "  }  ";
+            }
+            out += "  if (!" + $valid + ") {   ";
+            var $$outStack = $$outStack || [];
+            $$outStack.push(out);
+            out = "";
+            if (it.createErrors !== false) {
+              out += " { keyword: 'required' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { missingProperty: '" + $missingProperty + "' } ";
+              if (it.opts.messages !== false) {
+                out += " , message: '";
+                if (it.opts._errorDataPathProperty) {
+                  out += "is a required property";
+                } else {
+                  out += "should have required property \\'" + $missingProperty + "\\'";
+                }
+                out += "' ";
+              }
+              if (it.opts.verbose) {
+                out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+              }
+              out += " } ";
+            } else {
+              out += " {} ";
+            }
+            var __err = out;
+            out = $$outStack.pop();
+            if (!it.compositeRule && $breakOnError) {
+              if (it.async) {
+                out += " throw new ValidationError([" + __err + "]); ";
+              } else {
+                out += " validate.errors = [" + __err + "]; return false; ";
+              }
+            } else {
+              out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+            }
+            out += " } else { ";
+          } else {
+            out += " if ( ";
+            var arr2 = $required;
+            if (arr2) {
+              var $propertyKey, $i = -1, l2 = arr2.length - 1;
+              while ($i < l2) {
+                $propertyKey = arr2[$i += 1];
+                if ($i) {
+                  out += " || ";
+                }
+                var $prop = it.util.getProperty($propertyKey), $useData = $data + $prop;
+                out += " ( ( " + $useData + " === undefined ";
+                if ($ownProperties) {
+                  out += " || ! Object.prototype.hasOwnProperty.call(" + $data + ", '" + it.util.escapeQuotes($propertyKey) + "') ";
+                }
+                out += ") && (missing" + $lvl + " = " + it.util.toQuotedString(it.opts.jsonPointers ? $propertyKey : $prop) + ") ) ";
+              }
+            }
+            out += ") {  ";
+            var $propertyPath = "missing" + $lvl, $missingProperty = "' + " + $propertyPath + " + '";
+            if (it.opts._errorDataPathProperty) {
+              it.errorPath = it.opts.jsonPointers ? it.util.getPathExpr($currentErrorPath, $propertyPath, true) : $currentErrorPath + " + " + $propertyPath;
+            }
+            var $$outStack = $$outStack || [];
+            $$outStack.push(out);
+            out = "";
+            if (it.createErrors !== false) {
+              out += " { keyword: 'required' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { missingProperty: '" + $missingProperty + "' } ";
+              if (it.opts.messages !== false) {
+                out += " , message: '";
+                if (it.opts._errorDataPathProperty) {
+                  out += "is a required property";
+                } else {
+                  out += "should have required property \\'" + $missingProperty + "\\'";
+                }
+                out += "' ";
+              }
+              if (it.opts.verbose) {
+                out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+              }
+              out += " } ";
+            } else {
+              out += " {} ";
+            }
+            var __err = out;
+            out = $$outStack.pop();
+            if (!it.compositeRule && $breakOnError) {
+              if (it.async) {
+                out += " throw new ValidationError([" + __err + "]); ";
+              } else {
+                out += " validate.errors = [" + __err + "]; return false; ";
+              }
+            } else {
+              out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+            }
+            out += " } else { ";
+          }
+        } else {
+          if ($loopRequired) {
+            if (!$isData) {
+              out += " var " + $vSchema + " = validate.schema" + $schemaPath + "; ";
+            }
+            var $i = "i" + $lvl, $propertyPath = "schema" + $lvl + "[" + $i + "]", $missingProperty = "' + " + $propertyPath + " + '";
+            if (it.opts._errorDataPathProperty) {
+              it.errorPath = it.util.getPathExpr($currentErrorPath, $propertyPath, it.opts.jsonPointers);
+            }
+            if ($isData) {
+              out += " if (" + $vSchema + " && !Array.isArray(" + $vSchema + ")) {  var err =   ";
+              if (it.createErrors !== false) {
+                out += " { keyword: 'required' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { missingProperty: '" + $missingProperty + "' } ";
+                if (it.opts.messages !== false) {
+                  out += " , message: '";
+                  if (it.opts._errorDataPathProperty) {
+                    out += "is a required property";
+                  } else {
+                    out += "should have required property \\'" + $missingProperty + "\\'";
+                  }
+                  out += "' ";
+                }
+                if (it.opts.verbose) {
+                  out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+                }
+                out += " } ";
+              } else {
+                out += " {} ";
+              }
+              out += ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; } else if (" + $vSchema + " !== undefined) { ";
+            }
+            out += " for (var " + $i + " = 0; " + $i + " < " + $vSchema + ".length; " + $i + "++) { if (" + $data + "[" + $vSchema + "[" + $i + "]] === undefined ";
+            if ($ownProperties) {
+              out += " || ! Object.prototype.hasOwnProperty.call(" + $data + ", " + $vSchema + "[" + $i + "]) ";
+            }
+            out += ") {  var err =   ";
+            if (it.createErrors !== false) {
+              out += " { keyword: 'required' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { missingProperty: '" + $missingProperty + "' } ";
+              if (it.opts.messages !== false) {
+                out += " , message: '";
+                if (it.opts._errorDataPathProperty) {
+                  out += "is a required property";
+                } else {
+                  out += "should have required property \\'" + $missingProperty + "\\'";
+                }
+                out += "' ";
+              }
+              if (it.opts.verbose) {
+                out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+              }
+              out += " } ";
+            } else {
+              out += " {} ";
+            }
+            out += ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; } } ";
+            if ($isData) {
+              out += "  }  ";
+            }
+          } else {
+            var arr3 = $required;
+            if (arr3) {
+              var $propertyKey, i3 = -1, l3 = arr3.length - 1;
+              while (i3 < l3) {
+                $propertyKey = arr3[i3 += 1];
+                var $prop = it.util.getProperty($propertyKey), $missingProperty = it.util.escapeQuotes($propertyKey), $useData = $data + $prop;
+                if (it.opts._errorDataPathProperty) {
+                  it.errorPath = it.util.getPath($currentErrorPath, $propertyKey, it.opts.jsonPointers);
+                }
+                out += " if ( " + $useData + " === undefined ";
+                if ($ownProperties) {
+                  out += " || ! Object.prototype.hasOwnProperty.call(" + $data + ", '" + it.util.escapeQuotes($propertyKey) + "') ";
+                }
+                out += ") {  var err =   ";
+                if (it.createErrors !== false) {
+                  out += " { keyword: 'required' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { missingProperty: '" + $missingProperty + "' } ";
+                  if (it.opts.messages !== false) {
+                    out += " , message: '";
+                    if (it.opts._errorDataPathProperty) {
+                      out += "is a required property";
+                    } else {
+                      out += "should have required property \\'" + $missingProperty + "\\'";
+                    }
+                    out += "' ";
+                  }
+                  if (it.opts.verbose) {
+                    out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+                  }
+                  out += " } ";
+                } else {
+                  out += " {} ";
+                }
+                out += ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; } ";
+              }
+            }
+          }
+        }
+        it.errorPath = $currentErrorPath;
+      } else if ($breakOnError) {
+        out += " if (true) {";
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/uniqueItems.js
+var require_uniqueItems = __commonJS({
+  "node_modules/ajv/lib/dotjs/uniqueItems.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_uniqueItems(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $data = "data" + ($dataLvl || "");
+      var $valid = "valid" + $lvl;
+      var $isData = it.opts.$data && $schema && $schema.$data, $schemaValue;
+      if ($isData) {
+        out += " var schema" + $lvl + " = " + it.util.getData($schema.$data, $dataLvl, it.dataPathArr) + "; ";
+        $schemaValue = "schema" + $lvl;
+      } else {
+        $schemaValue = $schema;
+      }
+      if (($schema || $isData) && it.opts.uniqueItems !== false) {
+        if ($isData) {
+          out += " var " + $valid + "; if (" + $schemaValue + " === false || " + $schemaValue + " === undefined) " + $valid + " = true; else if (typeof " + $schemaValue + " != 'boolean') " + $valid + " = false; else { ";
+        }
+        out += " var i = " + $data + ".length , " + $valid + " = true , j; if (i > 1) { ";
+        var $itemType = it.schema.items && it.schema.items.type, $typeIsArray = Array.isArray($itemType);
+        if (!$itemType || $itemType == "object" || $itemType == "array" || $typeIsArray && ($itemType.indexOf("object") >= 0 || $itemType.indexOf("array") >= 0)) {
+          out += " outer: for (;i--;) { for (j = i; j--;) { if (equal(" + $data + "[i], " + $data + "[j])) { " + $valid + " = false; break outer; } } } ";
+        } else {
+          out += " var itemIndices = {}, item; for (;i--;) { var item = " + $data + "[i]; ";
+          var $method = "checkDataType" + ($typeIsArray ? "s" : "");
+          out += " if (" + it.util[$method]($itemType, "item", it.opts.strictNumbers, true) + ") continue; ";
+          if ($typeIsArray) {
+            out += ` if (typeof item == 'string') item = '"' + item; `;
+          }
+          out += " if (typeof itemIndices[item] == 'number') { " + $valid + " = false; j = itemIndices[item]; break; } itemIndices[item] = i; } ";
+        }
+        out += " } ";
+        if ($isData) {
+          out += "  }  ";
+        }
+        out += " if (!" + $valid + ") {   ";
+        var $$outStack = $$outStack || [];
+        $$outStack.push(out);
+        out = "";
+        if (it.createErrors !== false) {
+          out += " { keyword: 'uniqueItems' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { i: i, j: j } ";
+          if (it.opts.messages !== false) {
+            out += " , message: 'should NOT have duplicate items (items ## ' + j + ' and ' + i + ' are identical)' ";
+          }
+          if (it.opts.verbose) {
+            out += " , schema:  ";
+            if ($isData) {
+              out += "validate.schema" + $schemaPath;
+            } else {
+              out += "" + $schema;
+            }
+            out += "         , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+          }
+          out += " } ";
+        } else {
+          out += " {} ";
+        }
+        var __err = out;
+        out = $$outStack.pop();
+        if (!it.compositeRule && $breakOnError) {
+          if (it.async) {
+            out += " throw new ValidationError([" + __err + "]); ";
+          } else {
+            out += " validate.errors = [" + __err + "]; return false; ";
+          }
+        } else {
+          out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+        }
+        out += " } ";
+        if ($breakOnError) {
+          out += " else { ";
+        }
+      } else {
+        if ($breakOnError) {
+          out += " if (true) { ";
+        }
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/dotjs/index.js
+var require_dotjs = __commonJS({
+  "node_modules/ajv/lib/dotjs/index.js"(exports, module) {
+    "use strict";
+    module.exports = {
+      "$ref": require_ref(),
+      allOf: require_allOf(),
+      anyOf: require_anyOf(),
+      "$comment": require_comment(),
+      const: require_const(),
+      contains: require_contains(),
+      dependencies: require_dependencies(),
+      "enum": require_enum(),
+      format: require_format(),
+      "if": require_if(),
+      items: require_items(),
+      maximum: require_limit(),
+      minimum: require_limit(),
+      maxItems: require_limitItems(),
+      minItems: require_limitItems(),
+      maxLength: require_limitLength(),
+      minLength: require_limitLength(),
+      maxProperties: require_limitProperties(),
+      minProperties: require_limitProperties(),
+      multipleOf: require_multipleOf(),
+      not: require_not(),
+      oneOf: require_oneOf(),
+      pattern: require_pattern(),
+      properties: require_properties(),
+      propertyNames: require_propertyNames(),
+      required: require_required(),
+      uniqueItems: require_uniqueItems(),
+      validate: require_validate()
+    };
+  }
+});
+
+// node_modules/ajv/lib/compile/rules.js
+var require_rules = __commonJS({
+  "node_modules/ajv/lib/compile/rules.js"(exports, module) {
+    "use strict";
+    var ruleModules = require_dotjs();
+    var toHash = require_util().toHash;
+    module.exports = function rules() {
+      var RULES = [
+        {
+          type: "number",
+          rules: [
+            { "maximum": ["exclusiveMaximum"] },
+            { "minimum": ["exclusiveMinimum"] },
+            "multipleOf",
+            "format"
           ]
         },
-        "navigation": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "token",
-            "view",
-            "item"
-          ],
-          "properties": {
-            "token": {
-              "type": "string",
-              "minLength": 1,
-              "pattern": "^[^\\u0000]*$",
-              "maxLength": 64
-            },
-            "view": {
-              "enum": [
-                "overview",
-                "detail"
+        {
+          type: "string",
+          rules: ["maxLength", "minLength", "pattern", "format"]
+        },
+        {
+          type: "array",
+          rules: ["maxItems", "minItems", "items", "contains", "uniqueItems"]
+        },
+        {
+          type: "object",
+          rules: [
+            "maxProperties",
+            "minProperties",
+            "required",
+            "dependencies",
+            "propertyNames",
+            { "properties": ["additionalProperties", "patternProperties"] }
+          ]
+        },
+        { rules: ["$ref", "const", "enum", "not", "anyOf", "oneOf", "allOf", "if"] }
+      ];
+      var ALL = ["type", "$comment"];
+      var KEYWORDS = [
+        "$schema",
+        "$id",
+        "id",
+        "$data",
+        "$async",
+        "title",
+        "description",
+        "default",
+        "definitions",
+        "examples",
+        "readOnly",
+        "writeOnly",
+        "contentMediaType",
+        "contentEncoding",
+        "additionalItems",
+        "then",
+        "else"
+      ];
+      var TYPES = ["number", "integer", "string", "array", "object", "boolean", "null"];
+      RULES.all = toHash(ALL);
+      RULES.types = toHash(TYPES);
+      RULES.forEach(function(group) {
+        group.rules = group.rules.map(function(keyword) {
+          var implKeywords;
+          if (typeof keyword == "object") {
+            var key = Object.keys(keyword)[0];
+            implKeywords = keyword[key];
+            keyword = key;
+            implKeywords.forEach(function(k) {
+              ALL.push(k);
+              RULES.all[k] = true;
+            });
+          }
+          ALL.push(keyword);
+          var rule = RULES.all[keyword] = {
+            keyword,
+            code: ruleModules[keyword],
+            implements: implKeywords
+          };
+          return rule;
+        });
+        RULES.all.$comment = {
+          keyword: "$comment",
+          code: ruleModules.$comment
+        };
+        if (group.type) RULES.types[group.type] = group;
+      });
+      RULES.keywords = toHash(ALL.concat(KEYWORDS));
+      RULES.custom = {};
+      return RULES;
+    };
+  }
+});
+
+// node_modules/ajv/lib/data.js
+var require_data = __commonJS({
+  "node_modules/ajv/lib/data.js"(exports, module) {
+    "use strict";
+    var KEYWORDS = [
+      "multipleOf",
+      "maximum",
+      "exclusiveMaximum",
+      "minimum",
+      "exclusiveMinimum",
+      "maxLength",
+      "minLength",
+      "pattern",
+      "additionalItems",
+      "maxItems",
+      "minItems",
+      "uniqueItems",
+      "maxProperties",
+      "minProperties",
+      "required",
+      "additionalProperties",
+      "enum",
+      "format",
+      "const"
+    ];
+    module.exports = function(metaSchema, keywordsJsonPointers) {
+      for (var i = 0; i < keywordsJsonPointers.length; i++) {
+        metaSchema = JSON.parse(JSON.stringify(metaSchema));
+        var segments = keywordsJsonPointers[i].split("/");
+        var keywords = metaSchema;
+        var j;
+        for (j = 1; j < segments.length; j++)
+          keywords = keywords[segments[j]];
+        for (j = 0; j < KEYWORDS.length; j++) {
+          var key = KEYWORDS[j];
+          var schema = keywords[key];
+          if (schema) {
+            keywords[key] = {
+              anyOf: [
+                schema,
+                { $ref: "https://raw.githubusercontent.com/ajv-validator/ajv/master/lib/refs/data.json#" }
               ]
-            },
-            "item": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "minLength": 1,
-                  "pattern": "^[^\\u0000]*$"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "page": {
-              "type": "string",
-              "minLength": 1,
-              "pattern": "^[^\\u0000]*$"
-            },
-            "action": {
-              "type": "string",
-              "minLength": 1,
-              "pattern": "^[^\\u0000]*$"
-            }
+            };
+          }
+        }
+      }
+      return metaSchema;
+    };
+  }
+});
+
+// node_modules/ajv/lib/compile/async.js
+var require_async = __commonJS({
+  "node_modules/ajv/lib/compile/async.js"(exports, module) {
+    "use strict";
+    var MissingRefError = require_error_classes().MissingRef;
+    module.exports = compileAsync;
+    function compileAsync(schema, meta, callback) {
+      var self2 = this;
+      if (typeof this._opts.loadSchema != "function")
+        throw new Error("options.loadSchema should be a function");
+      if (typeof meta == "function") {
+        callback = meta;
+        meta = void 0;
+      }
+      var p = loadMetaSchemaOf(schema).then(function() {
+        var schemaObj = self2._addSchema(schema, void 0, meta);
+        return schemaObj.validate || _compileAsync(schemaObj);
+      });
+      if (callback) {
+        p.then(
+          function(v) {
+            callback(null, v);
           },
-          "allOf": [
-            {
-              "if": {
-                "properties": {
-                  "view": {
-                    "const": "overview"
-                  }
-                }
-              },
-              "then": {
-                "not": {
-                  "anyOf": [
-                    {
-                      "required": [
-                        "page"
-                      ]
-                    },
-                    {
-                      "required": [
-                        "action"
-                      ]
-                    }
-                  ]
-                }
-              },
-              "else": {
-                "properties": {
-                  "item": {
-                    "type": "string",
-                    "minLength": 1,
-                    "pattern": "^[^\\u0000]*$"
-                  }
-                }
-              }
+          callback
+        );
+      }
+      return p;
+      function loadMetaSchemaOf(sch) {
+        var $schema = sch.$schema;
+        return $schema && !self2.getSchema($schema) ? compileAsync.call(self2, { $ref: $schema }, true) : Promise.resolve();
+      }
+      function _compileAsync(schemaObj) {
+        try {
+          return self2._compile(schemaObj);
+        } catch (e) {
+          if (e instanceof MissingRefError) return loadMissingSchema(e);
+          throw e;
+        }
+        function loadMissingSchema(e) {
+          var ref2 = e.missingSchema;
+          if (added(ref2)) throw new Error("Schema " + ref2 + " is loaded but " + e.missingRef + " cannot be resolved");
+          var schemaPromise = self2._loadingSchemas[ref2];
+          if (!schemaPromise) {
+            schemaPromise = self2._loadingSchemas[ref2] = self2._opts.loadSchema(ref2);
+            schemaPromise.then(removePromise, removePromise);
+          }
+          return schemaPromise.then(function(sch) {
+            if (!added(ref2)) {
+              return loadMetaSchemaOf(sch).then(function() {
+                if (!added(ref2)) self2.addSchema(sch, ref2, void 0, meta);
+              });
             }
+          }).then(function() {
+            return _compileAsync(schemaObj);
+          });
+          function removePromise() {
+            delete self2._loadingSchemas[ref2];
+          }
+          function added(ref3) {
+            return self2._refs[ref3] || self2._schemas[ref3];
+          }
+        }
+      }
+    }
+  }
+});
+
+// node_modules/ajv/lib/dotjs/custom.js
+var require_custom = __commonJS({
+  "node_modules/ajv/lib/dotjs/custom.js"(exports, module) {
+    "use strict";
+    module.exports = function generate_custom(it, $keyword, $ruleType) {
+      var out = " ";
+      var $lvl = it.level;
+      var $dataLvl = it.dataLevel;
+      var $schema = it.schema[$keyword];
+      var $schemaPath = it.schemaPath + it.util.getProperty($keyword);
+      var $errSchemaPath = it.errSchemaPath + "/" + $keyword;
+      var $breakOnError = !it.opts.allErrors;
+      var $errorKeyword;
+      var $data = "data" + ($dataLvl || "");
+      var $valid = "valid" + $lvl;
+      var $errs = "errs__" + $lvl;
+      var $isData = it.opts.$data && $schema && $schema.$data, $schemaValue;
+      if ($isData) {
+        out += " var schema" + $lvl + " = " + it.util.getData($schema.$data, $dataLvl, it.dataPathArr) + "; ";
+        $schemaValue = "schema" + $lvl;
+      } else {
+        $schemaValue = $schema;
+      }
+      var $rule = this, $definition = "definition" + $lvl, $rDef = $rule.definition, $closingBraces = "";
+      var $compile, $inline, $macro, $ruleValidate, $validateCode;
+      if ($isData && $rDef.$data) {
+        $validateCode = "keywordValidate" + $lvl;
+        var $validateSchema = $rDef.validateSchema;
+        out += " var " + $definition + " = RULES.custom['" + $keyword + "'].definition; var " + $validateCode + " = " + $definition + ".validate;";
+      } else {
+        $ruleValidate = it.useCustomRule($rule, $schema, it.schema, it);
+        if (!$ruleValidate) return;
+        $schemaValue = "validate.schema" + $schemaPath;
+        $validateCode = $ruleValidate.code;
+        $compile = $rDef.compile;
+        $inline = $rDef.inline;
+        $macro = $rDef.macro;
+      }
+      var $ruleErrs = $validateCode + ".errors", $i = "i" + $lvl, $ruleErr = "ruleErr" + $lvl, $asyncKeyword = $rDef.async;
+      if ($asyncKeyword && !it.async) throw new Error("async keyword in sync schema");
+      if (!($inline || $macro)) {
+        out += "" + $ruleErrs + " = null;";
+      }
+      out += "var " + $errs + " = errors;var " + $valid + ";";
+      if ($isData && $rDef.$data) {
+        $closingBraces += "}";
+        out += " if (" + $schemaValue + " === undefined) { " + $valid + " = true; } else { ";
+        if ($validateSchema) {
+          $closingBraces += "}";
+          out += " " + $valid + " = " + $definition + ".validateSchema(" + $schemaValue + "); if (" + $valid + ") { ";
+        }
+      }
+      if ($inline) {
+        if ($rDef.statements) {
+          out += " " + $ruleValidate.validate + " ";
+        } else {
+          out += " " + $valid + " = " + $ruleValidate.validate + "; ";
+        }
+      } else if ($macro) {
+        var $it = it.util.copy(it);
+        var $closingBraces = "";
+        $it.level++;
+        var $nextValid = "valid" + $it.level;
+        $it.schema = $ruleValidate.validate;
+        $it.schemaPath = "";
+        var $wasComposite = it.compositeRule;
+        it.compositeRule = $it.compositeRule = true;
+        var $code = it.validate($it).replace(/validate\.schema/g, $validateCode);
+        it.compositeRule = $it.compositeRule = $wasComposite;
+        out += " " + $code;
+      } else {
+        var $$outStack = $$outStack || [];
+        $$outStack.push(out);
+        out = "";
+        out += "  " + $validateCode + ".call( ";
+        if (it.opts.passContext) {
+          out += "this";
+        } else {
+          out += "self";
+        }
+        if ($compile || $rDef.schema === false) {
+          out += " , " + $data + " ";
+        } else {
+          out += " , " + $schemaValue + " , " + $data + " , validate.schema" + it.schemaPath + " ";
+        }
+        out += " , (dataPath || '')";
+        if (it.errorPath != '""') {
+          out += " + " + it.errorPath;
+        }
+        var $parentData = $dataLvl ? "data" + ($dataLvl - 1 || "") : "parentData", $parentDataProperty = $dataLvl ? it.dataPathArr[$dataLvl] : "parentDataProperty";
+        out += " , " + $parentData + " , " + $parentDataProperty + " , rootData )  ";
+        var def_callRuleValidate = out;
+        out = $$outStack.pop();
+        if ($rDef.errors === false) {
+          out += " " + $valid + " = ";
+          if ($asyncKeyword) {
+            out += "await ";
+          }
+          out += "" + def_callRuleValidate + "; ";
+        } else {
+          if ($asyncKeyword) {
+            $ruleErrs = "customErrors" + $lvl;
+            out += " var " + $ruleErrs + " = null; try { " + $valid + " = await " + def_callRuleValidate + "; } catch (e) { " + $valid + " = false; if (e instanceof ValidationError) " + $ruleErrs + " = e.errors; else throw e; } ";
+          } else {
+            out += " " + $ruleErrs + " = null; " + $valid + " = " + def_callRuleValidate + "; ";
+          }
+        }
+      }
+      if ($rDef.modifying) {
+        out += " if (" + $parentData + ") " + $data + " = " + $parentData + "[" + $parentDataProperty + "];";
+      }
+      out += "" + $closingBraces;
+      if ($rDef.valid) {
+        if ($breakOnError) {
+          out += " if (true) { ";
+        }
+      } else {
+        out += " if ( ";
+        if ($rDef.valid === void 0) {
+          out += " !";
+          if ($macro) {
+            out += "" + $nextValid;
+          } else {
+            out += "" + $valid;
+          }
+        } else {
+          out += " " + !$rDef.valid + " ";
+        }
+        out += ") { ";
+        $errorKeyword = $rule.keyword;
+        var $$outStack = $$outStack || [];
+        $$outStack.push(out);
+        out = "";
+        var $$outStack = $$outStack || [];
+        $$outStack.push(out);
+        out = "";
+        if (it.createErrors !== false) {
+          out += " { keyword: '" + ($errorKeyword || "custom") + "' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { keyword: '" + $rule.keyword + "' } ";
+          if (it.opts.messages !== false) {
+            out += ` , message: 'should pass "` + $rule.keyword + `" keyword validation' `;
+          }
+          if (it.opts.verbose) {
+            out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+          }
+          out += " } ";
+        } else {
+          out += " {} ";
+        }
+        var __err = out;
+        out = $$outStack.pop();
+        if (!it.compositeRule && $breakOnError) {
+          if (it.async) {
+            out += " throw new ValidationError([" + __err + "]); ";
+          } else {
+            out += " validate.errors = [" + __err + "]; return false; ";
+          }
+        } else {
+          out += " var err = " + __err + ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+        }
+        var def_customError = out;
+        out = $$outStack.pop();
+        if ($inline) {
+          if ($rDef.errors) {
+            if ($rDef.errors != "full") {
+              out += "  for (var " + $i + "=" + $errs + "; " + $i + "<errors; " + $i + "++) { var " + $ruleErr + " = vErrors[" + $i + "]; if (" + $ruleErr + ".dataPath === undefined) " + $ruleErr + ".dataPath = (dataPath || '') + " + it.errorPath + "; if (" + $ruleErr + ".schemaPath === undefined) { " + $ruleErr + '.schemaPath = "' + $errSchemaPath + '"; } ';
+              if (it.opts.verbose) {
+                out += " " + $ruleErr + ".schema = " + $schemaValue + "; " + $ruleErr + ".data = " + $data + "; ";
+              }
+              out += " } ";
+            }
+          } else {
+            if ($rDef.errors === false) {
+              out += " " + def_customError + " ";
+            } else {
+              out += " if (" + $errs + " == errors) { " + def_customError + " } else {  for (var " + $i + "=" + $errs + "; " + $i + "<errors; " + $i + "++) { var " + $ruleErr + " = vErrors[" + $i + "]; if (" + $ruleErr + ".dataPath === undefined) " + $ruleErr + ".dataPath = (dataPath || '') + " + it.errorPath + "; if (" + $ruleErr + ".schemaPath === undefined) { " + $ruleErr + '.schemaPath = "' + $errSchemaPath + '"; } ';
+              if (it.opts.verbose) {
+                out += " " + $ruleErr + ".schema = " + $schemaValue + "; " + $ruleErr + ".data = " + $data + "; ";
+              }
+              out += " } } ";
+            }
+          }
+        } else if ($macro) {
+          out += "   var err =   ";
+          if (it.createErrors !== false) {
+            out += " { keyword: '" + ($errorKeyword || "custom") + "' , dataPath: (dataPath || '') + " + it.errorPath + " , schemaPath: " + it.util.toQuotedString($errSchemaPath) + " , params: { keyword: '" + $rule.keyword + "' } ";
+            if (it.opts.messages !== false) {
+              out += ` , message: 'should pass "` + $rule.keyword + `" keyword validation' `;
+            }
+            if (it.opts.verbose) {
+              out += " , schema: validate.schema" + $schemaPath + " , parentSchema: validate.schema" + it.schemaPath + " , data: " + $data + " ";
+            }
+            out += " } ";
+          } else {
+            out += " {} ";
+          }
+          out += ";  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ";
+          if (!it.compositeRule && $breakOnError) {
+            if (it.async) {
+              out += " throw new ValidationError(vErrors); ";
+            } else {
+              out += " validate.errors = vErrors; return false; ";
+            }
+          }
+        } else {
+          if ($rDef.errors === false) {
+            out += " " + def_customError + " ";
+          } else {
+            out += " if (Array.isArray(" + $ruleErrs + ")) { if (vErrors === null) vErrors = " + $ruleErrs + "; else vErrors = vErrors.concat(" + $ruleErrs + "); errors = vErrors.length;  for (var " + $i + "=" + $errs + "; " + $i + "<errors; " + $i + "++) { var " + $ruleErr + " = vErrors[" + $i + "]; if (" + $ruleErr + ".dataPath === undefined) " + $ruleErr + ".dataPath = (dataPath || '') + " + it.errorPath + ";  " + $ruleErr + '.schemaPath = "' + $errSchemaPath + '";  ';
+            if (it.opts.verbose) {
+              out += " " + $ruleErr + ".schema = " + $schemaValue + "; " + $ruleErr + ".data = " + $data + "; ";
+            }
+            out += " } } else { " + def_customError + " } ";
+          }
+        }
+        out += " } ";
+        if ($breakOnError) {
+          out += " else { ";
+        }
+      }
+      return out;
+    };
+  }
+});
+
+// node_modules/ajv/lib/refs/json-schema-draft-07.json
+var require_json_schema_draft_07 = __commonJS({
+  "node_modules/ajv/lib/refs/json-schema-draft-07.json"(exports, module) {
+    module.exports = {
+      $schema: "http://json-schema.org/draft-07/schema#",
+      $id: "http://json-schema.org/draft-07/schema#",
+      title: "Core schema meta-schema",
+      definitions: {
+        schemaArray: {
+          type: "array",
+          minItems: 1,
+          items: { $ref: "#" }
+        },
+        nonNegativeInteger: {
+          type: "integer",
+          minimum: 0
+        },
+        nonNegativeIntegerDefault0: {
+          allOf: [
+            { $ref: "#/definitions/nonNegativeInteger" },
+            { default: 0 }
+          ]
+        },
+        simpleTypes: {
+          enum: [
+            "array",
+            "boolean",
+            "integer",
+            "null",
+            "number",
+            "object",
+            "string"
+          ]
+        },
+        stringArray: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+          default: []
+        }
+      },
+      type: ["object", "boolean"],
+      properties: {
+        $id: {
+          type: "string",
+          format: "uri-reference"
+        },
+        $schema: {
+          type: "string",
+          format: "uri"
+        },
+        $ref: {
+          type: "string",
+          format: "uri-reference"
+        },
+        $comment: {
+          type: "string"
+        },
+        title: {
+          type: "string"
+        },
+        description: {
+          type: "string"
+        },
+        default: true,
+        readOnly: {
+          type: "boolean",
+          default: false
+        },
+        examples: {
+          type: "array",
+          items: true
+        },
+        multipleOf: {
+          type: "number",
+          exclusiveMinimum: 0
+        },
+        maximum: {
+          type: "number"
+        },
+        exclusiveMaximum: {
+          type: "number"
+        },
+        minimum: {
+          type: "number"
+        },
+        exclusiveMinimum: {
+          type: "number"
+        },
+        maxLength: { $ref: "#/definitions/nonNegativeInteger" },
+        minLength: { $ref: "#/definitions/nonNegativeIntegerDefault0" },
+        pattern: {
+          type: "string",
+          format: "regex"
+        },
+        additionalItems: { $ref: "#" },
+        items: {
+          anyOf: [
+            { $ref: "#" },
+            { $ref: "#/definitions/schemaArray" }
+          ],
+          default: true
+        },
+        maxItems: { $ref: "#/definitions/nonNegativeInteger" },
+        minItems: { $ref: "#/definitions/nonNegativeIntegerDefault0" },
+        uniqueItems: {
+          type: "boolean",
+          default: false
+        },
+        contains: { $ref: "#" },
+        maxProperties: { $ref: "#/definitions/nonNegativeInteger" },
+        minProperties: { $ref: "#/definitions/nonNegativeIntegerDefault0" },
+        required: { $ref: "#/definitions/stringArray" },
+        additionalProperties: { $ref: "#" },
+        definitions: {
+          type: "object",
+          additionalProperties: { $ref: "#" },
+          default: {}
+        },
+        properties: {
+          type: "object",
+          additionalProperties: { $ref: "#" },
+          default: {}
+        },
+        patternProperties: {
+          type: "object",
+          additionalProperties: { $ref: "#" },
+          propertyNames: { format: "regex" },
+          default: {}
+        },
+        dependencies: {
+          type: "object",
+          additionalProperties: {
+            anyOf: [
+              { $ref: "#" },
+              { $ref: "#/definitions/stringArray" }
+            ]
+          }
+        },
+        propertyNames: { $ref: "#" },
+        const: true,
+        enum: {
+          type: "array",
+          items: true,
+          minItems: 1,
+          uniqueItems: true
+        },
+        type: {
+          anyOf: [
+            { $ref: "#/definitions/simpleTypes" },
+            {
+              type: "array",
+              items: { $ref: "#/definitions/simpleTypes" },
+              minItems: 1,
+              uniqueItems: true
+            }
+          ]
+        },
+        format: { type: "string" },
+        contentMediaType: { type: "string" },
+        contentEncoding: { type: "string" },
+        if: { $ref: "#" },
+        then: { $ref: "#" },
+        else: { $ref: "#" },
+        allOf: { $ref: "#/definitions/schemaArray" },
+        anyOf: { $ref: "#/definitions/schemaArray" },
+        oneOf: { $ref: "#/definitions/schemaArray" },
+        not: { $ref: "#" }
+      },
+      default: true
+    };
+  }
+});
+
+// node_modules/ajv/lib/definition_schema.js
+var require_definition_schema = __commonJS({
+  "node_modules/ajv/lib/definition_schema.js"(exports, module) {
+    "use strict";
+    var metaSchema = require_json_schema_draft_07();
+    module.exports = {
+      $id: "https://github.com/ajv-validator/ajv/blob/master/lib/definition_schema.js",
+      definitions: {
+        simpleTypes: metaSchema.definitions.simpleTypes
+      },
+      type: "object",
+      dependencies: {
+        schema: ["validate"],
+        $data: ["validate"],
+        statements: ["inline"],
+        valid: { not: { required: ["macro"] } }
+      },
+      properties: {
+        type: metaSchema.properties.type,
+        schema: { type: "boolean" },
+        statements: { type: "boolean" },
+        dependencies: {
+          type: "array",
+          items: { type: "string" }
+        },
+        metaSchema: { type: "object" },
+        modifying: { type: "boolean" },
+        valid: { type: "boolean" },
+        $data: { type: "boolean" },
+        async: { type: "boolean" },
+        errors: {
+          anyOf: [
+            { type: "boolean" },
+            { const: "full" }
           ]
         }
       }
-    }
+    };
   }
-};
+});
 
-// src/common/data/appearance-schema.ts
-var APPEARANCE_SCHEMA_DEFINITIONS = {
-  backgroundStyle: {
-    type: "object",
-    required: ["borderWidth", "borderColor", "borderStyle", "backgroundColor"],
-    additionalProperties: false,
-    properties: {
-      borderWidth: { type: "number" },
-      borderColor: { type: "string" },
-      borderStyle: { type: "string" },
-      backgroundColor: { type: "string" },
-      backgroundImage: { type: "string" },
-      borderRadius: { type: "number" },
-      backgroundFit: { type: "string", enum: ["cover", "contain", "stretch", "tile"] },
-      backgroundPosition: { type: "string" }
-    }
-  },
-  geometry: {
-    type: "object",
-    required: ["x", "y", "width", "height"],
-    additionalProperties: true,
-    properties: {
-      x: { type: "number" },
-      y: { type: "number" },
-      width: { type: "number" },
-      height: { type: "number" },
-      rotate: { type: "number" },
-      config: { type: "object", additionalProperties: true }
-    }
-  },
-  elementConfig: {
-    type: "object",
-    additionalProperties: false,
-    properties: {
-      pinned: { type: "boolean" },
-      removable: { type: "boolean" },
-      maxCount: { type: "number" }
-    }
-  },
-  element: {
-    oneOf: [
-      { $ref: "#/definitions/textElement" },
-      { $ref: "#/definitions/iconElement" },
-      { $ref: "#/definitions/imageElement" }
-    ]
-  },
-  textElement: {
-    type: "object",
-    required: ["typeId", "uuid", "config", "geometry", "style", "data"],
-    additionalProperties: false,
-    properties: {
-      typeId: { const: "text" },
-      uuid: { type: "string", minLength: 1 },
-      name: { type: "string" },
-      identifier: { type: "string" },
-      config: { $ref: "#/definitions/elementConfig" },
-      geometry: { $ref: "#/definitions/geometry" },
-      style: {
-        type: "object",
-        required: [
-          "backgroundColor",
-          "color",
-          "fontFamily",
-          "fontSize",
-          "fontWeight",
-          "fontStyle",
-          "textShadow",
-          "background"
-        ],
-        additionalProperties: true,
-        properties: {
-          backgroundColor: { type: "string" },
-          color: { type: "string" },
-          fontFamily: { type: "string" },
-          fontSize: { type: "number" },
-          fontWeight: { type: "string" },
-          fontStyle: { type: "string" },
-          textShadow: { type: "string" },
-          background: { $ref: "#/definitions/backgroundStyle" }
+// node_modules/ajv/lib/keyword.js
+var require_keyword = __commonJS({
+  "node_modules/ajv/lib/keyword.js"(exports, module) {
+    "use strict";
+    var IDENTIFIER = /^[a-z_$][a-z0-9_$-]*$/i;
+    var customRuleCode = require_custom();
+    var definitionSchema = require_definition_schema();
+    module.exports = {
+      add: addKeyword,
+      get: getKeyword,
+      remove: removeKeyword,
+      validate: validateKeyword
+    };
+    function addKeyword(keyword, definition) {
+      var RULES = this.RULES;
+      if (RULES.keywords[keyword])
+        throw new Error("Keyword " + keyword + " is already defined");
+      if (!IDENTIFIER.test(keyword))
+        throw new Error("Keyword " + keyword + " is not a valid identifier");
+      if (definition) {
+        this.validateKeyword(definition, true);
+        var dataType = definition.type;
+        if (Array.isArray(dataType)) {
+          for (var i = 0; i < dataType.length; i++)
+            _addRule(keyword, dataType[i], definition);
+        } else {
+          _addRule(keyword, dataType, definition);
         }
-      },
-      data: {
-        type: "object",
-        required: ["text"],
-        additionalProperties: false,
-        properties: {
-          text: { type: "string" }
+        var metaSchema = definition.metaSchema;
+        if (metaSchema) {
+          if (definition.$data && this._opts.$data) {
+            metaSchema = {
+              anyOf: [
+                metaSchema,
+                { "$ref": "https://raw.githubusercontent.com/ajv-validator/ajv/master/lib/refs/data.json#" }
+              ]
+            };
+          }
+          definition.validateSchema = this.compile(metaSchema, true);
         }
       }
-    }
-  },
-  iconElement: {
-    type: "object",
-    required: ["typeId", "uuid", "config", "geometry", "style", "data"],
-    additionalProperties: false,
-    properties: {
-      typeId: { const: "icon" },
-      uuid: { type: "string", minLength: 1 },
-      name: { type: "string" },
-      identifier: { type: "string" },
-      config: { $ref: "#/definitions/elementConfig" },
-      geometry: { $ref: "#/definitions/geometry" },
-      style: {
-        type: "object",
-        required: ["backgroundColor", "color", "fontSize", "textShadow", "background"],
-        additionalProperties: true,
-        properties: {
-          backgroundColor: { type: "string" },
-          color: { type: "string" },
-          fontSize: { type: "number" },
-          textShadow: { type: "string" },
-          background: { $ref: "#/definitions/backgroundStyle" }
+      RULES.keywords[keyword] = RULES.all[keyword] = true;
+      function _addRule(keyword2, dataType2, definition2) {
+        var ruleGroup;
+        for (var i2 = 0; i2 < RULES.length; i2++) {
+          var rg = RULES[i2];
+          if (rg.type == dataType2) {
+            ruleGroup = rg;
+            break;
+          }
         }
-      },
-      data: {
-        type: "object",
-        required: ["value", "type"],
-        additionalProperties: true,
-        properties: {
-          value: { type: "string" },
-          type: { type: "string", enum: ["icon", "emoji", "custom"] },
-          emojiSet: { type: "string", enum: ["native", "apple", "google", "twitter", "facebook"] },
-          emojiUnified: { type: "string" },
-          emojiSheetX: { type: "number" },
-          emojiSheetY: { type: "number" }
+        if (!ruleGroup) {
+          ruleGroup = { type: dataType2, rules: [] };
+          RULES.push(ruleGroup);
+        }
+        var rule = {
+          keyword: keyword2,
+          definition: definition2,
+          custom: true,
+          code: customRuleCode,
+          implements: definition2.implements
+        };
+        ruleGroup.rules.push(rule);
+        RULES.custom[keyword2] = rule;
+      }
+      return this;
+    }
+    function getKeyword(keyword) {
+      var rule = this.RULES.custom[keyword];
+      return rule ? rule.definition : this.RULES.keywords[keyword] || false;
+    }
+    function removeKeyword(keyword) {
+      var RULES = this.RULES;
+      delete RULES.keywords[keyword];
+      delete RULES.all[keyword];
+      delete RULES.custom[keyword];
+      for (var i = 0; i < RULES.length; i++) {
+        var rules = RULES[i].rules;
+        for (var j = 0; j < rules.length; j++) {
+          if (rules[j].keyword == keyword) {
+            rules.splice(j, 1);
+            break;
+          }
         }
       }
+      return this;
     }
-  },
-  imageElement: {
-    type: "object",
-    required: ["typeId", "uuid", "config", "geometry", "style", "data"],
-    additionalProperties: false,
-    properties: {
-      typeId: { const: "image" },
-      uuid: { type: "string", minLength: 1 },
-      name: { type: "string" },
-      identifier: { type: "string" },
-      config: { $ref: "#/definitions/elementConfig" },
-      geometry: { $ref: "#/definitions/geometry" },
-      style: {
-        type: "object",
-        required: ["backgroundColor", "background"],
-        additionalProperties: true,
-        properties: {
-          backgroundColor: { type: "string" },
-          background: { $ref: "#/definitions/backgroundStyle" }
-        }
-      },
-      data: {
-        type: "object",
-        required: ["value"],
-        additionalProperties: false,
-        properties: {
-          value: { type: "string" }
-        }
-      }
+    function validateKeyword(definition, throwError) {
+      validateKeyword.errors = null;
+      var v = this._validateKeyword = this._validateKeyword || this.compile(definitionSchema, true);
+      if (v(definition)) return true;
+      validateKeyword.errors = v.errors;
+      if (throwError)
+        throw new Error("custom keyword definition is invalid: " + this.errorsText(v.errors));
+      else
+        return false;
     }
   }
-};
+});
+
+// node_modules/ajv/lib/refs/data.json
+var require_data2 = __commonJS({
+  "node_modules/ajv/lib/refs/data.json"(exports, module) {
+    module.exports = {
+      $schema: "http://json-schema.org/draft-07/schema#",
+      $id: "https://raw.githubusercontent.com/ajv-validator/ajv/master/lib/refs/data.json#",
+      description: "Meta-schema for $data reference (JSON Schema extension proposal)",
+      type: "object",
+      required: ["$data"],
+      properties: {
+        $data: {
+          type: "string",
+          anyOf: [
+            { format: "relative-json-pointer" },
+            { format: "json-pointer" }
+          ]
+        }
+      },
+      additionalProperties: false
+    };
+  }
+});
+
+// node_modules/ajv/lib/ajv.js
+var require_ajv = __commonJS({
+  "node_modules/ajv/lib/ajv.js"(exports, module) {
+    "use strict";
+    var compileSchema = require_compile();
+    var resolve = require_resolve();
+    var Cache = require_cache();
+    var SchemaObject = require_schema_obj();
+    var stableStringify = require_fast_json_stable_stringify();
+    var formats = require_formats();
+    var rules = require_rules();
+    var $dataMetaSchema = require_data();
+    var util = require_util();
+    module.exports = Ajv4;
+    Ajv4.prototype.validate = validate;
+    Ajv4.prototype.compile = compile;
+    Ajv4.prototype.addSchema = addSchema;
+    Ajv4.prototype.addMetaSchema = addMetaSchema;
+    Ajv4.prototype.validateSchema = validateSchema;
+    Ajv4.prototype.getSchema = getSchema;
+    Ajv4.prototype.removeSchema = removeSchema;
+    Ajv4.prototype.addFormat = addFormat;
+    Ajv4.prototype.errorsText = errorsText;
+    Ajv4.prototype._addSchema = _addSchema;
+    Ajv4.prototype._compile = _compile;
+    Ajv4.prototype.compileAsync = require_async();
+    var customKeyword = require_keyword();
+    Ajv4.prototype.addKeyword = customKeyword.add;
+    Ajv4.prototype.getKeyword = customKeyword.get;
+    Ajv4.prototype.removeKeyword = customKeyword.remove;
+    Ajv4.prototype.validateKeyword = customKeyword.validate;
+    var errorClasses = require_error_classes();
+    Ajv4.ValidationError = errorClasses.Validation;
+    Ajv4.MissingRefError = errorClasses.MissingRef;
+    Ajv4.$dataMetaSchema = $dataMetaSchema;
+    var META_SCHEMA_ID = "http://json-schema.org/draft-07/schema";
+    var META_IGNORE_OPTIONS = ["removeAdditional", "useDefaults", "coerceTypes", "strictDefaults"];
+    var META_SUPPORT_DATA = ["/properties"];
+    function Ajv4(opts) {
+      if (!(this instanceof Ajv4)) return new Ajv4(opts);
+      opts = this._opts = util.copy(opts) || {};
+      setLogger(this);
+      this._schemas = {};
+      this._refs = {};
+      this._fragments = {};
+      this._formats = formats(opts.format);
+      this._cache = opts.cache || new Cache();
+      this._loadingSchemas = {};
+      this._compilations = [];
+      this.RULES = rules();
+      this._getId = chooseGetId(opts);
+      opts.loopRequired = opts.loopRequired || Infinity;
+      if (opts.errorDataPath == "property") opts._errorDataPathProperty = true;
+      if (opts.serialize === void 0) opts.serialize = stableStringify;
+      this._metaOpts = getMetaSchemaOptions(this);
+      if (opts.formats) addInitialFormats(this);
+      if (opts.keywords) addInitialKeywords(this);
+      addDefaultMetaSchema(this);
+      if (typeof opts.meta == "object") this.addMetaSchema(opts.meta);
+      if (opts.nullable) this.addKeyword("nullable", { metaSchema: { type: "boolean" } });
+      addInitialSchemas(this);
+    }
+    function validate(schemaKeyRef, data) {
+      var v;
+      if (typeof schemaKeyRef == "string") {
+        v = this.getSchema(schemaKeyRef);
+        if (!v) throw new Error('no schema with key or ref "' + schemaKeyRef + '"');
+      } else {
+        var schemaObj = this._addSchema(schemaKeyRef);
+        v = schemaObj.validate || this._compile(schemaObj);
+      }
+      var valid = v(data);
+      if (v.$async !== true) this.errors = v.errors;
+      return valid;
+    }
+    function compile(schema, _meta) {
+      var schemaObj = this._addSchema(schema, void 0, _meta);
+      return schemaObj.validate || this._compile(schemaObj);
+    }
+    function addSchema(schema, key, _skipValidation, _meta) {
+      if (Array.isArray(schema)) {
+        for (var i = 0; i < schema.length; i++) this.addSchema(schema[i], void 0, _skipValidation, _meta);
+        return this;
+      }
+      var id3 = this._getId(schema);
+      if (id3 !== void 0 && typeof id3 != "string")
+        throw new Error("schema id must be string");
+      key = resolve.normalizeId(key || id3);
+      checkUnique(this, key);
+      this._schemas[key] = this._addSchema(schema, _skipValidation, _meta, true);
+      return this;
+    }
+    function addMetaSchema(schema, key, skipValidation) {
+      this.addSchema(schema, key, skipValidation, true);
+      return this;
+    }
+    function validateSchema(schema, throwOrLogError) {
+      var $schema = schema.$schema;
+      if ($schema !== void 0 && typeof $schema != "string")
+        throw new Error("$schema must be a string");
+      $schema = $schema || this._opts.defaultMeta || defaultMeta(this);
+      if (!$schema) {
+        this.logger.warn("meta-schema not available");
+        this.errors = null;
+        return true;
+      }
+      var valid = this.validate($schema, schema);
+      if (!valid && throwOrLogError) {
+        var message = "schema is invalid: " + this.errorsText();
+        if (this._opts.validateSchema == "log") this.logger.error(message);
+        else throw new Error(message);
+      }
+      return valid;
+    }
+    function defaultMeta(self2) {
+      var meta = self2._opts.meta;
+      self2._opts.defaultMeta = typeof meta == "object" ? self2._getId(meta) || meta : self2.getSchema(META_SCHEMA_ID) ? META_SCHEMA_ID : void 0;
+      return self2._opts.defaultMeta;
+    }
+    function getSchema(keyRef) {
+      var schemaObj = _getSchemaObj(this, keyRef);
+      switch (typeof schemaObj) {
+        case "object":
+          return schemaObj.validate || this._compile(schemaObj);
+        case "string":
+          return this.getSchema(schemaObj);
+        case "undefined":
+          return _getSchemaFragment(this, keyRef);
+      }
+    }
+    function _getSchemaFragment(self2, ref2) {
+      var res = resolve.schema.call(self2, { schema: {} }, ref2);
+      if (res) {
+        var schema = res.schema, root = res.root, baseId = res.baseId;
+        var v = compileSchema.call(self2, schema, root, void 0, baseId);
+        self2._fragments[ref2] = new SchemaObject({
+          ref: ref2,
+          fragment: true,
+          schema,
+          root,
+          baseId,
+          validate: v
+        });
+        return v;
+      }
+    }
+    function _getSchemaObj(self2, keyRef) {
+      keyRef = resolve.normalizeId(keyRef);
+      return self2._schemas[keyRef] || self2._refs[keyRef] || self2._fragments[keyRef];
+    }
+    function removeSchema(schemaKeyRef) {
+      if (schemaKeyRef instanceof RegExp) {
+        _removeAllSchemas(this, this._schemas, schemaKeyRef);
+        _removeAllSchemas(this, this._refs, schemaKeyRef);
+        return this;
+      }
+      switch (typeof schemaKeyRef) {
+        case "undefined":
+          _removeAllSchemas(this, this._schemas);
+          _removeAllSchemas(this, this._refs);
+          this._cache.clear();
+          return this;
+        case "string":
+          var schemaObj = _getSchemaObj(this, schemaKeyRef);
+          if (schemaObj) this._cache.del(schemaObj.cacheKey);
+          delete this._schemas[schemaKeyRef];
+          delete this._refs[schemaKeyRef];
+          return this;
+        case "object":
+          var serialize = this._opts.serialize;
+          var cacheKey = serialize ? serialize(schemaKeyRef) : schemaKeyRef;
+          this._cache.del(cacheKey);
+          var id3 = this._getId(schemaKeyRef);
+          if (id3) {
+            id3 = resolve.normalizeId(id3);
+            delete this._schemas[id3];
+            delete this._refs[id3];
+          }
+      }
+      return this;
+    }
+    function _removeAllSchemas(self2, schemas, regex) {
+      for (var keyRef in schemas) {
+        var schemaObj = schemas[keyRef];
+        if (!schemaObj.meta && (!regex || regex.test(keyRef))) {
+          self2._cache.del(schemaObj.cacheKey);
+          delete schemas[keyRef];
+        }
+      }
+    }
+    function _addSchema(schema, skipValidation, meta, shouldAddSchema) {
+      if (typeof schema != "object" && typeof schema != "boolean")
+        throw new Error("schema should be object or boolean");
+      var serialize = this._opts.serialize;
+      var cacheKey = serialize ? serialize(schema) : schema;
+      var cached = this._cache.get(cacheKey);
+      if (cached) return cached;
+      shouldAddSchema = shouldAddSchema || this._opts.addUsedSchema !== false;
+      var id3 = resolve.normalizeId(this._getId(schema));
+      if (id3 && shouldAddSchema) checkUnique(this, id3);
+      var willValidate = this._opts.validateSchema !== false && !skipValidation;
+      var recursiveMeta;
+      if (willValidate && !(recursiveMeta = id3 && id3 == resolve.normalizeId(schema.$schema)))
+        this.validateSchema(schema, true);
+      var localRefs = resolve.ids.call(this, schema);
+      var schemaObj = new SchemaObject({
+        id: id3,
+        schema,
+        localRefs,
+        cacheKey,
+        meta
+      });
+      if (id3[0] != "#" && shouldAddSchema) this._refs[id3] = schemaObj;
+      this._cache.put(cacheKey, schemaObj);
+      if (willValidate && recursiveMeta) this.validateSchema(schema, true);
+      return schemaObj;
+    }
+    function _compile(schemaObj, root) {
+      if (schemaObj.compiling) {
+        schemaObj.validate = callValidate;
+        callValidate.schema = schemaObj.schema;
+        callValidate.errors = null;
+        callValidate.root = root ? root : callValidate;
+        if (schemaObj.schema.$async === true)
+          callValidate.$async = true;
+        return callValidate;
+      }
+      schemaObj.compiling = true;
+      var currentOpts;
+      if (schemaObj.meta) {
+        currentOpts = this._opts;
+        this._opts = this._metaOpts;
+      }
+      var v;
+      try {
+        v = compileSchema.call(this, schemaObj.schema, root, schemaObj.localRefs);
+      } catch (e) {
+        delete schemaObj.validate;
+        throw e;
+      } finally {
+        schemaObj.compiling = false;
+        if (schemaObj.meta) this._opts = currentOpts;
+      }
+      schemaObj.validate = v;
+      schemaObj.refs = v.refs;
+      schemaObj.refVal = v.refVal;
+      schemaObj.root = v.root;
+      return v;
+      function callValidate() {
+        var _validate = schemaObj.validate;
+        var result = _validate.apply(this, arguments);
+        callValidate.errors = _validate.errors;
+        return result;
+      }
+    }
+    function chooseGetId(opts) {
+      switch (opts.schemaId) {
+        case "auto":
+          return _get$IdOrId;
+        case "id":
+          return _getId;
+        default:
+          return _get$Id;
+      }
+    }
+    function _getId(schema) {
+      if (schema.$id) this.logger.warn("schema $id ignored", schema.$id);
+      return schema.id;
+    }
+    function _get$Id(schema) {
+      if (schema.id) this.logger.warn("schema id ignored", schema.id);
+      return schema.$id;
+    }
+    function _get$IdOrId(schema) {
+      if (schema.$id && schema.id && schema.$id != schema.id)
+        throw new Error("schema $id is different from id");
+      return schema.$id || schema.id;
+    }
+    function errorsText(errors, options) {
+      errors = errors || this.errors;
+      if (!errors) return "No errors";
+      options = options || {};
+      var separator = options.separator === void 0 ? ", " : options.separator;
+      var dataVar = options.dataVar === void 0 ? "data" : options.dataVar;
+      var text4 = "";
+      for (var i = 0; i < errors.length; i++) {
+        var e = errors[i];
+        if (e) text4 += dataVar + e.dataPath + " " + e.message + separator;
+      }
+      return text4.slice(0, -separator.length);
+    }
+    function addFormat(name2, format) {
+      if (typeof format == "string") format = new RegExp(format);
+      this._formats[name2] = format;
+      return this;
+    }
+    function addDefaultMetaSchema(self2) {
+      var $dataSchema;
+      if (self2._opts.$data) {
+        $dataSchema = require_data2();
+        self2.addMetaSchema($dataSchema, $dataSchema.$id, true);
+      }
+      if (self2._opts.meta === false) return;
+      var metaSchema = require_json_schema_draft_07();
+      if (self2._opts.$data) metaSchema = $dataMetaSchema(metaSchema, META_SUPPORT_DATA);
+      self2.addMetaSchema(metaSchema, META_SCHEMA_ID, true);
+      self2._refs["http://json-schema.org/schema"] = META_SCHEMA_ID;
+    }
+    function addInitialSchemas(self2) {
+      var optsSchemas = self2._opts.schemas;
+      if (!optsSchemas) return;
+      if (Array.isArray(optsSchemas)) self2.addSchema(optsSchemas);
+      else for (var key in optsSchemas) self2.addSchema(optsSchemas[key], key);
+    }
+    function addInitialFormats(self2) {
+      for (var name2 in self2._opts.formats) {
+        var format = self2._opts.formats[name2];
+        self2.addFormat(name2, format);
+      }
+    }
+    function addInitialKeywords(self2) {
+      for (var name2 in self2._opts.keywords) {
+        var keyword = self2._opts.keywords[name2];
+        self2.addKeyword(name2, keyword);
+      }
+    }
+    function checkUnique(self2, id3) {
+      if (self2._schemas[id3] || self2._refs[id3])
+        throw new Error('schema with key or id "' + id3 + '" already exists');
+    }
+    function getMetaSchemaOptions(self2) {
+      var metaOpts = util.copy(self2._opts);
+      for (var i = 0; i < META_IGNORE_OPTIONS.length; i++)
+        delete metaOpts[META_IGNORE_OPTIONS[i]];
+      return metaOpts;
+    }
+    function setLogger(self2) {
+      var logger = self2._opts.logger;
+      if (logger === false) {
+        self2.logger = { log: noop, warn: noop, error: noop };
+      } else {
+        if (logger === void 0) logger = console;
+        if (!(typeof logger == "object" && logger.log && logger.warn && logger.error))
+          throw new Error("logger must implement log, warn and error methods");
+        self2.logger = logger;
+      }
+    }
+    function noop() {
+    }
+  }
+});
+
+// node_modules/js-sha256/src/sha256.js
+var require_sha256 = __commonJS({
+  "node_modules/js-sha256/src/sha256.js"(exports, module) {
+    (function() {
+      "use strict";
+      var ERROR = "input is invalid type";
+      var WINDOW = typeof window === "object";
+      var root = WINDOW ? window : {};
+      if (root.JS_SHA256_NO_WINDOW) {
+        WINDOW = false;
+      }
+      var WEB_WORKER = !WINDOW && typeof self === "object";
+      var NODE_JS = !root.JS_SHA256_NO_NODE_JS && typeof process === "object" && process.versions && process.versions.node && process.type != "renderer";
+      if (NODE_JS) {
+        root = global;
+      } else if (WEB_WORKER) {
+        root = self;
+      }
+      var COMMON_JS = !root.JS_SHA256_NO_COMMON_JS && typeof module === "object" && module.exports;
+      var AMD = typeof define === "function" && define.amd;
+      var ARRAY_BUFFER = !root.JS_SHA256_NO_ARRAY_BUFFER && typeof ArrayBuffer !== "undefined";
+      var HEX_CHARS = "0123456789abcdef".split("");
+      var EXTRA = [-2147483648, 8388608, 32768, 128];
+      var SHIFT = [24, 16, 8, 0];
+      var K = [
+        1116352408,
+        1899447441,
+        3049323471,
+        3921009573,
+        961987163,
+        1508970993,
+        2453635748,
+        2870763221,
+        3624381080,
+        310598401,
+        607225278,
+        1426881987,
+        1925078388,
+        2162078206,
+        2614888103,
+        3248222580,
+        3835390401,
+        4022224774,
+        264347078,
+        604807628,
+        770255983,
+        1249150122,
+        1555081692,
+        1996064986,
+        2554220882,
+        2821834349,
+        2952996808,
+        3210313671,
+        3336571891,
+        3584528711,
+        113926993,
+        338241895,
+        666307205,
+        773529912,
+        1294757372,
+        1396182291,
+        1695183700,
+        1986661051,
+        2177026350,
+        2456956037,
+        2730485921,
+        2820302411,
+        3259730800,
+        3345764771,
+        3516065817,
+        3600352804,
+        4094571909,
+        275423344,
+        430227734,
+        506948616,
+        659060556,
+        883997877,
+        958139571,
+        1322822218,
+        1537002063,
+        1747873779,
+        1955562222,
+        2024104815,
+        2227730452,
+        2361852424,
+        2428436474,
+        2756734187,
+        3204031479,
+        3329325298
+      ];
+      var OUTPUT_TYPES = ["hex", "array", "digest", "arrayBuffer"];
+      var blocks = [];
+      if (root.JS_SHA256_NO_NODE_JS || !Array.isArray) {
+        Array.isArray = function(obj) {
+          return Object.prototype.toString.call(obj) === "[object Array]";
+        };
+      }
+      if (ARRAY_BUFFER && (root.JS_SHA256_NO_ARRAY_BUFFER_IS_VIEW || !ArrayBuffer.isView)) {
+        ArrayBuffer.isView = function(obj) {
+          return typeof obj === "object" && obj.buffer && obj.buffer.constructor === ArrayBuffer;
+        };
+      }
+      var createOutputMethod = function(outputType, is224) {
+        return function(message) {
+          return new Sha256(is224, true).update(message)[outputType]();
+        };
+      };
+      var createMethod = function(is224) {
+        var method = createOutputMethod("hex", is224);
+        if (NODE_JS) {
+          method = nodeWrap(method, is224);
+        }
+        method.create = function() {
+          return new Sha256(is224);
+        };
+        method.update = function(message) {
+          return method.create().update(message);
+        };
+        for (var i = 0; i < OUTPUT_TYPES.length; ++i) {
+          var type = OUTPUT_TYPES[i];
+          method[type] = createOutputMethod(type, is224);
+        }
+        return method;
+      };
+      var nodeWrap = function(method, is224) {
+        var crypto = __require("crypto");
+        var Buffer2 = __require("buffer").Buffer;
+        var algorithm = is224 ? "sha224" : "sha256";
+        var bufferFrom;
+        if (Buffer2.from && !root.JS_SHA256_NO_BUFFER_FROM) {
+          bufferFrom = Buffer2.from;
+        } else {
+          bufferFrom = function(message) {
+            return new Buffer2(message);
+          };
+        }
+        var nodeMethod = function(message) {
+          if (typeof message === "string") {
+            return crypto.createHash(algorithm).update(message, "utf8").digest("hex");
+          } else {
+            if (message === null || message === void 0) {
+              throw new Error(ERROR);
+            } else if (message.constructor === ArrayBuffer) {
+              message = new Uint8Array(message);
+            }
+          }
+          if (Array.isArray(message) || ArrayBuffer.isView(message) || message.constructor === Buffer2) {
+            return crypto.createHash(algorithm).update(bufferFrom(message)).digest("hex");
+          } else {
+            return method(message);
+          }
+        };
+        return nodeMethod;
+      };
+      var createHmacOutputMethod = function(outputType, is224) {
+        return function(key, message) {
+          return new HmacSha256(key, is224, true).update(message)[outputType]();
+        };
+      };
+      var createHmacMethod = function(is224) {
+        var method = createHmacOutputMethod("hex", is224);
+        method.create = function(key) {
+          return new HmacSha256(key, is224);
+        };
+        method.update = function(key, message) {
+          return method.create(key).update(message);
+        };
+        for (var i = 0; i < OUTPUT_TYPES.length; ++i) {
+          var type = OUTPUT_TYPES[i];
+          method[type] = createHmacOutputMethod(type, is224);
+        }
+        return method;
+      };
+      function Sha256(is224, sharedMemory) {
+        if (sharedMemory) {
+          blocks[0] = blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] = blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] = blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+          this.blocks = blocks;
+        } else {
+          this.blocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        }
+        if (is224) {
+          this.h0 = 3238371032;
+          this.h1 = 914150663;
+          this.h2 = 812702999;
+          this.h3 = 4144912697;
+          this.h4 = 4290775857;
+          this.h5 = 1750603025;
+          this.h6 = 1694076839;
+          this.h7 = 3204075428;
+        } else {
+          this.h0 = 1779033703;
+          this.h1 = 3144134277;
+          this.h2 = 1013904242;
+          this.h3 = 2773480762;
+          this.h4 = 1359893119;
+          this.h5 = 2600822924;
+          this.h6 = 528734635;
+          this.h7 = 1541459225;
+        }
+        this.block = this.start = this.bytes = this.hBytes = 0;
+        this.finalized = this.hashed = false;
+        this.first = true;
+        this.is224 = is224;
+      }
+      Sha256.prototype.update = function(message) {
+        if (this.finalized) {
+          return;
+        }
+        var notString, type = typeof message;
+        if (type !== "string") {
+          if (type === "object") {
+            if (message === null) {
+              throw new Error(ERROR);
+            } else if (ARRAY_BUFFER && message.constructor === ArrayBuffer) {
+              message = new Uint8Array(message);
+            } else if (!Array.isArray(message)) {
+              if (!ARRAY_BUFFER || !ArrayBuffer.isView(message)) {
+                throw new Error(ERROR);
+              }
+            }
+          } else {
+            throw new Error(ERROR);
+          }
+          notString = true;
+        }
+        var code, index = 0, i, length = message.length, blocks2 = this.blocks;
+        while (index < length) {
+          if (this.hashed) {
+            this.hashed = false;
+            blocks2[0] = this.block;
+            this.block = blocks2[16] = blocks2[1] = blocks2[2] = blocks2[3] = blocks2[4] = blocks2[5] = blocks2[6] = blocks2[7] = blocks2[8] = blocks2[9] = blocks2[10] = blocks2[11] = blocks2[12] = blocks2[13] = blocks2[14] = blocks2[15] = 0;
+          }
+          if (notString) {
+            for (i = this.start; index < length && i < 64; ++index) {
+              blocks2[i >>> 2] |= message[index] << SHIFT[i++ & 3];
+            }
+          } else {
+            for (i = this.start; index < length && i < 64; ++index) {
+              code = message.charCodeAt(index);
+              if (code < 128) {
+                blocks2[i >>> 2] |= code << SHIFT[i++ & 3];
+              } else if (code < 2048) {
+                blocks2[i >>> 2] |= (192 | code >>> 6) << SHIFT[i++ & 3];
+                blocks2[i >>> 2] |= (128 | code & 63) << SHIFT[i++ & 3];
+              } else if (code < 55296 || code >= 57344) {
+                blocks2[i >>> 2] |= (224 | code >>> 12) << SHIFT[i++ & 3];
+                blocks2[i >>> 2] |= (128 | code >>> 6 & 63) << SHIFT[i++ & 3];
+                blocks2[i >>> 2] |= (128 | code & 63) << SHIFT[i++ & 3];
+              } else {
+                code = 65536 + ((code & 1023) << 10 | message.charCodeAt(++index) & 1023);
+                blocks2[i >>> 2] |= (240 | code >>> 18) << SHIFT[i++ & 3];
+                blocks2[i >>> 2] |= (128 | code >>> 12 & 63) << SHIFT[i++ & 3];
+                blocks2[i >>> 2] |= (128 | code >>> 6 & 63) << SHIFT[i++ & 3];
+                blocks2[i >>> 2] |= (128 | code & 63) << SHIFT[i++ & 3];
+              }
+            }
+          }
+          this.lastByteIndex = i;
+          this.bytes += i - this.start;
+          if (i >= 64) {
+            this.block = blocks2[16];
+            this.start = i - 64;
+            this.hash();
+            this.hashed = true;
+          } else {
+            this.start = i;
+          }
+        }
+        if (this.bytes > 4294967295) {
+          this.hBytes += this.bytes / 4294967296 << 0;
+          this.bytes = this.bytes % 4294967296;
+        }
+        return this;
+      };
+      Sha256.prototype.finalize = function() {
+        if (this.finalized) {
+          return;
+        }
+        this.finalized = true;
+        var blocks2 = this.blocks, i = this.lastByteIndex;
+        blocks2[16] = this.block;
+        blocks2[i >>> 2] |= EXTRA[i & 3];
+        this.block = blocks2[16];
+        if (i >= 56) {
+          if (!this.hashed) {
+            this.hash();
+          }
+          blocks2[0] = this.block;
+          blocks2[16] = blocks2[1] = blocks2[2] = blocks2[3] = blocks2[4] = blocks2[5] = blocks2[6] = blocks2[7] = blocks2[8] = blocks2[9] = blocks2[10] = blocks2[11] = blocks2[12] = blocks2[13] = blocks2[14] = blocks2[15] = 0;
+        }
+        blocks2[14] = this.hBytes << 3 | this.bytes >>> 29;
+        blocks2[15] = this.bytes << 3;
+        this.hash();
+      };
+      Sha256.prototype.hash = function() {
+        var a = this.h0, b = this.h1, c = this.h2, d = this.h3, e = this.h4, f = this.h5, g = this.h6, h = this.h7, blocks2 = this.blocks, j, s0, s1, maj, t1, t2, ch, ab, da, cd, bc;
+        for (j = 16; j < 64; ++j) {
+          t1 = blocks2[j - 15];
+          s0 = (t1 >>> 7 | t1 << 25) ^ (t1 >>> 18 | t1 << 14) ^ t1 >>> 3;
+          t1 = blocks2[j - 2];
+          s1 = (t1 >>> 17 | t1 << 15) ^ (t1 >>> 19 | t1 << 13) ^ t1 >>> 10;
+          blocks2[j] = blocks2[j - 16] + s0 + blocks2[j - 7] + s1 << 0;
+        }
+        bc = b & c;
+        for (j = 0; j < 64; j += 4) {
+          if (this.first) {
+            if (this.is224) {
+              ab = 300032;
+              t1 = blocks2[0] - 1413257819;
+              h = t1 - 150054599 << 0;
+              d = t1 + 24177077 << 0;
+            } else {
+              ab = 704751109;
+              t1 = blocks2[0] - 210244248;
+              h = t1 - 1521486534 << 0;
+              d = t1 + 143694565 << 0;
+            }
+            this.first = false;
+          } else {
+            s0 = (a >>> 2 | a << 30) ^ (a >>> 13 | a << 19) ^ (a >>> 22 | a << 10);
+            s1 = (e >>> 6 | e << 26) ^ (e >>> 11 | e << 21) ^ (e >>> 25 | e << 7);
+            ab = a & b;
+            maj = ab ^ a & c ^ bc;
+            ch = e & f ^ ~e & g;
+            t1 = h + s1 + ch + K[j] + blocks2[j];
+            t2 = s0 + maj;
+            h = d + t1 << 0;
+            d = t1 + t2 << 0;
+          }
+          s0 = (d >>> 2 | d << 30) ^ (d >>> 13 | d << 19) ^ (d >>> 22 | d << 10);
+          s1 = (h >>> 6 | h << 26) ^ (h >>> 11 | h << 21) ^ (h >>> 25 | h << 7);
+          da = d & a;
+          maj = da ^ d & b ^ ab;
+          ch = h & e ^ ~h & f;
+          t1 = g + s1 + ch + K[j + 1] + blocks2[j + 1];
+          t2 = s0 + maj;
+          g = c + t1 << 0;
+          c = t1 + t2 << 0;
+          s0 = (c >>> 2 | c << 30) ^ (c >>> 13 | c << 19) ^ (c >>> 22 | c << 10);
+          s1 = (g >>> 6 | g << 26) ^ (g >>> 11 | g << 21) ^ (g >>> 25 | g << 7);
+          cd = c & d;
+          maj = cd ^ c & a ^ da;
+          ch = g & h ^ ~g & e;
+          t1 = f + s1 + ch + K[j + 2] + blocks2[j + 2];
+          t2 = s0 + maj;
+          f = b + t1 << 0;
+          b = t1 + t2 << 0;
+          s0 = (b >>> 2 | b << 30) ^ (b >>> 13 | b << 19) ^ (b >>> 22 | b << 10);
+          s1 = (f >>> 6 | f << 26) ^ (f >>> 11 | f << 21) ^ (f >>> 25 | f << 7);
+          bc = b & c;
+          maj = bc ^ b & d ^ cd;
+          ch = f & g ^ ~f & h;
+          t1 = e + s1 + ch + K[j + 3] + blocks2[j + 3];
+          t2 = s0 + maj;
+          e = a + t1 << 0;
+          a = t1 + t2 << 0;
+          this.chromeBugWorkAround = true;
+        }
+        this.h0 = this.h0 + a << 0;
+        this.h1 = this.h1 + b << 0;
+        this.h2 = this.h2 + c << 0;
+        this.h3 = this.h3 + d << 0;
+        this.h4 = this.h4 + e << 0;
+        this.h5 = this.h5 + f << 0;
+        this.h6 = this.h6 + g << 0;
+        this.h7 = this.h7 + h << 0;
+      };
+      Sha256.prototype.hex = function() {
+        this.finalize();
+        var h0 = this.h0, h1 = this.h1, h2 = this.h2, h3 = this.h3, h4 = this.h4, h5 = this.h5, h6 = this.h6, h7 = this.h7;
+        var hex = HEX_CHARS[h0 >>> 28 & 15] + HEX_CHARS[h0 >>> 24 & 15] + HEX_CHARS[h0 >>> 20 & 15] + HEX_CHARS[h0 >>> 16 & 15] + HEX_CHARS[h0 >>> 12 & 15] + HEX_CHARS[h0 >>> 8 & 15] + HEX_CHARS[h0 >>> 4 & 15] + HEX_CHARS[h0 & 15] + HEX_CHARS[h1 >>> 28 & 15] + HEX_CHARS[h1 >>> 24 & 15] + HEX_CHARS[h1 >>> 20 & 15] + HEX_CHARS[h1 >>> 16 & 15] + HEX_CHARS[h1 >>> 12 & 15] + HEX_CHARS[h1 >>> 8 & 15] + HEX_CHARS[h1 >>> 4 & 15] + HEX_CHARS[h1 & 15] + HEX_CHARS[h2 >>> 28 & 15] + HEX_CHARS[h2 >>> 24 & 15] + HEX_CHARS[h2 >>> 20 & 15] + HEX_CHARS[h2 >>> 16 & 15] + HEX_CHARS[h2 >>> 12 & 15] + HEX_CHARS[h2 >>> 8 & 15] + HEX_CHARS[h2 >>> 4 & 15] + HEX_CHARS[h2 & 15] + HEX_CHARS[h3 >>> 28 & 15] + HEX_CHARS[h3 >>> 24 & 15] + HEX_CHARS[h3 >>> 20 & 15] + HEX_CHARS[h3 >>> 16 & 15] + HEX_CHARS[h3 >>> 12 & 15] + HEX_CHARS[h3 >>> 8 & 15] + HEX_CHARS[h3 >>> 4 & 15] + HEX_CHARS[h3 & 15] + HEX_CHARS[h4 >>> 28 & 15] + HEX_CHARS[h4 >>> 24 & 15] + HEX_CHARS[h4 >>> 20 & 15] + HEX_CHARS[h4 >>> 16 & 15] + HEX_CHARS[h4 >>> 12 & 15] + HEX_CHARS[h4 >>> 8 & 15] + HEX_CHARS[h4 >>> 4 & 15] + HEX_CHARS[h4 & 15] + HEX_CHARS[h5 >>> 28 & 15] + HEX_CHARS[h5 >>> 24 & 15] + HEX_CHARS[h5 >>> 20 & 15] + HEX_CHARS[h5 >>> 16 & 15] + HEX_CHARS[h5 >>> 12 & 15] + HEX_CHARS[h5 >>> 8 & 15] + HEX_CHARS[h5 >>> 4 & 15] + HEX_CHARS[h5 & 15] + HEX_CHARS[h6 >>> 28 & 15] + HEX_CHARS[h6 >>> 24 & 15] + HEX_CHARS[h6 >>> 20 & 15] + HEX_CHARS[h6 >>> 16 & 15] + HEX_CHARS[h6 >>> 12 & 15] + HEX_CHARS[h6 >>> 8 & 15] + HEX_CHARS[h6 >>> 4 & 15] + HEX_CHARS[h6 & 15];
+        if (!this.is224) {
+          hex += HEX_CHARS[h7 >>> 28 & 15] + HEX_CHARS[h7 >>> 24 & 15] + HEX_CHARS[h7 >>> 20 & 15] + HEX_CHARS[h7 >>> 16 & 15] + HEX_CHARS[h7 >>> 12 & 15] + HEX_CHARS[h7 >>> 8 & 15] + HEX_CHARS[h7 >>> 4 & 15] + HEX_CHARS[h7 & 15];
+        }
+        return hex;
+      };
+      Sha256.prototype.toString = Sha256.prototype.hex;
+      Sha256.prototype.digest = function() {
+        this.finalize();
+        var h0 = this.h0, h1 = this.h1, h2 = this.h2, h3 = this.h3, h4 = this.h4, h5 = this.h5, h6 = this.h6, h7 = this.h7;
+        var arr = [
+          h0 >>> 24 & 255,
+          h0 >>> 16 & 255,
+          h0 >>> 8 & 255,
+          h0 & 255,
+          h1 >>> 24 & 255,
+          h1 >>> 16 & 255,
+          h1 >>> 8 & 255,
+          h1 & 255,
+          h2 >>> 24 & 255,
+          h2 >>> 16 & 255,
+          h2 >>> 8 & 255,
+          h2 & 255,
+          h3 >>> 24 & 255,
+          h3 >>> 16 & 255,
+          h3 >>> 8 & 255,
+          h3 & 255,
+          h4 >>> 24 & 255,
+          h4 >>> 16 & 255,
+          h4 >>> 8 & 255,
+          h4 & 255,
+          h5 >>> 24 & 255,
+          h5 >>> 16 & 255,
+          h5 >>> 8 & 255,
+          h5 & 255,
+          h6 >>> 24 & 255,
+          h6 >>> 16 & 255,
+          h6 >>> 8 & 255,
+          h6 & 255
+        ];
+        if (!this.is224) {
+          arr.push(h7 >>> 24 & 255, h7 >>> 16 & 255, h7 >>> 8 & 255, h7 & 255);
+        }
+        return arr;
+      };
+      Sha256.prototype.array = Sha256.prototype.digest;
+      Sha256.prototype.arrayBuffer = function() {
+        this.finalize();
+        var buffer = new ArrayBuffer(this.is224 ? 28 : 32);
+        var dataView = new DataView(buffer);
+        dataView.setUint32(0, this.h0);
+        dataView.setUint32(4, this.h1);
+        dataView.setUint32(8, this.h2);
+        dataView.setUint32(12, this.h3);
+        dataView.setUint32(16, this.h4);
+        dataView.setUint32(20, this.h5);
+        dataView.setUint32(24, this.h6);
+        if (!this.is224) {
+          dataView.setUint32(28, this.h7);
+        }
+        return buffer;
+      };
+      function HmacSha256(key, is224, sharedMemory) {
+        var i, type = typeof key;
+        if (type === "string") {
+          var bytes2 = [], length = key.length, index = 0, code;
+          for (i = 0; i < length; ++i) {
+            code = key.charCodeAt(i);
+            if (code < 128) {
+              bytes2[index++] = code;
+            } else if (code < 2048) {
+              bytes2[index++] = 192 | code >>> 6;
+              bytes2[index++] = 128 | code & 63;
+            } else if (code < 55296 || code >= 57344) {
+              bytes2[index++] = 224 | code >>> 12;
+              bytes2[index++] = 128 | code >>> 6 & 63;
+              bytes2[index++] = 128 | code & 63;
+            } else {
+              code = 65536 + ((code & 1023) << 10 | key.charCodeAt(++i) & 1023);
+              bytes2[index++] = 240 | code >>> 18;
+              bytes2[index++] = 128 | code >>> 12 & 63;
+              bytes2[index++] = 128 | code >>> 6 & 63;
+              bytes2[index++] = 128 | code & 63;
+            }
+          }
+          key = bytes2;
+        } else {
+          if (type === "object") {
+            if (key === null) {
+              throw new Error(ERROR);
+            } else if (ARRAY_BUFFER && key.constructor === ArrayBuffer) {
+              key = new Uint8Array(key);
+            } else if (!Array.isArray(key)) {
+              if (!ARRAY_BUFFER || !ArrayBuffer.isView(key)) {
+                throw new Error(ERROR);
+              }
+            }
+          } else {
+            throw new Error(ERROR);
+          }
+        }
+        if (key.length > 64) {
+          key = new Sha256(is224, true).update(key).array();
+        }
+        var oKeyPad = [], iKeyPad = [];
+        for (i = 0; i < 64; ++i) {
+          var b = key[i] || 0;
+          oKeyPad[i] = 92 ^ b;
+          iKeyPad[i] = 54 ^ b;
+        }
+        Sha256.call(this, is224, sharedMemory);
+        this.update(iKeyPad);
+        this.oKeyPad = oKeyPad;
+        this.inner = true;
+        this.sharedMemory = sharedMemory;
+      }
+      HmacSha256.prototype = new Sha256();
+      HmacSha256.prototype.finalize = function() {
+        Sha256.prototype.finalize.call(this);
+        if (this.inner) {
+          this.inner = false;
+          var innerHash = this.array();
+          Sha256.call(this, this.is224, this.sharedMemory);
+          this.update(this.oKeyPad);
+          this.update(innerHash);
+          Sha256.prototype.finalize.call(this);
+        }
+      };
+      var exports2 = createMethod();
+      exports2.sha256 = exports2;
+      exports2.sha224 = createMethod(true);
+      exports2.sha256.hmac = createHmacMethod();
+      exports2.sha224.hmac = createHmacMethod(true);
+      if (COMMON_JS) {
+        module.exports = exports2;
+      } else {
+        root.sha256 = exports2.sha256;
+        root.sha224 = exports2.sha224;
+        if (AMD) {
+          define(function() {
+            return exports2;
+          });
+        }
+      }
+    })();
+  }
+});
 
 // src/common/assets/Icons.json
 var Icons_default = {
@@ -67072,6 +65572,38 @@ var Icons_default = {
 };
 
 // src/common/data/theme-builtin-registry-v1.ts
+var BUILTIN_FONTS_V1 = {
+  "puhuiti": {
+    "kind": "font",
+    "minStudioVersion": "1.0.0",
+    "sourcePath": "src/common/assets/puhuiti.ttf",
+    "blobHash": "sha256:caccab7cdd7f5ed67aab3c46806247fdebdce3d508576f5f35a6f3f14c5a5e72"
+  },
+  "consola": {
+    "kind": "font",
+    "minStudioVersion": "1.0.0",
+    "sourcePath": "src/common/assets/consola.ttf",
+    "blobHash": "sha256:c6e6ce8119fdd47ec6a5449a08e2d2ad7f41ea03143aae193068ed9fa58eaebc"
+  },
+  "ds-digital": {
+    "kind": "font",
+    "minStudioVersion": "1.0.0",
+    "sourcePath": "src/common/assets/ds-digital.ttf",
+    "blobHash": "sha256:87eb14d41eeeac0bd7fe0c62ece05134bbf1ee8059b6e3e701d7f4a7799506dc"
+  },
+  "source-han-sans-hwsc": {
+    "kind": "font",
+    "minStudioVersion": "1.0.0",
+    "sourcePath": "src/renderer/assets/css/fonts/SourceHanSansHWSC-VF-Minimized.woff2",
+    "blobHash": "sha256:32b7ec3fddc5976a4e2e38cea8f0b33722c25af9963fd31122adc22d29c63f43"
+  },
+  "orbitron": {
+    "kind": "font",
+    "minStudioVersion": "1.0.0",
+    "sourcePath": "src/renderer/assets/css/fonts/Orbitron-VariableFont_wght.ttf",
+    "blobHash": "sha256:46eefc7084fd9abffd87547c47f729b6071c7f7a8d5af281266bb09e5461c435"
+  }
+};
 var icons = /* @__PURE__ */ new Map();
 for (const group of Object.values(Icons_default)) for (const icon of group) icons.set(icon.name, icon.codepoint);
 var BUILTIN_ICONS_V1 = Object.entries(Icons_default).flatMap(([group, entries]) => entries.map((icon) => ({
@@ -67080,15 +65612,8015 @@ var BUILTIN_ICONS_V1 = Object.entries(Icons_default).flatMap(([group, entries]) 
   aliases: [...icon.aliases],
   group
 })));
+function findThemeBuiltinV1(reference) {
+  if (reference.startsWith("builtin:font:") && Object.prototype.hasOwnProperty.call(BUILTIN_FONTS_V1, reference.slice(13))) {
+    return { kind: "font", minStudioVersion: "1.0.0" };
+  }
+  if (reference.startsWith("builtin:icon:")) {
+    const codepoint = icons.get(reference.slice(13));
+    if (codepoint) return { kind: "icon", minStudioVersion: "1.0.0", codepoint };
+  }
+  return void 0;
+}
+
+// src/common/button-group-definition-v1.ts
+function validateButtonGroupDefinitionV1(unit) {
+  if (unit.plugin.type !== "button-group") return;
+  const buttons = unit.buttonGroup?.buttons ?? [];
+  if (buttons.length < 2) {
+    throw new Error(`button-group '${unit.typeId}' must declare at least two buttons`);
+  }
+  const seen = /* @__PURE__ */ new Set();
+  for (const button2 of buttons) {
+    const id3 = button2.buttonId;
+    const normalizedId = id3.trim();
+    if (!normalizedId) {
+      throw new Error(`button-group '${unit.typeId}' has an empty buttonId`);
+    }
+    if (normalizedId !== id3) {
+      throw new Error(`button-group '${unit.typeId}' buttonId '${id3}' must not have leading or trailing whitespace`);
+    }
+    if (seen.has(id3)) {
+      throw new Error(`Duplicate button-group buttonId '${id3}' in '${unit.typeId}'`);
+    }
+    if (button2.icon && findThemeBuiltinV1(button2.icon)?.kind !== "icon") throw new Error(`button-group '${unit.typeId}' contains an unsupported icon`);
+    seen.add(id3);
+  }
+  const defaultSeen = /* @__PURE__ */ new Set();
+  const defaultActiveButtonIds = unit.buttonGroup?.defaultActiveButtonIds ?? [];
+  const selectionMode = unit.buttonGroup?.selectionMode ?? "single";
+  const hasExplicitDefaultActiveButtonIds = unit.buttonGroup !== void 0 && Object.prototype.hasOwnProperty.call(unit.buttonGroup, "defaultActiveButtonIds");
+  if (hasExplicitDefaultActiveButtonIds && defaultActiveButtonIds.length === 0 && unit.buttonGroup?.mandatory !== false) {
+    throw new Error(`button-group '${unit.typeId}' mandatory groups cannot declare empty defaultActiveButtonIds`);
+  }
+  for (const activeId of defaultActiveButtonIds) {
+    const normalizedActiveId = activeId.trim();
+    if (!normalizedActiveId) {
+      throw new Error(`button-group '${unit.typeId}' defaultActiveButtonIds contains an empty buttonId`);
+    }
+    if (normalizedActiveId !== activeId) {
+      throw new Error(
+        `button-group '${unit.typeId}' defaultActiveButtonIds buttonId '${activeId}' must not have leading or trailing whitespace`
+      );
+    }
+    if (defaultSeen.has(activeId)) {
+      throw new Error(`Duplicate button-group defaultActiveButtonId '${activeId}' in '${unit.typeId}'`);
+    }
+    defaultSeen.add(activeId);
+    if (!seen.has(activeId)) {
+      throw new Error(`button-group '${unit.typeId}' defaultActiveButtonIds contains unknown buttonId '${activeId}'`);
+    }
+  }
+  if (selectionMode === "single" && defaultActiveButtonIds.length > 1) {
+    throw new Error(`button-group '${unit.typeId}' selectionMode 'single' cannot declare multiple defaultActiveButtonIds`);
+  }
+}
+
+// src/common/plugin-form-dialog.ts
+var text = (v, max = 240) => typeof v === "string" && v.length <= max && !v.includes("\0");
+var finite = (v) => typeof v === "number" && Number.isFinite(v);
+function validatePluginFormField(value) {
+  const f = value;
+  if (!f || !text(f.key, 64) || !/^[a-zA-Z][\w-]*$/.test(f.key) || !text(f.label) || f.required !== void 0 && typeof f.required !== "boolean") throw new Error("invalid-plugin-form");
+  switch (f.type) {
+    case "text":
+    case "textarea":
+      if (!text(f.value, 24e3) || f.maxBytes !== void 0 && (!Number.isSafeInteger(f.maxBytes) || f.maxBytes < 1 || f.maxBytes > 24e3)) throw new Error("invalid-plugin-form");
+      break;
+    case "select":
+      if (!text(f.value) || !Array.isArray(f.items) || !f.items.length || f.items.length > 32 || f.items.some((i) => !i || !text(i.value) || !text(i.title)) || new Set(f.items.map((i) => i.value)).size !== f.items.length) throw new Error("invalid-plugin-form");
+      break;
+    case "number":
+      if (!finite(f.value) || [f.min, f.max, f.step].some((v) => v !== void 0 && !finite(v)) || f.min !== void 0 && f.max !== void 0 && f.min > f.max || f.step !== void 0 && f.step <= 0) throw new Error("invalid-plugin-form");
+      break;
+    case "switch":
+      if (typeof f.value !== "boolean") throw new Error("invalid-plugin-form");
+      break;
+    default:
+      throw new Error("invalid-plugin-form");
+  }
+}
+function pluginFormError(form, field, value) {
+  if (field.type === "switch") return typeof value === "boolean" ? "" : form.requiredText;
+  if (field.type === "number") {
+    if (!finite(value) || field.min !== void 0 && value < field.min || field.max !== void 0 && value > field.max) return form.requiredText;
+    const steps = (value - (field.min ?? 0)) / (field.step ?? 1);
+    return field.step !== void 0 && Math.abs(steps - Math.round(steps)) > 1e-8 ? form.requiredText : "";
+  }
+  if (typeof value !== "string" || field.required && !value.trim()) return form.requiredText;
+  if ("maxBytes" in field && field.maxBytes !== void 0 && new TextEncoder().encode(value).length > field.maxBytes) return form.tooLongText;
+  if (field.type === "select" && !field.items.some((i) => i.value === value)) return form.requiredText;
+  return "";
+}
+
+// src/common/generated/input-mdi.generated.ts
+var INPUT_MDI_NAMES = /* @__PURE__ */ new Set([
+  "mdi-ab-testing",
+  "mdi-abacus",
+  "mdi-abjad-arabic",
+  "mdi-abjad-hebrew",
+  "mdi-abugida-devanagari",
+  "mdi-abugida-thai",
+  "mdi-access-point",
+  "mdi-access-point-check",
+  "mdi-access-point-minus",
+  "mdi-access-point-network",
+  "mdi-access-point-network-off",
+  "mdi-access-point-off",
+  "mdi-access-point-plus",
+  "mdi-access-point-remove",
+  "mdi-account",
+  "mdi-account-alert",
+  "mdi-account-alert-outline",
+  "mdi-account-arrow-down",
+  "mdi-account-arrow-down-outline",
+  "mdi-account-arrow-left",
+  "mdi-account-arrow-left-outline",
+  "mdi-account-arrow-right",
+  "mdi-account-arrow-right-outline",
+  "mdi-account-arrow-up",
+  "mdi-account-arrow-up-outline",
+  "mdi-account-badge",
+  "mdi-account-badge-outline",
+  "mdi-account-box",
+  "mdi-account-box-edit-outline",
+  "mdi-account-box-minus-outline",
+  "mdi-account-box-multiple",
+  "mdi-account-box-multiple-outline",
+  "mdi-account-box-outline",
+  "mdi-account-box-plus-outline",
+  "mdi-account-cancel",
+  "mdi-account-cancel-outline",
+  "mdi-account-card",
+  "mdi-account-card-outline",
+  "mdi-account-cash",
+  "mdi-account-cash-outline",
+  "mdi-account-check",
+  "mdi-account-check-outline",
+  "mdi-account-child",
+  "mdi-account-child-circle",
+  "mdi-account-child-outline",
+  "mdi-account-circle",
+  "mdi-account-circle-outline",
+  "mdi-account-clock",
+  "mdi-account-clock-outline",
+  "mdi-account-cog",
+  "mdi-account-cog-outline",
+  "mdi-account-convert",
+  "mdi-account-convert-outline",
+  "mdi-account-cowboy-hat",
+  "mdi-account-cowboy-hat-outline",
+  "mdi-account-credit-card",
+  "mdi-account-credit-card-outline",
+  "mdi-account-details",
+  "mdi-account-details-outline",
+  "mdi-account-edit",
+  "mdi-account-edit-outline",
+  "mdi-account-eye",
+  "mdi-account-eye-outline",
+  "mdi-account-file",
+  "mdi-account-file-outline",
+  "mdi-account-file-text",
+  "mdi-account-file-text-outline",
+  "mdi-account-filter",
+  "mdi-account-filter-outline",
+  "mdi-account-group",
+  "mdi-account-group-outline",
+  "mdi-account-hard-hat",
+  "mdi-account-hard-hat-outline",
+  "mdi-account-heart",
+  "mdi-account-heart-outline",
+  "mdi-account-injury",
+  "mdi-account-injury-outline",
+  "mdi-account-key",
+  "mdi-account-key-outline",
+  "mdi-account-lock",
+  "mdi-account-lock-open",
+  "mdi-account-lock-open-outline",
+  "mdi-account-lock-outline",
+  "mdi-account-minus",
+  "mdi-account-minus-outline",
+  "mdi-account-multiple",
+  "mdi-account-multiple-check",
+  "mdi-account-multiple-check-outline",
+  "mdi-account-multiple-minus",
+  "mdi-account-multiple-minus-outline",
+  "mdi-account-multiple-outline",
+  "mdi-account-multiple-plus",
+  "mdi-account-multiple-plus-outline",
+  "mdi-account-multiple-remove",
+  "mdi-account-multiple-remove-outline",
+  "mdi-account-music",
+  "mdi-account-music-outline",
+  "mdi-account-network",
+  "mdi-account-network-off",
+  "mdi-account-network-off-outline",
+  "mdi-account-network-outline",
+  "mdi-account-off",
+  "mdi-account-off-outline",
+  "mdi-account-outline",
+  "mdi-account-plus",
+  "mdi-account-plus-outline",
+  "mdi-account-question",
+  "mdi-account-question-outline",
+  "mdi-account-reactivate",
+  "mdi-account-reactivate-outline",
+  "mdi-account-remove",
+  "mdi-account-remove-outline",
+  "mdi-account-school",
+  "mdi-account-school-outline",
+  "mdi-account-search",
+  "mdi-account-search-outline",
+  "mdi-account-settings",
+  "mdi-account-settings-outline",
+  "mdi-account-star",
+  "mdi-account-star-outline",
+  "mdi-account-supervisor",
+  "mdi-account-supervisor-circle",
+  "mdi-account-supervisor-circle-outline",
+  "mdi-account-supervisor-outline",
+  "mdi-account-switch",
+  "mdi-account-switch-outline",
+  "mdi-account-sync",
+  "mdi-account-sync-outline",
+  "mdi-account-tag",
+  "mdi-account-tag-outline",
+  "mdi-account-tie",
+  "mdi-account-tie-hat",
+  "mdi-account-tie-hat-outline",
+  "mdi-account-tie-outline",
+  "mdi-account-tie-voice",
+  "mdi-account-tie-voice-off",
+  "mdi-account-tie-voice-off-outline",
+  "mdi-account-tie-voice-outline",
+  "mdi-account-tie-woman",
+  "mdi-account-voice",
+  "mdi-account-voice-off",
+  "mdi-account-wrench",
+  "mdi-account-wrench-outline",
+  "mdi-adjust",
+  "mdi-advertisements",
+  "mdi-advertisements-off",
+  "mdi-air-conditioner",
+  "mdi-air-filter",
+  "mdi-air-horn",
+  "mdi-air-humidifier",
+  "mdi-air-humidifier-off",
+  "mdi-air-purifier",
+  "mdi-air-purifier-off",
+  "mdi-airbag",
+  "mdi-airballoon",
+  "mdi-airballoon-outline",
+  "mdi-airplane",
+  "mdi-airplane-alert",
+  "mdi-airplane-check",
+  "mdi-airplane-clock",
+  "mdi-airplane-cog",
+  "mdi-airplane-edit",
+  "mdi-airplane-landing",
+  "mdi-airplane-marker",
+  "mdi-airplane-minus",
+  "mdi-airplane-off",
+  "mdi-airplane-plus",
+  "mdi-airplane-remove",
+  "mdi-airplane-search",
+  "mdi-airplane-settings",
+  "mdi-airplane-takeoff",
+  "mdi-airport",
+  "mdi-alarm",
+  "mdi-alarm-bell",
+  "mdi-alarm-check",
+  "mdi-alarm-light",
+  "mdi-alarm-light-off",
+  "mdi-alarm-light-off-outline",
+  "mdi-alarm-light-outline",
+  "mdi-alarm-multiple",
+  "mdi-alarm-note",
+  "mdi-alarm-note-off",
+  "mdi-alarm-off",
+  "mdi-alarm-panel",
+  "mdi-alarm-panel-outline",
+  "mdi-alarm-plus",
+  "mdi-alarm-snooze",
+  "mdi-album",
+  "mdi-alert",
+  "mdi-alert-box",
+  "mdi-alert-box-outline",
+  "mdi-alert-circle",
+  "mdi-alert-circle-check",
+  "mdi-alert-circle-check-outline",
+  "mdi-alert-circle-outline",
+  "mdi-alert-decagram",
+  "mdi-alert-decagram-outline",
+  "mdi-alert-minus",
+  "mdi-alert-minus-outline",
+  "mdi-alert-octagon",
+  "mdi-alert-octagon-outline",
+  "mdi-alert-octagram",
+  "mdi-alert-octagram-outline",
+  "mdi-alert-outline",
+  "mdi-alert-plus",
+  "mdi-alert-plus-outline",
+  "mdi-alert-remove",
+  "mdi-alert-remove-outline",
+  "mdi-alert-rhombus",
+  "mdi-alert-rhombus-outline",
+  "mdi-alien",
+  "mdi-alien-outline",
+  "mdi-align-horizontal-center",
+  "mdi-align-horizontal-distribute",
+  "mdi-align-horizontal-left",
+  "mdi-align-horizontal-right",
+  "mdi-align-vertical-bottom",
+  "mdi-align-vertical-center",
+  "mdi-align-vertical-distribute",
+  "mdi-align-vertical-top",
+  "mdi-all-inclusive",
+  "mdi-all-inclusive-box",
+  "mdi-all-inclusive-box-outline",
+  "mdi-allergy",
+  "mdi-alpha",
+  "mdi-alpha-a",
+  "mdi-alpha-a-box",
+  "mdi-alpha-a-box-outline",
+  "mdi-alpha-a-circle",
+  "mdi-alpha-a-circle-outline",
+  "mdi-alpha-b",
+  "mdi-alpha-b-box",
+  "mdi-alpha-b-box-outline",
+  "mdi-alpha-b-circle",
+  "mdi-alpha-b-circle-outline",
+  "mdi-alpha-c",
+  "mdi-alpha-c-box",
+  "mdi-alpha-c-box-outline",
+  "mdi-alpha-c-circle",
+  "mdi-alpha-c-circle-outline",
+  "mdi-alpha-d",
+  "mdi-alpha-d-box",
+  "mdi-alpha-d-box-outline",
+  "mdi-alpha-d-circle",
+  "mdi-alpha-d-circle-outline",
+  "mdi-alpha-e",
+  "mdi-alpha-e-box",
+  "mdi-alpha-e-box-outline",
+  "mdi-alpha-e-circle",
+  "mdi-alpha-e-circle-outline",
+  "mdi-alpha-f",
+  "mdi-alpha-f-box",
+  "mdi-alpha-f-box-outline",
+  "mdi-alpha-f-circle",
+  "mdi-alpha-f-circle-outline",
+  "mdi-alpha-g",
+  "mdi-alpha-g-box",
+  "mdi-alpha-g-box-outline",
+  "mdi-alpha-g-circle",
+  "mdi-alpha-g-circle-outline",
+  "mdi-alpha-h",
+  "mdi-alpha-h-box",
+  "mdi-alpha-h-box-outline",
+  "mdi-alpha-h-circle",
+  "mdi-alpha-h-circle-outline",
+  "mdi-alpha-i",
+  "mdi-alpha-i-box",
+  "mdi-alpha-i-box-outline",
+  "mdi-alpha-i-circle",
+  "mdi-alpha-i-circle-outline",
+  "mdi-alpha-j",
+  "mdi-alpha-j-box",
+  "mdi-alpha-j-box-outline",
+  "mdi-alpha-j-circle",
+  "mdi-alpha-j-circle-outline",
+  "mdi-alpha-k",
+  "mdi-alpha-k-box",
+  "mdi-alpha-k-box-outline",
+  "mdi-alpha-k-circle",
+  "mdi-alpha-k-circle-outline",
+  "mdi-alpha-l",
+  "mdi-alpha-l-box",
+  "mdi-alpha-l-box-outline",
+  "mdi-alpha-l-circle",
+  "mdi-alpha-l-circle-outline",
+  "mdi-alpha-m",
+  "mdi-alpha-m-box",
+  "mdi-alpha-m-box-outline",
+  "mdi-alpha-m-circle",
+  "mdi-alpha-m-circle-outline",
+  "mdi-alpha-n",
+  "mdi-alpha-n-box",
+  "mdi-alpha-n-box-outline",
+  "mdi-alpha-n-circle",
+  "mdi-alpha-n-circle-outline",
+  "mdi-alpha-o",
+  "mdi-alpha-o-box",
+  "mdi-alpha-o-box-outline",
+  "mdi-alpha-o-circle",
+  "mdi-alpha-o-circle-outline",
+  "mdi-alpha-p",
+  "mdi-alpha-p-box",
+  "mdi-alpha-p-box-outline",
+  "mdi-alpha-p-circle",
+  "mdi-alpha-p-circle-outline",
+  "mdi-alpha-q",
+  "mdi-alpha-q-box",
+  "mdi-alpha-q-box-outline",
+  "mdi-alpha-q-circle",
+  "mdi-alpha-q-circle-outline",
+  "mdi-alpha-r",
+  "mdi-alpha-r-box",
+  "mdi-alpha-r-box-outline",
+  "mdi-alpha-r-circle",
+  "mdi-alpha-r-circle-outline",
+  "mdi-alpha-s",
+  "mdi-alpha-s-box",
+  "mdi-alpha-s-box-outline",
+  "mdi-alpha-s-circle",
+  "mdi-alpha-s-circle-outline",
+  "mdi-alpha-t",
+  "mdi-alpha-t-box",
+  "mdi-alpha-t-box-outline",
+  "mdi-alpha-t-circle",
+  "mdi-alpha-t-circle-outline",
+  "mdi-alpha-u",
+  "mdi-alpha-u-box",
+  "mdi-alpha-u-box-outline",
+  "mdi-alpha-u-circle",
+  "mdi-alpha-u-circle-outline",
+  "mdi-alpha-v",
+  "mdi-alpha-v-box",
+  "mdi-alpha-v-box-outline",
+  "mdi-alpha-v-circle",
+  "mdi-alpha-v-circle-outline",
+  "mdi-alpha-w",
+  "mdi-alpha-w-box",
+  "mdi-alpha-w-box-outline",
+  "mdi-alpha-w-circle",
+  "mdi-alpha-w-circle-outline",
+  "mdi-alpha-x",
+  "mdi-alpha-x-box",
+  "mdi-alpha-x-box-outline",
+  "mdi-alpha-x-circle",
+  "mdi-alpha-x-circle-outline",
+  "mdi-alpha-y",
+  "mdi-alpha-y-box",
+  "mdi-alpha-y-box-outline",
+  "mdi-alpha-y-circle",
+  "mdi-alpha-y-circle-outline",
+  "mdi-alpha-z",
+  "mdi-alpha-z-box",
+  "mdi-alpha-z-box-outline",
+  "mdi-alpha-z-circle",
+  "mdi-alpha-z-circle-outline",
+  "mdi-alphabet-aurebesh",
+  "mdi-alphabet-cyrillic",
+  "mdi-alphabet-greek",
+  "mdi-alphabet-latin",
+  "mdi-alphabet-piqad",
+  "mdi-alphabet-tengwar",
+  "mdi-alphabetical",
+  "mdi-alphabetical-off",
+  "mdi-alphabetical-variant",
+  "mdi-alphabetical-variant-off",
+  "mdi-altimeter",
+  "mdi-ambulance",
+  "mdi-ammunition",
+  "mdi-ampersand",
+  "mdi-amplifier",
+  "mdi-amplifier-off",
+  "mdi-anchor",
+  "mdi-android",
+  "mdi-android-studio",
+  "mdi-angle-acute",
+  "mdi-angle-obtuse",
+  "mdi-angle-right",
+  "mdi-angular",
+  "mdi-angularjs",
+  "mdi-animation",
+  "mdi-animation-outline",
+  "mdi-animation-play",
+  "mdi-animation-play-outline",
+  "mdi-ansible",
+  "mdi-antenna",
+  "mdi-anvil",
+  "mdi-apache-kafka",
+  "mdi-api",
+  "mdi-api-off",
+  "mdi-apple",
+  "mdi-apple-finder",
+  "mdi-apple-icloud",
+  "mdi-apple-ios",
+  "mdi-apple-keyboard-caps",
+  "mdi-apple-keyboard-command",
+  "mdi-apple-keyboard-control",
+  "mdi-apple-keyboard-option",
+  "mdi-apple-keyboard-shift",
+  "mdi-apple-safari",
+  "mdi-application",
+  "mdi-application-array",
+  "mdi-application-array-outline",
+  "mdi-application-braces",
+  "mdi-application-braces-outline",
+  "mdi-application-brackets",
+  "mdi-application-brackets-outline",
+  "mdi-application-cog",
+  "mdi-application-cog-outline",
+  "mdi-application-edit",
+  "mdi-application-edit-outline",
+  "mdi-application-export",
+  "mdi-application-import",
+  "mdi-application-outline",
+  "mdi-application-parentheses",
+  "mdi-application-parentheses-outline",
+  "mdi-application-settings",
+  "mdi-application-settings-outline",
+  "mdi-application-variable",
+  "mdi-application-variable-outline",
+  "mdi-approximately-equal",
+  "mdi-approximately-equal-box",
+  "mdi-apps",
+  "mdi-apps-box",
+  "mdi-arch",
+  "mdi-archive",
+  "mdi-archive-alert",
+  "mdi-archive-alert-outline",
+  "mdi-archive-arrow-down",
+  "mdi-archive-arrow-down-outline",
+  "mdi-archive-arrow-up",
+  "mdi-archive-arrow-up-outline",
+  "mdi-archive-cancel",
+  "mdi-archive-cancel-outline",
+  "mdi-archive-check",
+  "mdi-archive-check-outline",
+  "mdi-archive-clock",
+  "mdi-archive-clock-outline",
+  "mdi-archive-cog",
+  "mdi-archive-cog-outline",
+  "mdi-archive-edit",
+  "mdi-archive-edit-outline",
+  "mdi-archive-eye",
+  "mdi-archive-eye-outline",
+  "mdi-archive-lock",
+  "mdi-archive-lock-open",
+  "mdi-archive-lock-open-outline",
+  "mdi-archive-lock-outline",
+  "mdi-archive-marker",
+  "mdi-archive-marker-outline",
+  "mdi-archive-minus",
+  "mdi-archive-minus-outline",
+  "mdi-archive-music",
+  "mdi-archive-music-outline",
+  "mdi-archive-off",
+  "mdi-archive-off-outline",
+  "mdi-archive-outline",
+  "mdi-archive-plus",
+  "mdi-archive-plus-outline",
+  "mdi-archive-refresh",
+  "mdi-archive-refresh-outline",
+  "mdi-archive-remove",
+  "mdi-archive-remove-outline",
+  "mdi-archive-search",
+  "mdi-archive-search-outline",
+  "mdi-archive-settings",
+  "mdi-archive-settings-outline",
+  "mdi-archive-star",
+  "mdi-archive-star-outline",
+  "mdi-archive-sync",
+  "mdi-archive-sync-outline",
+  "mdi-arm-flex",
+  "mdi-arm-flex-outline",
+  "mdi-arrange-bring-forward",
+  "mdi-arrange-bring-to-front",
+  "mdi-arrange-send-backward",
+  "mdi-arrange-send-to-back",
+  "mdi-arrow-all",
+  "mdi-arrow-bottom-left",
+  "mdi-arrow-bottom-left-bold-box",
+  "mdi-arrow-bottom-left-bold-box-outline",
+  "mdi-arrow-bottom-left-bold-outline",
+  "mdi-arrow-bottom-left-thick",
+  "mdi-arrow-bottom-left-thin",
+  "mdi-arrow-bottom-left-thin-circle-outline",
+  "mdi-arrow-bottom-right",
+  "mdi-arrow-bottom-right-bold-box",
+  "mdi-arrow-bottom-right-bold-box-outline",
+  "mdi-arrow-bottom-right-bold-outline",
+  "mdi-arrow-bottom-right-thick",
+  "mdi-arrow-bottom-right-thin",
+  "mdi-arrow-bottom-right-thin-circle-outline",
+  "mdi-arrow-collapse",
+  "mdi-arrow-collapse-all",
+  "mdi-arrow-collapse-down",
+  "mdi-arrow-collapse-horizontal",
+  "mdi-arrow-collapse-left",
+  "mdi-arrow-collapse-right",
+  "mdi-arrow-collapse-up",
+  "mdi-arrow-collapse-vertical",
+  "mdi-arrow-decision",
+  "mdi-arrow-decision-auto",
+  "mdi-arrow-decision-auto-outline",
+  "mdi-arrow-decision-outline",
+  "mdi-arrow-down",
+  "mdi-arrow-down-bold",
+  "mdi-arrow-down-bold-box",
+  "mdi-arrow-down-bold-box-outline",
+  "mdi-arrow-down-bold-circle",
+  "mdi-arrow-down-bold-circle-outline",
+  "mdi-arrow-down-bold-hexagon-outline",
+  "mdi-arrow-down-bold-outline",
+  "mdi-arrow-down-box",
+  "mdi-arrow-down-circle",
+  "mdi-arrow-down-circle-outline",
+  "mdi-arrow-down-drop-circle",
+  "mdi-arrow-down-drop-circle-outline",
+  "mdi-arrow-down-left",
+  "mdi-arrow-down-left-bold",
+  "mdi-arrow-down-right",
+  "mdi-arrow-down-right-bold",
+  "mdi-arrow-down-thick",
+  "mdi-arrow-down-thin",
+  "mdi-arrow-down-thin-circle-outline",
+  "mdi-arrow-expand",
+  "mdi-arrow-expand-all",
+  "mdi-arrow-expand-down",
+  "mdi-arrow-expand-horizontal",
+  "mdi-arrow-expand-left",
+  "mdi-arrow-expand-right",
+  "mdi-arrow-expand-up",
+  "mdi-arrow-expand-vertical",
+  "mdi-arrow-horizontal-lock",
+  "mdi-arrow-left",
+  "mdi-arrow-left-bold",
+  "mdi-arrow-left-bold-box",
+  "mdi-arrow-left-bold-box-outline",
+  "mdi-arrow-left-bold-circle",
+  "mdi-arrow-left-bold-circle-outline",
+  "mdi-arrow-left-bold-hexagon-outline",
+  "mdi-arrow-left-bold-outline",
+  "mdi-arrow-left-bottom",
+  "mdi-arrow-left-bottom-bold",
+  "mdi-arrow-left-box",
+  "mdi-arrow-left-circle",
+  "mdi-arrow-left-circle-outline",
+  "mdi-arrow-left-drop-circle",
+  "mdi-arrow-left-drop-circle-outline",
+  "mdi-arrow-left-right",
+  "mdi-arrow-left-right-bold",
+  "mdi-arrow-left-right-bold-outline",
+  "mdi-arrow-left-thick",
+  "mdi-arrow-left-thin",
+  "mdi-arrow-left-thin-circle-outline",
+  "mdi-arrow-left-top",
+  "mdi-arrow-left-top-bold",
+  "mdi-arrow-oscillating",
+  "mdi-arrow-oscillating-off",
+  "mdi-arrow-projectile",
+  "mdi-arrow-projectile-multiple",
+  "mdi-arrow-right",
+  "mdi-arrow-right-bold",
+  "mdi-arrow-right-bold-box",
+  "mdi-arrow-right-bold-box-outline",
+  "mdi-arrow-right-bold-circle",
+  "mdi-arrow-right-bold-circle-outline",
+  "mdi-arrow-right-bold-hexagon-outline",
+  "mdi-arrow-right-bold-outline",
+  "mdi-arrow-right-bottom",
+  "mdi-arrow-right-bottom-bold",
+  "mdi-arrow-right-box",
+  "mdi-arrow-right-circle",
+  "mdi-arrow-right-circle-outline",
+  "mdi-arrow-right-drop-circle",
+  "mdi-arrow-right-drop-circle-outline",
+  "mdi-arrow-right-thick",
+  "mdi-arrow-right-thin",
+  "mdi-arrow-right-thin-circle-outline",
+  "mdi-arrow-right-top",
+  "mdi-arrow-right-top-bold",
+  "mdi-arrow-split-horizontal",
+  "mdi-arrow-split-vertical",
+  "mdi-arrow-top-left",
+  "mdi-arrow-top-left-bold-box",
+  "mdi-arrow-top-left-bold-box-outline",
+  "mdi-arrow-top-left-bold-outline",
+  "mdi-arrow-top-left-bottom-right",
+  "mdi-arrow-top-left-bottom-right-bold",
+  "mdi-arrow-top-left-thick",
+  "mdi-arrow-top-left-thin",
+  "mdi-arrow-top-left-thin-circle-outline",
+  "mdi-arrow-top-right",
+  "mdi-arrow-top-right-bold-box",
+  "mdi-arrow-top-right-bold-box-outline",
+  "mdi-arrow-top-right-bold-outline",
+  "mdi-arrow-top-right-bottom-left",
+  "mdi-arrow-top-right-bottom-left-bold",
+  "mdi-arrow-top-right-thick",
+  "mdi-arrow-top-right-thin",
+  "mdi-arrow-top-right-thin-circle-outline",
+  "mdi-arrow-u-down-left",
+  "mdi-arrow-u-down-left-bold",
+  "mdi-arrow-u-down-right",
+  "mdi-arrow-u-down-right-bold",
+  "mdi-arrow-u-left-bottom",
+  "mdi-arrow-u-left-bottom-bold",
+  "mdi-arrow-u-left-top",
+  "mdi-arrow-u-left-top-bold",
+  "mdi-arrow-u-right-bottom",
+  "mdi-arrow-u-right-bottom-bold",
+  "mdi-arrow-u-right-top",
+  "mdi-arrow-u-right-top-bold",
+  "mdi-arrow-u-up-left",
+  "mdi-arrow-u-up-left-bold",
+  "mdi-arrow-u-up-right",
+  "mdi-arrow-u-up-right-bold",
+  "mdi-arrow-up",
+  "mdi-arrow-up-bold",
+  "mdi-arrow-up-bold-box",
+  "mdi-arrow-up-bold-box-outline",
+  "mdi-arrow-up-bold-circle",
+  "mdi-arrow-up-bold-circle-outline",
+  "mdi-arrow-up-bold-hexagon-outline",
+  "mdi-arrow-up-bold-outline",
+  "mdi-arrow-up-box",
+  "mdi-arrow-up-circle",
+  "mdi-arrow-up-circle-outline",
+  "mdi-arrow-up-down",
+  "mdi-arrow-up-down-bold",
+  "mdi-arrow-up-down-bold-outline",
+  "mdi-arrow-up-drop-circle",
+  "mdi-arrow-up-drop-circle-outline",
+  "mdi-arrow-up-left",
+  "mdi-arrow-up-left-bold",
+  "mdi-arrow-up-right",
+  "mdi-arrow-up-right-bold",
+  "mdi-arrow-up-thick",
+  "mdi-arrow-up-thin",
+  "mdi-arrow-up-thin-circle-outline",
+  "mdi-arrow-vertical-lock",
+  "mdi-artboard",
+  "mdi-artstation",
+  "mdi-aspect-ratio",
+  "mdi-assistant",
+  "mdi-asterisk",
+  "mdi-asterisk-circle-outline",
+  "mdi-at",
+  "mdi-atlassian",
+  "mdi-atm",
+  "mdi-atom",
+  "mdi-atom-variant",
+  "mdi-attachment",
+  "mdi-attachment-check",
+  "mdi-attachment-lock",
+  "mdi-attachment-minus",
+  "mdi-attachment-off",
+  "mdi-attachment-plus",
+  "mdi-attachment-remove",
+  "mdi-atv",
+  "mdi-audio-input-rca",
+  "mdi-audio-input-stereo-minijack",
+  "mdi-audio-input-xlr",
+  "mdi-audio-video",
+  "mdi-audio-video-off",
+  "mdi-augmented-reality",
+  "mdi-aurora",
+  "mdi-auto-download",
+  "mdi-auto-fix",
+  "mdi-auto-mode",
+  "mdi-auto-upload",
+  "mdi-autorenew",
+  "mdi-autorenew-off",
+  "mdi-av-timer",
+  "mdi-awning",
+  "mdi-awning-outline",
+  "mdi-aws",
+  "mdi-axe",
+  "mdi-axe-battle",
+  "mdi-axis",
+  "mdi-axis-arrow",
+  "mdi-axis-arrow-info",
+  "mdi-axis-arrow-lock",
+  "mdi-axis-lock",
+  "mdi-axis-x-arrow",
+  "mdi-axis-x-arrow-lock",
+  "mdi-axis-x-rotate-clockwise",
+  "mdi-axis-x-rotate-counterclockwise",
+  "mdi-axis-x-y-arrow-lock",
+  "mdi-axis-y-arrow",
+  "mdi-axis-y-arrow-lock",
+  "mdi-axis-y-rotate-clockwise",
+  "mdi-axis-y-rotate-counterclockwise",
+  "mdi-axis-z-arrow",
+  "mdi-axis-z-arrow-lock",
+  "mdi-axis-z-rotate-clockwise",
+  "mdi-axis-z-rotate-counterclockwise",
+  "mdi-babel",
+  "mdi-baby",
+  "mdi-baby-bottle",
+  "mdi-baby-bottle-outline",
+  "mdi-baby-buggy",
+  "mdi-baby-buggy-off",
+  "mdi-baby-carriage",
+  "mdi-baby-carriage-off",
+  "mdi-baby-face",
+  "mdi-baby-face-outline",
+  "mdi-backburger",
+  "mdi-backspace",
+  "mdi-backspace-outline",
+  "mdi-backspace-reverse",
+  "mdi-backspace-reverse-outline",
+  "mdi-backup-restore",
+  "mdi-bacteria",
+  "mdi-bacteria-outline",
+  "mdi-badge-account",
+  "mdi-badge-account-alert",
+  "mdi-badge-account-alert-outline",
+  "mdi-badge-account-horizontal",
+  "mdi-badge-account-horizontal-outline",
+  "mdi-badge-account-outline",
+  "mdi-badminton",
+  "mdi-bag-carry-on",
+  "mdi-bag-carry-on-check",
+  "mdi-bag-carry-on-off",
+  "mdi-bag-checked",
+  "mdi-bag-personal",
+  "mdi-bag-personal-off",
+  "mdi-bag-personal-off-outline",
+  "mdi-bag-personal-outline",
+  "mdi-bag-personal-plus",
+  "mdi-bag-personal-plus-outline",
+  "mdi-bag-personal-tag",
+  "mdi-bag-personal-tag-outline",
+  "mdi-bag-suitcase",
+  "mdi-bag-suitcase-off",
+  "mdi-bag-suitcase-off-outline",
+  "mdi-bag-suitcase-outline",
+  "mdi-baguette",
+  "mdi-balcony",
+  "mdi-balloon",
+  "mdi-ballot",
+  "mdi-ballot-outline",
+  "mdi-ballot-recount",
+  "mdi-ballot-recount-outline",
+  "mdi-bandage",
+  "mdi-bank",
+  "mdi-bank-check",
+  "mdi-bank-circle",
+  "mdi-bank-circle-outline",
+  "mdi-bank-minus",
+  "mdi-bank-off",
+  "mdi-bank-off-outline",
+  "mdi-bank-outline",
+  "mdi-bank-plus",
+  "mdi-bank-remove",
+  "mdi-bank-transfer",
+  "mdi-bank-transfer-in",
+  "mdi-bank-transfer-out",
+  "mdi-barcode",
+  "mdi-barcode-off",
+  "mdi-barcode-scan",
+  "mdi-barley",
+  "mdi-barley-off",
+  "mdi-barn",
+  "mdi-barrel",
+  "mdi-barrel-outline",
+  "mdi-baseball",
+  "mdi-baseball-bat",
+  "mdi-baseball-diamond",
+  "mdi-baseball-diamond-outline",
+  "mdi-baseball-outline",
+  "mdi-bash",
+  "mdi-basket",
+  "mdi-basket-check",
+  "mdi-basket-check-outline",
+  "mdi-basket-fill",
+  "mdi-basket-minus",
+  "mdi-basket-minus-outline",
+  "mdi-basket-off",
+  "mdi-basket-off-outline",
+  "mdi-basket-outline",
+  "mdi-basket-plus",
+  "mdi-basket-plus-outline",
+  "mdi-basket-remove",
+  "mdi-basket-remove-outline",
+  "mdi-basket-unfill",
+  "mdi-basketball",
+  "mdi-basketball-hoop",
+  "mdi-basketball-hoop-outline",
+  "mdi-bat",
+  "mdi-bathtub",
+  "mdi-bathtub-outline",
+  "mdi-battery",
+  "mdi-battery-10",
+  "mdi-battery-10-bluetooth",
+  "mdi-battery-20",
+  "mdi-battery-20-bluetooth",
+  "mdi-battery-30",
+  "mdi-battery-30-bluetooth",
+  "mdi-battery-40",
+  "mdi-battery-40-bluetooth",
+  "mdi-battery-50",
+  "mdi-battery-50-bluetooth",
+  "mdi-battery-60",
+  "mdi-battery-60-bluetooth",
+  "mdi-battery-70",
+  "mdi-battery-70-bluetooth",
+  "mdi-battery-80",
+  "mdi-battery-80-bluetooth",
+  "mdi-battery-90",
+  "mdi-battery-90-bluetooth",
+  "mdi-battery-alert",
+  "mdi-battery-alert-bluetooth",
+  "mdi-battery-alert-variant",
+  "mdi-battery-alert-variant-outline",
+  "mdi-battery-arrow-down",
+  "mdi-battery-arrow-down-outline",
+  "mdi-battery-arrow-up",
+  "mdi-battery-arrow-up-outline",
+  "mdi-battery-bluetooth",
+  "mdi-battery-bluetooth-variant",
+  "mdi-battery-charging",
+  "mdi-battery-charging-10",
+  "mdi-battery-charging-100",
+  "mdi-battery-charging-20",
+  "mdi-battery-charging-30",
+  "mdi-battery-charging-40",
+  "mdi-battery-charging-50",
+  "mdi-battery-charging-60",
+  "mdi-battery-charging-70",
+  "mdi-battery-charging-80",
+  "mdi-battery-charging-90",
+  "mdi-battery-charging-high",
+  "mdi-battery-charging-low",
+  "mdi-battery-charging-medium",
+  "mdi-battery-charging-outline",
+  "mdi-battery-charging-wireless",
+  "mdi-battery-charging-wireless-10",
+  "mdi-battery-charging-wireless-20",
+  "mdi-battery-charging-wireless-30",
+  "mdi-battery-charging-wireless-40",
+  "mdi-battery-charging-wireless-50",
+  "mdi-battery-charging-wireless-60",
+  "mdi-battery-charging-wireless-70",
+  "mdi-battery-charging-wireless-80",
+  "mdi-battery-charging-wireless-90",
+  "mdi-battery-charging-wireless-alert",
+  "mdi-battery-charging-wireless-outline",
+  "mdi-battery-check",
+  "mdi-battery-check-outline",
+  "mdi-battery-clock",
+  "mdi-battery-clock-outline",
+  "mdi-battery-heart",
+  "mdi-battery-heart-outline",
+  "mdi-battery-heart-variant",
+  "mdi-battery-high",
+  "mdi-battery-lock",
+  "mdi-battery-lock-open",
+  "mdi-battery-low",
+  "mdi-battery-medium",
+  "mdi-battery-minus",
+  "mdi-battery-minus-outline",
+  "mdi-battery-minus-variant",
+  "mdi-battery-negative",
+  "mdi-battery-off",
+  "mdi-battery-off-outline",
+  "mdi-battery-outline",
+  "mdi-battery-plus",
+  "mdi-battery-plus-outline",
+  "mdi-battery-plus-variant",
+  "mdi-battery-positive",
+  "mdi-battery-remove",
+  "mdi-battery-remove-outline",
+  "mdi-battery-sync",
+  "mdi-battery-sync-outline",
+  "mdi-battery-unknown",
+  "mdi-battery-unknown-bluetooth",
+  "mdi-beach",
+  "mdi-beaker",
+  "mdi-beaker-alert",
+  "mdi-beaker-alert-outline",
+  "mdi-beaker-check",
+  "mdi-beaker-check-outline",
+  "mdi-beaker-minus",
+  "mdi-beaker-minus-outline",
+  "mdi-beaker-outline",
+  "mdi-beaker-plus",
+  "mdi-beaker-plus-outline",
+  "mdi-beaker-question",
+  "mdi-beaker-question-outline",
+  "mdi-beaker-remove",
+  "mdi-beaker-remove-outline",
+  "mdi-bed",
+  "mdi-bed-clock",
+  "mdi-bed-double",
+  "mdi-bed-double-outline",
+  "mdi-bed-empty",
+  "mdi-bed-king",
+  "mdi-bed-king-outline",
+  "mdi-bed-outline",
+  "mdi-bed-queen",
+  "mdi-bed-queen-outline",
+  "mdi-bed-single",
+  "mdi-bed-single-outline",
+  "mdi-bee",
+  "mdi-bee-flower",
+  "mdi-beehive-off-outline",
+  "mdi-beehive-outline",
+  "mdi-beekeeper",
+  "mdi-beer",
+  "mdi-beer-outline",
+  "mdi-bell",
+  "mdi-bell-alert",
+  "mdi-bell-alert-outline",
+  "mdi-bell-badge",
+  "mdi-bell-badge-outline",
+  "mdi-bell-cancel",
+  "mdi-bell-cancel-outline",
+  "mdi-bell-check",
+  "mdi-bell-check-outline",
+  "mdi-bell-circle",
+  "mdi-bell-circle-outline",
+  "mdi-bell-cog",
+  "mdi-bell-cog-outline",
+  "mdi-bell-minus",
+  "mdi-bell-minus-outline",
+  "mdi-bell-off",
+  "mdi-bell-off-outline",
+  "mdi-bell-outline",
+  "mdi-bell-plus",
+  "mdi-bell-plus-outline",
+  "mdi-bell-remove",
+  "mdi-bell-remove-outline",
+  "mdi-bell-ring",
+  "mdi-bell-ring-outline",
+  "mdi-bell-sleep",
+  "mdi-bell-sleep-outline",
+  "mdi-bench",
+  "mdi-bench-back",
+  "mdi-beta",
+  "mdi-betamax",
+  "mdi-biathlon",
+  "mdi-bicycle",
+  "mdi-bicycle-basket",
+  "mdi-bicycle-cargo",
+  "mdi-bicycle-electric",
+  "mdi-bicycle-penny-farthing",
+  "mdi-bike",
+  "mdi-bike-fast",
+  "mdi-bike-pedal",
+  "mdi-bike-pedal-clipless",
+  "mdi-bike-pedal-mountain",
+  "mdi-billboard",
+  "mdi-billiards",
+  "mdi-billiards-rack",
+  "mdi-binoculars",
+  "mdi-bio",
+  "mdi-biohazard",
+  "mdi-bird",
+  "mdi-bitbucket",
+  "mdi-bitcoin",
+  "mdi-black-mesa",
+  "mdi-blender",
+  "mdi-blender-outline",
+  "mdi-blender-software",
+  "mdi-blinds",
+  "mdi-blinds-horizontal",
+  "mdi-blinds-horizontal-closed",
+  "mdi-blinds-open",
+  "mdi-blinds-vertical",
+  "mdi-blinds-vertical-closed",
+  "mdi-block-helper",
+  "mdi-blood-bag",
+  "mdi-bluetooth",
+  "mdi-bluetooth-audio",
+  "mdi-bluetooth-connect",
+  "mdi-bluetooth-off",
+  "mdi-bluetooth-settings",
+  "mdi-bluetooth-transfer",
+  "mdi-blur",
+  "mdi-blur-linear",
+  "mdi-blur-off",
+  "mdi-blur-radial",
+  "mdi-bolt",
+  "mdi-bomb",
+  "mdi-bomb-off",
+  "mdi-bone",
+  "mdi-bone-off",
+  "mdi-book",
+  "mdi-book-account",
+  "mdi-book-account-outline",
+  "mdi-book-alert",
+  "mdi-book-alert-outline",
+  "mdi-book-alphabet",
+  "mdi-book-arrow-down",
+  "mdi-book-arrow-down-outline",
+  "mdi-book-arrow-left",
+  "mdi-book-arrow-left-outline",
+  "mdi-book-arrow-right",
+  "mdi-book-arrow-right-outline",
+  "mdi-book-arrow-up",
+  "mdi-book-arrow-up-outline",
+  "mdi-book-cancel",
+  "mdi-book-cancel-outline",
+  "mdi-book-check",
+  "mdi-book-check-outline",
+  "mdi-book-clock",
+  "mdi-book-clock-outline",
+  "mdi-book-cog",
+  "mdi-book-cog-outline",
+  "mdi-book-cross",
+  "mdi-book-edit",
+  "mdi-book-edit-outline",
+  "mdi-book-education",
+  "mdi-book-education-outline",
+  "mdi-book-heart",
+  "mdi-book-heart-outline",
+  "mdi-book-information-variant",
+  "mdi-book-lock",
+  "mdi-book-lock-open",
+  "mdi-book-lock-open-outline",
+  "mdi-book-lock-outline",
+  "mdi-book-marker",
+  "mdi-book-marker-outline",
+  "mdi-book-minus",
+  "mdi-book-minus-multiple",
+  "mdi-book-minus-multiple-outline",
+  "mdi-book-minus-outline",
+  "mdi-book-multiple",
+  "mdi-book-multiple-outline",
+  "mdi-book-music",
+  "mdi-book-music-outline",
+  "mdi-book-off",
+  "mdi-book-off-outline",
+  "mdi-book-open",
+  "mdi-book-open-blank-variant",
+  "mdi-book-open-blank-variant-outline",
+  "mdi-book-open-outline",
+  "mdi-book-open-page-variant",
+  "mdi-book-open-page-variant-outline",
+  "mdi-book-open-variant",
+  "mdi-book-open-variant-outline",
+  "mdi-book-outline",
+  "mdi-book-play",
+  "mdi-book-play-outline",
+  "mdi-book-plus",
+  "mdi-book-plus-multiple",
+  "mdi-book-plus-multiple-outline",
+  "mdi-book-plus-outline",
+  "mdi-book-refresh",
+  "mdi-book-refresh-outline",
+  "mdi-book-remove",
+  "mdi-book-remove-multiple",
+  "mdi-book-remove-multiple-outline",
+  "mdi-book-remove-outline",
+  "mdi-book-search",
+  "mdi-book-search-outline",
+  "mdi-book-settings",
+  "mdi-book-settings-outline",
+  "mdi-book-sync",
+  "mdi-book-sync-outline",
+  "mdi-book-variant",
+  "mdi-bookmark",
+  "mdi-bookmark-box",
+  "mdi-bookmark-box-multiple",
+  "mdi-bookmark-box-multiple-outline",
+  "mdi-bookmark-box-outline",
+  "mdi-bookmark-check",
+  "mdi-bookmark-check-outline",
+  "mdi-bookmark-minus",
+  "mdi-bookmark-minus-outline",
+  "mdi-bookmark-multiple",
+  "mdi-bookmark-multiple-outline",
+  "mdi-bookmark-music",
+  "mdi-bookmark-music-outline",
+  "mdi-bookmark-off",
+  "mdi-bookmark-off-outline",
+  "mdi-bookmark-outline",
+  "mdi-bookmark-plus",
+  "mdi-bookmark-plus-outline",
+  "mdi-bookmark-remove",
+  "mdi-bookmark-remove-outline",
+  "mdi-bookshelf",
+  "mdi-boom-gate",
+  "mdi-boom-gate-alert",
+  "mdi-boom-gate-alert-outline",
+  "mdi-boom-gate-arrow-down",
+  "mdi-boom-gate-arrow-down-outline",
+  "mdi-boom-gate-arrow-up",
+  "mdi-boom-gate-arrow-up-outline",
+  "mdi-boom-gate-outline",
+  "mdi-boom-gate-up",
+  "mdi-boom-gate-up-outline",
+  "mdi-boombox",
+  "mdi-boomerang",
+  "mdi-bootstrap",
+  "mdi-border-all",
+  "mdi-border-all-variant",
+  "mdi-border-bottom",
+  "mdi-border-bottom-variant",
+  "mdi-border-color",
+  "mdi-border-horizontal",
+  "mdi-border-inside",
+  "mdi-border-left",
+  "mdi-border-left-variant",
+  "mdi-border-none",
+  "mdi-border-none-variant",
+  "mdi-border-outside",
+  "mdi-border-radius",
+  "mdi-border-right",
+  "mdi-border-right-variant",
+  "mdi-border-style",
+  "mdi-border-top",
+  "mdi-border-top-variant",
+  "mdi-border-vertical",
+  "mdi-bottle-soda",
+  "mdi-bottle-soda-classic",
+  "mdi-bottle-soda-classic-outline",
+  "mdi-bottle-soda-outline",
+  "mdi-bottle-tonic",
+  "mdi-bottle-tonic-outline",
+  "mdi-bottle-tonic-plus",
+  "mdi-bottle-tonic-plus-outline",
+  "mdi-bottle-tonic-skull",
+  "mdi-bottle-tonic-skull-outline",
+  "mdi-bottle-wine",
+  "mdi-bottle-wine-outline",
+  "mdi-bow-arrow",
+  "mdi-bow-tie",
+  "mdi-bowl",
+  "mdi-bowl-mix",
+  "mdi-bowl-mix-outline",
+  "mdi-bowl-outline",
+  "mdi-bowling",
+  "mdi-box",
+  "mdi-box-cutter",
+  "mdi-box-cutter-off",
+  "mdi-box-shadow",
+  "mdi-boxing-glove",
+  "mdi-braille",
+  "mdi-brain",
+  "mdi-bread-slice",
+  "mdi-bread-slice-outline",
+  "mdi-bridge",
+  "mdi-briefcase",
+  "mdi-briefcase-account",
+  "mdi-briefcase-account-outline",
+  "mdi-briefcase-arrow-left-right",
+  "mdi-briefcase-arrow-left-right-outline",
+  "mdi-briefcase-arrow-up-down",
+  "mdi-briefcase-arrow-up-down-outline",
+  "mdi-briefcase-check",
+  "mdi-briefcase-check-outline",
+  "mdi-briefcase-clock",
+  "mdi-briefcase-clock-outline",
+  "mdi-briefcase-download",
+  "mdi-briefcase-download-outline",
+  "mdi-briefcase-edit",
+  "mdi-briefcase-edit-outline",
+  "mdi-briefcase-eye",
+  "mdi-briefcase-eye-outline",
+  "mdi-briefcase-minus",
+  "mdi-briefcase-minus-outline",
+  "mdi-briefcase-off",
+  "mdi-briefcase-off-outline",
+  "mdi-briefcase-outline",
+  "mdi-briefcase-plus",
+  "mdi-briefcase-plus-outline",
+  "mdi-briefcase-remove",
+  "mdi-briefcase-remove-outline",
+  "mdi-briefcase-search",
+  "mdi-briefcase-search-outline",
+  "mdi-briefcase-upload",
+  "mdi-briefcase-upload-outline",
+  "mdi-briefcase-variant",
+  "mdi-briefcase-variant-off",
+  "mdi-briefcase-variant-off-outline",
+  "mdi-briefcase-variant-outline",
+  "mdi-brightness-1",
+  "mdi-brightness-2",
+  "mdi-brightness-3",
+  "mdi-brightness-4",
+  "mdi-brightness-5",
+  "mdi-brightness-6",
+  "mdi-brightness-7",
+  "mdi-brightness-auto",
+  "mdi-brightness-percent",
+  "mdi-broadcast",
+  "mdi-broadcast-off",
+  "mdi-broom",
+  "mdi-brush",
+  "mdi-brush-off",
+  "mdi-brush-outline",
+  "mdi-brush-variant",
+  "mdi-bucket",
+  "mdi-bucket-outline",
+  "mdi-buffet",
+  "mdi-bug",
+  "mdi-bug-check",
+  "mdi-bug-check-outline",
+  "mdi-bug-outline",
+  "mdi-bug-pause",
+  "mdi-bug-pause-outline",
+  "mdi-bug-play",
+  "mdi-bug-play-outline",
+  "mdi-bug-stop",
+  "mdi-bug-stop-outline",
+  "mdi-bugle",
+  "mdi-bulkhead-light",
+  "mdi-bulldozer",
+  "mdi-bullet",
+  "mdi-bulletin-board",
+  "mdi-bullhorn",
+  "mdi-bullhorn-outline",
+  "mdi-bullhorn-variant",
+  "mdi-bullhorn-variant-outline",
+  "mdi-bullseye",
+  "mdi-bullseye-arrow",
+  "mdi-bulma",
+  "mdi-bunk-bed",
+  "mdi-bunk-bed-outline",
+  "mdi-bus",
+  "mdi-bus-alert",
+  "mdi-bus-articulated-end",
+  "mdi-bus-articulated-front",
+  "mdi-bus-clock",
+  "mdi-bus-double-decker",
+  "mdi-bus-electric",
+  "mdi-bus-marker",
+  "mdi-bus-multiple",
+  "mdi-bus-school",
+  "mdi-bus-side",
+  "mdi-bus-sign",
+  "mdi-bus-stop",
+  "mdi-bus-stop-covered",
+  "mdi-bus-stop-uncovered",
+  "mdi-bus-wrench",
+  "mdi-butterfly",
+  "mdi-butterfly-outline",
+  "mdi-button-cursor",
+  "mdi-button-pointer",
+  "mdi-cabin-a-frame",
+  "mdi-cable-data",
+  "mdi-cached",
+  "mdi-cactus",
+  "mdi-cake",
+  "mdi-cake-layered",
+  "mdi-cake-variant",
+  "mdi-cake-variant-outline",
+  "mdi-calculator",
+  "mdi-calculator-variant",
+  "mdi-calculator-variant-outline",
+  "mdi-calendar",
+  "mdi-calendar-account",
+  "mdi-calendar-account-outline",
+  "mdi-calendar-alert",
+  "mdi-calendar-alert-outline",
+  "mdi-calendar-arrow-left",
+  "mdi-calendar-arrow-right",
+  "mdi-calendar-badge",
+  "mdi-calendar-badge-outline",
+  "mdi-calendar-blank",
+  "mdi-calendar-blank-multiple",
+  "mdi-calendar-blank-outline",
+  "mdi-calendar-check",
+  "mdi-calendar-check-outline",
+  "mdi-calendar-clock",
+  "mdi-calendar-clock-outline",
+  "mdi-calendar-collapse-horizontal",
+  "mdi-calendar-collapse-horizontal-outline",
+  "mdi-calendar-cursor",
+  "mdi-calendar-cursor-outline",
+  "mdi-calendar-edit",
+  "mdi-calendar-edit-outline",
+  "mdi-calendar-end",
+  "mdi-calendar-end-outline",
+  "mdi-calendar-expand-horizontal",
+  "mdi-calendar-expand-horizontal-outline",
+  "mdi-calendar-export",
+  "mdi-calendar-export-outline",
+  "mdi-calendar-filter",
+  "mdi-calendar-filter-outline",
+  "mdi-calendar-heart",
+  "mdi-calendar-heart-outline",
+  "mdi-calendar-import",
+  "mdi-calendar-import-outline",
+  "mdi-calendar-lock",
+  "mdi-calendar-lock-open",
+  "mdi-calendar-lock-open-outline",
+  "mdi-calendar-lock-outline",
+  "mdi-calendar-minus",
+  "mdi-calendar-minus-outline",
+  "mdi-calendar-month",
+  "mdi-calendar-month-outline",
+  "mdi-calendar-multiple",
+  "mdi-calendar-multiple-check",
+  "mdi-calendar-multiselect",
+  "mdi-calendar-multiselect-outline",
+  "mdi-calendar-outline",
+  "mdi-calendar-plus",
+  "mdi-calendar-plus-outline",
+  "mdi-calendar-question",
+  "mdi-calendar-question-outline",
+  "mdi-calendar-range",
+  "mdi-calendar-range-outline",
+  "mdi-calendar-refresh",
+  "mdi-calendar-refresh-outline",
+  "mdi-calendar-remove",
+  "mdi-calendar-remove-outline",
+  "mdi-calendar-search",
+  "mdi-calendar-search-outline",
+  "mdi-calendar-star",
+  "mdi-calendar-star-four-points",
+  "mdi-calendar-star-outline",
+  "mdi-calendar-start",
+  "mdi-calendar-start-outline",
+  "mdi-calendar-sync",
+  "mdi-calendar-sync-outline",
+  "mdi-calendar-text",
+  "mdi-calendar-text-outline",
+  "mdi-calendar-today",
+  "mdi-calendar-today-outline",
+  "mdi-calendar-week",
+  "mdi-calendar-week-begin",
+  "mdi-calendar-week-begin-outline",
+  "mdi-calendar-week-outline",
+  "mdi-calendar-weekend",
+  "mdi-calendar-weekend-outline",
+  "mdi-call-made",
+  "mdi-call-merge",
+  "mdi-call-missed",
+  "mdi-call-received",
+  "mdi-call-split",
+  "mdi-camcorder",
+  "mdi-camcorder-off",
+  "mdi-camera",
+  "mdi-camera-account",
+  "mdi-camera-burst",
+  "mdi-camera-control",
+  "mdi-camera-document",
+  "mdi-camera-document-off",
+  "mdi-camera-enhance",
+  "mdi-camera-enhance-outline",
+  "mdi-camera-flip",
+  "mdi-camera-flip-outline",
+  "mdi-camera-front",
+  "mdi-camera-front-variant",
+  "mdi-camera-gopro",
+  "mdi-camera-image",
+  "mdi-camera-iris",
+  "mdi-camera-lock",
+  "mdi-camera-lock-open",
+  "mdi-camera-lock-open-outline",
+  "mdi-camera-lock-outline",
+  "mdi-camera-marker",
+  "mdi-camera-marker-outline",
+  "mdi-camera-metering-center",
+  "mdi-camera-metering-matrix",
+  "mdi-camera-metering-partial",
+  "mdi-camera-metering-spot",
+  "mdi-camera-off",
+  "mdi-camera-off-outline",
+  "mdi-camera-outline",
+  "mdi-camera-party-mode",
+  "mdi-camera-plus",
+  "mdi-camera-plus-outline",
+  "mdi-camera-rear",
+  "mdi-camera-rear-variant",
+  "mdi-camera-retake",
+  "mdi-camera-retake-outline",
+  "mdi-camera-switch",
+  "mdi-camera-switch-outline",
+  "mdi-camera-timer",
+  "mdi-camera-wireless",
+  "mdi-camera-wireless-outline",
+  "mdi-campfire",
+  "mdi-cancel",
+  "mdi-candelabra",
+  "mdi-candelabra-fire",
+  "mdi-candle",
+  "mdi-candy",
+  "mdi-candy-off",
+  "mdi-candy-off-outline",
+  "mdi-candy-outline",
+  "mdi-candycane",
+  "mdi-cannabis",
+  "mdi-cannabis-off",
+  "mdi-caps-lock",
+  "mdi-car",
+  "mdi-car-2-plus",
+  "mdi-car-3-plus",
+  "mdi-car-arrow-left",
+  "mdi-car-arrow-right",
+  "mdi-car-back",
+  "mdi-car-battery",
+  "mdi-car-brake-abs",
+  "mdi-car-brake-alert",
+  "mdi-car-brake-fluid-level",
+  "mdi-car-brake-hold",
+  "mdi-car-brake-low-pressure",
+  "mdi-car-brake-parking",
+  "mdi-car-brake-retarder",
+  "mdi-car-brake-temperature",
+  "mdi-car-brake-worn-linings",
+  "mdi-car-child-seat",
+  "mdi-car-clock",
+  "mdi-car-clutch",
+  "mdi-car-cog",
+  "mdi-car-connected",
+  "mdi-car-convertible",
+  "mdi-car-coolant-level",
+  "mdi-car-cruise-control",
+  "mdi-car-defrost-front",
+  "mdi-car-defrost-rear",
+  "mdi-car-door",
+  "mdi-car-door-lock",
+  "mdi-car-door-lock-open",
+  "mdi-car-electric",
+  "mdi-car-electric-outline",
+  "mdi-car-emergency",
+  "mdi-car-esp",
+  "mdi-car-estate",
+  "mdi-car-hatchback",
+  "mdi-car-info",
+  "mdi-car-key",
+  "mdi-car-lifted-pickup",
+  "mdi-car-light-alert",
+  "mdi-car-light-dimmed",
+  "mdi-car-light-fog",
+  "mdi-car-light-high",
+  "mdi-car-limousine",
+  "mdi-car-multiple",
+  "mdi-car-off",
+  "mdi-car-outline",
+  "mdi-car-parking-lights",
+  "mdi-car-pickup",
+  "mdi-car-search",
+  "mdi-car-search-outline",
+  "mdi-car-seat",
+  "mdi-car-seat-cooler",
+  "mdi-car-seat-heater",
+  "mdi-car-select",
+  "mdi-car-settings",
+  "mdi-car-shift-pattern",
+  "mdi-car-side",
+  "mdi-car-speed-limiter",
+  "mdi-car-sports",
+  "mdi-car-tire-alert",
+  "mdi-car-traction-control",
+  "mdi-car-turbocharger",
+  "mdi-car-wash",
+  "mdi-car-windshield",
+  "mdi-car-windshield-outline",
+  "mdi-car-wireless",
+  "mdi-car-wrench",
+  "mdi-carabiner",
+  "mdi-caravan",
+  "mdi-card",
+  "mdi-card-account-details",
+  "mdi-card-account-details-outline",
+  "mdi-card-account-details-star",
+  "mdi-card-account-details-star-outline",
+  "mdi-card-account-mail",
+  "mdi-card-account-mail-outline",
+  "mdi-card-account-phone",
+  "mdi-card-account-phone-outline",
+  "mdi-card-bulleted",
+  "mdi-card-bulleted-off",
+  "mdi-card-bulleted-off-outline",
+  "mdi-card-bulleted-outline",
+  "mdi-card-bulleted-settings",
+  "mdi-card-bulleted-settings-outline",
+  "mdi-card-minus",
+  "mdi-card-minus-outline",
+  "mdi-card-multiple",
+  "mdi-card-multiple-outline",
+  "mdi-card-off",
+  "mdi-card-off-outline",
+  "mdi-card-outline",
+  "mdi-card-plus",
+  "mdi-card-plus-outline",
+  "mdi-card-remove",
+  "mdi-card-remove-outline",
+  "mdi-card-search",
+  "mdi-card-search-outline",
+  "mdi-card-text",
+  "mdi-card-text-outline",
+  "mdi-cards",
+  "mdi-cards-club",
+  "mdi-cards-club-outline",
+  "mdi-cards-diamond",
+  "mdi-cards-diamond-outline",
+  "mdi-cards-heart",
+  "mdi-cards-heart-outline",
+  "mdi-cards-outline",
+  "mdi-cards-playing",
+  "mdi-cards-playing-club",
+  "mdi-cards-playing-club-multiple",
+  "mdi-cards-playing-club-multiple-outline",
+  "mdi-cards-playing-club-outline",
+  "mdi-cards-playing-diamond",
+  "mdi-cards-playing-diamond-multiple",
+  "mdi-cards-playing-diamond-multiple-outline",
+  "mdi-cards-playing-diamond-outline",
+  "mdi-cards-playing-heart",
+  "mdi-cards-playing-heart-multiple",
+  "mdi-cards-playing-heart-multiple-outline",
+  "mdi-cards-playing-heart-outline",
+  "mdi-cards-playing-outline",
+  "mdi-cards-playing-spade",
+  "mdi-cards-playing-spade-multiple",
+  "mdi-cards-playing-spade-multiple-outline",
+  "mdi-cards-playing-spade-outline",
+  "mdi-cards-spade",
+  "mdi-cards-spade-outline",
+  "mdi-cards-variant",
+  "mdi-carrot",
+  "mdi-cart",
+  "mdi-cart-arrow-down",
+  "mdi-cart-arrow-right",
+  "mdi-cart-arrow-up",
+  "mdi-cart-check",
+  "mdi-cart-heart",
+  "mdi-cart-minus",
+  "mdi-cart-off",
+  "mdi-cart-outline",
+  "mdi-cart-percent",
+  "mdi-cart-plus",
+  "mdi-cart-remove",
+  "mdi-cart-variant",
+  "mdi-case-sensitive-alt",
+  "mdi-cash",
+  "mdi-cash-100",
+  "mdi-cash-check",
+  "mdi-cash-clock",
+  "mdi-cash-edit",
+  "mdi-cash-fast",
+  "mdi-cash-lock",
+  "mdi-cash-lock-open",
+  "mdi-cash-marker",
+  "mdi-cash-minus",
+  "mdi-cash-multiple",
+  "mdi-cash-off",
+  "mdi-cash-plus",
+  "mdi-cash-refund",
+  "mdi-cash-register",
+  "mdi-cash-remove",
+  "mdi-cash-sync",
+  "mdi-cassette",
+  "mdi-cast",
+  "mdi-cast-audio",
+  "mdi-cast-audio-variant",
+  "mdi-cast-connected",
+  "mdi-cast-education",
+  "mdi-cast-off",
+  "mdi-cast-variant",
+  "mdi-castle",
+  "mdi-cat",
+  "mdi-cctv",
+  "mdi-cctv-off",
+  "mdi-ceiling-fan",
+  "mdi-ceiling-fan-light",
+  "mdi-ceiling-light",
+  "mdi-ceiling-light-multiple",
+  "mdi-ceiling-light-multiple-outline",
+  "mdi-ceiling-light-outline",
+  "mdi-cellphone",
+  "mdi-cellphone-arrow-down",
+  "mdi-cellphone-arrow-down-variant",
+  "mdi-cellphone-basic",
+  "mdi-cellphone-charging",
+  "mdi-cellphone-check",
+  "mdi-cellphone-cog",
+  "mdi-cellphone-dock",
+  "mdi-cellphone-information",
+  "mdi-cellphone-key",
+  "mdi-cellphone-link",
+  "mdi-cellphone-link-off",
+  "mdi-cellphone-lock",
+  "mdi-cellphone-marker",
+  "mdi-cellphone-message",
+  "mdi-cellphone-message-off",
+  "mdi-cellphone-nfc",
+  "mdi-cellphone-nfc-off",
+  "mdi-cellphone-off",
+  "mdi-cellphone-play",
+  "mdi-cellphone-remove",
+  "mdi-cellphone-screenshot",
+  "mdi-cellphone-settings",
+  "mdi-cellphone-sound",
+  "mdi-cellphone-text",
+  "mdi-cellphone-wireless",
+  "mdi-centos",
+  "mdi-certificate",
+  "mdi-certificate-outline",
+  "mdi-chair-rolling",
+  "mdi-chair-school",
+  "mdi-chandelier",
+  "mdi-charity",
+  "mdi-charity-search",
+  "mdi-chart-arc",
+  "mdi-chart-areaspline",
+  "mdi-chart-areaspline-variant",
+  "mdi-chart-bar",
+  "mdi-chart-bar-stacked",
+  "mdi-chart-bell-curve",
+  "mdi-chart-bell-curve-cumulative",
+  "mdi-chart-box",
+  "mdi-chart-box-multiple",
+  "mdi-chart-box-multiple-outline",
+  "mdi-chart-box-outline",
+  "mdi-chart-box-plus-outline",
+  "mdi-chart-bubble",
+  "mdi-chart-donut",
+  "mdi-chart-donut-variant",
+  "mdi-chart-gantt",
+  "mdi-chart-histogram",
+  "mdi-chart-line",
+  "mdi-chart-line-stacked",
+  "mdi-chart-line-variant",
+  "mdi-chart-multiline",
+  "mdi-chart-multiple",
+  "mdi-chart-pie",
+  "mdi-chart-pie-outline",
+  "mdi-chart-ppf",
+  "mdi-chart-sankey",
+  "mdi-chart-sankey-variant",
+  "mdi-chart-scatter-plot",
+  "mdi-chart-scatter-plot-hexbin",
+  "mdi-chart-timeline",
+  "mdi-chart-timeline-variant",
+  "mdi-chart-timeline-variant-shimmer",
+  "mdi-chart-tree",
+  "mdi-chart-waterfall",
+  "mdi-chat",
+  "mdi-chat-alert",
+  "mdi-chat-alert-outline",
+  "mdi-chat-minus",
+  "mdi-chat-minus-outline",
+  "mdi-chat-outline",
+  "mdi-chat-plus",
+  "mdi-chat-plus-outline",
+  "mdi-chat-processing",
+  "mdi-chat-processing-outline",
+  "mdi-chat-question",
+  "mdi-chat-question-outline",
+  "mdi-chat-remove",
+  "mdi-chat-remove-outline",
+  "mdi-chat-sleep",
+  "mdi-chat-sleep-outline",
+  "mdi-check",
+  "mdi-check-all",
+  "mdi-check-bold",
+  "mdi-check-circle",
+  "mdi-check-circle-outline",
+  "mdi-check-decagram",
+  "mdi-check-decagram-outline",
+  "mdi-check-network",
+  "mdi-check-network-outline",
+  "mdi-check-outline",
+  "mdi-check-underline",
+  "mdi-check-underline-circle",
+  "mdi-check-underline-circle-outline",
+  "mdi-checkbook",
+  "mdi-checkbook-arrow-left",
+  "mdi-checkbook-arrow-right",
+  "mdi-checkbox-blank",
+  "mdi-checkbox-blank-badge",
+  "mdi-checkbox-blank-badge-outline",
+  "mdi-checkbox-blank-circle",
+  "mdi-checkbox-blank-circle-outline",
+  "mdi-checkbox-blank-off",
+  "mdi-checkbox-blank-off-outline",
+  "mdi-checkbox-blank-outline",
+  "mdi-checkbox-intermediate",
+  "mdi-checkbox-intermediate-variant",
+  "mdi-checkbox-marked",
+  "mdi-checkbox-marked-circle",
+  "mdi-checkbox-marked-circle-auto-outline",
+  "mdi-checkbox-marked-circle-minus-outline",
+  "mdi-checkbox-marked-circle-outline",
+  "mdi-checkbox-marked-circle-plus-outline",
+  "mdi-checkbox-marked-outline",
+  "mdi-checkbox-multiple-blank",
+  "mdi-checkbox-multiple-blank-circle",
+  "mdi-checkbox-multiple-blank-circle-outline",
+  "mdi-checkbox-multiple-blank-outline",
+  "mdi-checkbox-multiple-marked",
+  "mdi-checkbox-multiple-marked-circle",
+  "mdi-checkbox-multiple-marked-circle-outline",
+  "mdi-checkbox-multiple-marked-outline",
+  "mdi-checkbox-multiple-outline",
+  "mdi-checkbox-outline",
+  "mdi-checkerboard",
+  "mdi-checkerboard-minus",
+  "mdi-checkerboard-plus",
+  "mdi-checkerboard-remove",
+  "mdi-cheese",
+  "mdi-cheese-off",
+  "mdi-chef-hat",
+  "mdi-chemical-weapon",
+  "mdi-chess-bishop",
+  "mdi-chess-king",
+  "mdi-chess-knight",
+  "mdi-chess-pawn",
+  "mdi-chess-queen",
+  "mdi-chess-rook",
+  "mdi-chevron-double-down",
+  "mdi-chevron-double-left",
+  "mdi-chevron-double-right",
+  "mdi-chevron-double-up",
+  "mdi-chevron-down",
+  "mdi-chevron-down-box",
+  "mdi-chevron-down-box-outline",
+  "mdi-chevron-down-circle",
+  "mdi-chevron-down-circle-outline",
+  "mdi-chevron-left",
+  "mdi-chevron-left-box",
+  "mdi-chevron-left-box-outline",
+  "mdi-chevron-left-circle",
+  "mdi-chevron-left-circle-outline",
+  "mdi-chevron-right",
+  "mdi-chevron-right-box",
+  "mdi-chevron-right-box-outline",
+  "mdi-chevron-right-circle",
+  "mdi-chevron-right-circle-outline",
+  "mdi-chevron-triple-down",
+  "mdi-chevron-triple-left",
+  "mdi-chevron-triple-right",
+  "mdi-chevron-triple-up",
+  "mdi-chevron-up",
+  "mdi-chevron-up-box",
+  "mdi-chevron-up-box-outline",
+  "mdi-chevron-up-circle",
+  "mdi-chevron-up-circle-outline",
+  "mdi-chili-alert",
+  "mdi-chili-alert-outline",
+  "mdi-chili-hot",
+  "mdi-chili-hot-outline",
+  "mdi-chili-medium",
+  "mdi-chili-medium-outline",
+  "mdi-chili-mild",
+  "mdi-chili-mild-outline",
+  "mdi-chili-off",
+  "mdi-chili-off-outline",
+  "mdi-chip",
+  "mdi-church",
+  "mdi-church-outline",
+  "mdi-cigar",
+  "mdi-cigar-off",
+  "mdi-circle",
+  "mdi-circle-box",
+  "mdi-circle-box-outline",
+  "mdi-circle-double",
+  "mdi-circle-edit-outline",
+  "mdi-circle-expand",
+  "mdi-circle-half",
+  "mdi-circle-half-full",
+  "mdi-circle-medium",
+  "mdi-circle-multiple",
+  "mdi-circle-multiple-outline",
+  "mdi-circle-off-outline",
+  "mdi-circle-opacity",
+  "mdi-circle-outline",
+  "mdi-circle-slice-1",
+  "mdi-circle-slice-2",
+  "mdi-circle-slice-3",
+  "mdi-circle-slice-4",
+  "mdi-circle-slice-5",
+  "mdi-circle-slice-6",
+  "mdi-circle-slice-7",
+  "mdi-circle-slice-8",
+  "mdi-circle-small",
+  "mdi-circular-saw",
+  "mdi-city",
+  "mdi-city-switch",
+  "mdi-city-variant",
+  "mdi-city-variant-outline",
+  "mdi-clipboard",
+  "mdi-clipboard-account",
+  "mdi-clipboard-account-outline",
+  "mdi-clipboard-alert",
+  "mdi-clipboard-alert-outline",
+  "mdi-clipboard-arrow-down",
+  "mdi-clipboard-arrow-down-outline",
+  "mdi-clipboard-arrow-left",
+  "mdi-clipboard-arrow-left-outline",
+  "mdi-clipboard-arrow-right",
+  "mdi-clipboard-arrow-right-outline",
+  "mdi-clipboard-arrow-up",
+  "mdi-clipboard-arrow-up-outline",
+  "mdi-clipboard-check",
+  "mdi-clipboard-check-multiple",
+  "mdi-clipboard-check-multiple-outline",
+  "mdi-clipboard-check-outline",
+  "mdi-clipboard-clock",
+  "mdi-clipboard-clock-outline",
+  "mdi-clipboard-edit",
+  "mdi-clipboard-edit-outline",
+  "mdi-clipboard-file",
+  "mdi-clipboard-file-outline",
+  "mdi-clipboard-flow",
+  "mdi-clipboard-flow-outline",
+  "mdi-clipboard-list",
+  "mdi-clipboard-list-outline",
+  "mdi-clipboard-minus",
+  "mdi-clipboard-minus-outline",
+  "mdi-clipboard-multiple",
+  "mdi-clipboard-multiple-outline",
+  "mdi-clipboard-off",
+  "mdi-clipboard-off-outline",
+  "mdi-clipboard-outline",
+  "mdi-clipboard-play",
+  "mdi-clipboard-play-multiple",
+  "mdi-clipboard-play-multiple-outline",
+  "mdi-clipboard-play-outline",
+  "mdi-clipboard-plus",
+  "mdi-clipboard-plus-outline",
+  "mdi-clipboard-pulse",
+  "mdi-clipboard-pulse-outline",
+  "mdi-clipboard-remove",
+  "mdi-clipboard-remove-outline",
+  "mdi-clipboard-search",
+  "mdi-clipboard-search-outline",
+  "mdi-clipboard-text",
+  "mdi-clipboard-text-clock",
+  "mdi-clipboard-text-clock-outline",
+  "mdi-clipboard-text-multiple",
+  "mdi-clipboard-text-multiple-outline",
+  "mdi-clipboard-text-off",
+  "mdi-clipboard-text-off-outline",
+  "mdi-clipboard-text-outline",
+  "mdi-clipboard-text-play",
+  "mdi-clipboard-text-play-outline",
+  "mdi-clipboard-text-search",
+  "mdi-clipboard-text-search-outline",
+  "mdi-clippy",
+  "mdi-clock",
+  "mdi-clock-alert",
+  "mdi-clock-alert-outline",
+  "mdi-clock-check",
+  "mdi-clock-check-outline",
+  "mdi-clock-digital",
+  "mdi-clock-edit",
+  "mdi-clock-edit-outline",
+  "mdi-clock-end",
+  "mdi-clock-fast",
+  "mdi-clock-in",
+  "mdi-clock-minus",
+  "mdi-clock-minus-outline",
+  "mdi-clock-out",
+  "mdi-clock-outline",
+  "mdi-clock-plus",
+  "mdi-clock-plus-outline",
+  "mdi-clock-remove",
+  "mdi-clock-remove-outline",
+  "mdi-clock-star-four-points",
+  "mdi-clock-star-four-points-outline",
+  "mdi-clock-start",
+  "mdi-clock-time-eight",
+  "mdi-clock-time-eight-outline",
+  "mdi-clock-time-eleven",
+  "mdi-clock-time-eleven-outline",
+  "mdi-clock-time-five",
+  "mdi-clock-time-five-outline",
+  "mdi-clock-time-four",
+  "mdi-clock-time-four-outline",
+  "mdi-clock-time-nine",
+  "mdi-clock-time-nine-outline",
+  "mdi-clock-time-one",
+  "mdi-clock-time-one-outline",
+  "mdi-clock-time-seven",
+  "mdi-clock-time-seven-outline",
+  "mdi-clock-time-six",
+  "mdi-clock-time-six-outline",
+  "mdi-clock-time-ten",
+  "mdi-clock-time-ten-outline",
+  "mdi-clock-time-three",
+  "mdi-clock-time-three-outline",
+  "mdi-clock-time-twelve",
+  "mdi-clock-time-twelve-outline",
+  "mdi-clock-time-two",
+  "mdi-clock-time-two-outline",
+  "mdi-close",
+  "mdi-close-box",
+  "mdi-close-box-multiple",
+  "mdi-close-box-multiple-outline",
+  "mdi-close-box-outline",
+  "mdi-close-circle",
+  "mdi-close-circle-multiple",
+  "mdi-close-circle-multiple-outline",
+  "mdi-close-circle-outline",
+  "mdi-close-network",
+  "mdi-close-network-outline",
+  "mdi-close-octagon",
+  "mdi-close-octagon-outline",
+  "mdi-close-outline",
+  "mdi-close-thick",
+  "mdi-closed-caption",
+  "mdi-closed-caption-outline",
+  "mdi-cloud",
+  "mdi-cloud-alert",
+  "mdi-cloud-alert-outline",
+  "mdi-cloud-arrow-down",
+  "mdi-cloud-arrow-down-outline",
+  "mdi-cloud-arrow-left",
+  "mdi-cloud-arrow-left-outline",
+  "mdi-cloud-arrow-right",
+  "mdi-cloud-arrow-right-outline",
+  "mdi-cloud-arrow-up",
+  "mdi-cloud-arrow-up-outline",
+  "mdi-cloud-braces",
+  "mdi-cloud-cancel",
+  "mdi-cloud-cancel-outline",
+  "mdi-cloud-check",
+  "mdi-cloud-check-outline",
+  "mdi-cloud-check-variant",
+  "mdi-cloud-check-variant-outline",
+  "mdi-cloud-circle",
+  "mdi-cloud-circle-outline",
+  "mdi-cloud-clock",
+  "mdi-cloud-clock-outline",
+  "mdi-cloud-cog",
+  "mdi-cloud-cog-outline",
+  "mdi-cloud-download",
+  "mdi-cloud-download-outline",
+  "mdi-cloud-key",
+  "mdi-cloud-key-outline",
+  "mdi-cloud-lock",
+  "mdi-cloud-lock-open",
+  "mdi-cloud-lock-open-outline",
+  "mdi-cloud-lock-outline",
+  "mdi-cloud-minus",
+  "mdi-cloud-minus-outline",
+  "mdi-cloud-off",
+  "mdi-cloud-off-outline",
+  "mdi-cloud-outline",
+  "mdi-cloud-percent",
+  "mdi-cloud-percent-outline",
+  "mdi-cloud-plus",
+  "mdi-cloud-plus-outline",
+  "mdi-cloud-print",
+  "mdi-cloud-print-outline",
+  "mdi-cloud-question",
+  "mdi-cloud-question-outline",
+  "mdi-cloud-refresh",
+  "mdi-cloud-refresh-outline",
+  "mdi-cloud-refresh-variant",
+  "mdi-cloud-refresh-variant-outline",
+  "mdi-cloud-remove",
+  "mdi-cloud-remove-outline",
+  "mdi-cloud-search",
+  "mdi-cloud-search-outline",
+  "mdi-cloud-sync",
+  "mdi-cloud-sync-outline",
+  "mdi-cloud-tags",
+  "mdi-cloud-upload",
+  "mdi-cloud-upload-outline",
+  "mdi-clouds",
+  "mdi-clover",
+  "mdi-clover-outline",
+  "mdi-coach-lamp",
+  "mdi-coach-lamp-variant",
+  "mdi-coat-rack",
+  "mdi-code-array",
+  "mdi-code-block-braces",
+  "mdi-code-block-brackets",
+  "mdi-code-block-parentheses",
+  "mdi-code-block-tags",
+  "mdi-code-braces",
+  "mdi-code-braces-box",
+  "mdi-code-brackets",
+  "mdi-code-equal",
+  "mdi-code-greater-than",
+  "mdi-code-greater-than-or-equal",
+  "mdi-code-json",
+  "mdi-code-less-than",
+  "mdi-code-less-than-or-equal",
+  "mdi-code-not-equal",
+  "mdi-code-not-equal-variant",
+  "mdi-code-parentheses",
+  "mdi-code-parentheses-box",
+  "mdi-code-string",
+  "mdi-code-tags",
+  "mdi-code-tags-check",
+  "mdi-codepen",
+  "mdi-coffee",
+  "mdi-coffee-maker",
+  "mdi-coffee-maker-check",
+  "mdi-coffee-maker-check-outline",
+  "mdi-coffee-maker-outline",
+  "mdi-coffee-off",
+  "mdi-coffee-off-outline",
+  "mdi-coffee-outline",
+  "mdi-coffee-to-go",
+  "mdi-coffee-to-go-outline",
+  "mdi-coffin",
+  "mdi-cog",
+  "mdi-cog-box",
+  "mdi-cog-clockwise",
+  "mdi-cog-counterclockwise",
+  "mdi-cog-off",
+  "mdi-cog-off-outline",
+  "mdi-cog-outline",
+  "mdi-cog-pause",
+  "mdi-cog-pause-outline",
+  "mdi-cog-play",
+  "mdi-cog-play-outline",
+  "mdi-cog-refresh",
+  "mdi-cog-refresh-outline",
+  "mdi-cog-stop",
+  "mdi-cog-stop-outline",
+  "mdi-cog-sync",
+  "mdi-cog-sync-outline",
+  "mdi-cog-transfer",
+  "mdi-cog-transfer-outline",
+  "mdi-cogs",
+  "mdi-collage",
+  "mdi-collapse-all",
+  "mdi-collapse-all-outline",
+  "mdi-color-helper",
+  "mdi-comma",
+  "mdi-comma-box",
+  "mdi-comma-box-outline",
+  "mdi-comma-circle",
+  "mdi-comma-circle-outline",
+  "mdi-comment",
+  "mdi-comment-account",
+  "mdi-comment-account-outline",
+  "mdi-comment-alert",
+  "mdi-comment-alert-outline",
+  "mdi-comment-arrow-left",
+  "mdi-comment-arrow-left-outline",
+  "mdi-comment-arrow-right",
+  "mdi-comment-arrow-right-outline",
+  "mdi-comment-bookmark",
+  "mdi-comment-bookmark-outline",
+  "mdi-comment-check",
+  "mdi-comment-check-outline",
+  "mdi-comment-edit",
+  "mdi-comment-edit-outline",
+  "mdi-comment-eye",
+  "mdi-comment-eye-outline",
+  "mdi-comment-flash",
+  "mdi-comment-flash-outline",
+  "mdi-comment-minus",
+  "mdi-comment-minus-outline",
+  "mdi-comment-multiple",
+  "mdi-comment-multiple-outline",
+  "mdi-comment-off",
+  "mdi-comment-off-outline",
+  "mdi-comment-outline",
+  "mdi-comment-plus",
+  "mdi-comment-plus-outline",
+  "mdi-comment-processing",
+  "mdi-comment-processing-outline",
+  "mdi-comment-question",
+  "mdi-comment-question-outline",
+  "mdi-comment-quote",
+  "mdi-comment-quote-outline",
+  "mdi-comment-remove",
+  "mdi-comment-remove-outline",
+  "mdi-comment-search",
+  "mdi-comment-search-outline",
+  "mdi-comment-text",
+  "mdi-comment-text-multiple",
+  "mdi-comment-text-multiple-outline",
+  "mdi-comment-text-outline",
+  "mdi-compare",
+  "mdi-compare-horizontal",
+  "mdi-compare-remove",
+  "mdi-compare-vertical",
+  "mdi-compass",
+  "mdi-compass-off",
+  "mdi-compass-off-outline",
+  "mdi-compass-outline",
+  "mdi-compass-rose",
+  "mdi-compost",
+  "mdi-cone",
+  "mdi-cone-off",
+  "mdi-connection",
+  "mdi-console",
+  "mdi-console-line",
+  "mdi-console-network",
+  "mdi-console-network-outline",
+  "mdi-consolidate",
+  "mdi-contactless-payment",
+  "mdi-contactless-payment-circle",
+  "mdi-contactless-payment-circle-outline",
+  "mdi-contacts",
+  "mdi-contacts-outline",
+  "mdi-contain",
+  "mdi-contain-end",
+  "mdi-contain-start",
+  "mdi-content-copy",
+  "mdi-content-cut",
+  "mdi-content-duplicate",
+  "mdi-content-paste",
+  "mdi-content-save",
+  "mdi-content-save-alert",
+  "mdi-content-save-alert-outline",
+  "mdi-content-save-all",
+  "mdi-content-save-all-outline",
+  "mdi-content-save-check",
+  "mdi-content-save-check-outline",
+  "mdi-content-save-cog",
+  "mdi-content-save-cog-outline",
+  "mdi-content-save-edit",
+  "mdi-content-save-edit-outline",
+  "mdi-content-save-minus",
+  "mdi-content-save-minus-outline",
+  "mdi-content-save-move",
+  "mdi-content-save-move-outline",
+  "mdi-content-save-off",
+  "mdi-content-save-off-outline",
+  "mdi-content-save-outline",
+  "mdi-content-save-plus",
+  "mdi-content-save-plus-outline",
+  "mdi-content-save-settings",
+  "mdi-content-save-settings-outline",
+  "mdi-contrast",
+  "mdi-contrast-box",
+  "mdi-contrast-circle",
+  "mdi-controller",
+  "mdi-controller-classic",
+  "mdi-controller-classic-outline",
+  "mdi-controller-off",
+  "mdi-cookie",
+  "mdi-cookie-alert",
+  "mdi-cookie-alert-outline",
+  "mdi-cookie-check",
+  "mdi-cookie-check-outline",
+  "mdi-cookie-clock",
+  "mdi-cookie-clock-outline",
+  "mdi-cookie-cog",
+  "mdi-cookie-cog-outline",
+  "mdi-cookie-edit",
+  "mdi-cookie-edit-outline",
+  "mdi-cookie-lock",
+  "mdi-cookie-lock-outline",
+  "mdi-cookie-minus",
+  "mdi-cookie-minus-outline",
+  "mdi-cookie-off",
+  "mdi-cookie-off-outline",
+  "mdi-cookie-outline",
+  "mdi-cookie-plus",
+  "mdi-cookie-plus-outline",
+  "mdi-cookie-refresh",
+  "mdi-cookie-refresh-outline",
+  "mdi-cookie-remove",
+  "mdi-cookie-remove-outline",
+  "mdi-cookie-settings",
+  "mdi-cookie-settings-outline",
+  "mdi-coolant-temperature",
+  "mdi-copyleft",
+  "mdi-copyright",
+  "mdi-cordova",
+  "mdi-corn",
+  "mdi-corn-off",
+  "mdi-cosine-wave",
+  "mdi-counter",
+  "mdi-countertop",
+  "mdi-countertop-outline",
+  "mdi-cow",
+  "mdi-cow-off",
+  "mdi-cpu-32-bit",
+  "mdi-cpu-64-bit",
+  "mdi-cradle",
+  "mdi-cradle-outline",
+  "mdi-crane",
+  "mdi-creation",
+  "mdi-creation-outline",
+  "mdi-creative-commons",
+  "mdi-credit-card",
+  "mdi-credit-card-check",
+  "mdi-credit-card-check-outline",
+  "mdi-credit-card-chip",
+  "mdi-credit-card-chip-outline",
+  "mdi-credit-card-clock",
+  "mdi-credit-card-clock-outline",
+  "mdi-credit-card-edit",
+  "mdi-credit-card-edit-outline",
+  "mdi-credit-card-fast",
+  "mdi-credit-card-fast-outline",
+  "mdi-credit-card-lock",
+  "mdi-credit-card-lock-outline",
+  "mdi-credit-card-marker",
+  "mdi-credit-card-marker-outline",
+  "mdi-credit-card-minus",
+  "mdi-credit-card-minus-outline",
+  "mdi-credit-card-multiple",
+  "mdi-credit-card-multiple-outline",
+  "mdi-credit-card-off",
+  "mdi-credit-card-off-outline",
+  "mdi-credit-card-outline",
+  "mdi-credit-card-plus",
+  "mdi-credit-card-plus-outline",
+  "mdi-credit-card-refresh",
+  "mdi-credit-card-refresh-outline",
+  "mdi-credit-card-refund",
+  "mdi-credit-card-refund-outline",
+  "mdi-credit-card-remove",
+  "mdi-credit-card-remove-outline",
+  "mdi-credit-card-scan",
+  "mdi-credit-card-scan-outline",
+  "mdi-credit-card-search",
+  "mdi-credit-card-search-outline",
+  "mdi-credit-card-settings",
+  "mdi-credit-card-settings-outline",
+  "mdi-credit-card-sync",
+  "mdi-credit-card-sync-outline",
+  "mdi-credit-card-wireless",
+  "mdi-credit-card-wireless-off",
+  "mdi-credit-card-wireless-off-outline",
+  "mdi-credit-card-wireless-outline",
+  "mdi-cricket",
+  "mdi-crop",
+  "mdi-crop-free",
+  "mdi-crop-landscape",
+  "mdi-crop-portrait",
+  "mdi-crop-rotate",
+  "mdi-crop-square",
+  "mdi-cross",
+  "mdi-cross-bolnisi",
+  "mdi-cross-celtic",
+  "mdi-cross-outline",
+  "mdi-crosshairs",
+  "mdi-crosshairs-gps",
+  "mdi-crosshairs-off",
+  "mdi-crosshairs-question",
+  "mdi-crowd",
+  "mdi-crown",
+  "mdi-crown-circle",
+  "mdi-crown-circle-outline",
+  "mdi-crown-outline",
+  "mdi-cryengine",
+  "mdi-crystal-ball",
+  "mdi-cube",
+  "mdi-cube-off",
+  "mdi-cube-off-outline",
+  "mdi-cube-outline",
+  "mdi-cube-scan",
+  "mdi-cube-send",
+  "mdi-cube-unfolded",
+  "mdi-cup",
+  "mdi-cup-off",
+  "mdi-cup-off-outline",
+  "mdi-cup-outline",
+  "mdi-cup-water",
+  "mdi-cupboard",
+  "mdi-cupboard-outline",
+  "mdi-cupcake",
+  "mdi-curling",
+  "mdi-currency-bdt",
+  "mdi-currency-brl",
+  "mdi-currency-btc",
+  "mdi-currency-cny",
+  "mdi-currency-eth",
+  "mdi-currency-eur",
+  "mdi-currency-eur-off",
+  "mdi-currency-fra",
+  "mdi-currency-gbp",
+  "mdi-currency-ils",
+  "mdi-currency-inr",
+  "mdi-currency-jpy",
+  "mdi-currency-krw",
+  "mdi-currency-kzt",
+  "mdi-currency-mnt",
+  "mdi-currency-ngn",
+  "mdi-currency-php",
+  "mdi-currency-rial",
+  "mdi-currency-rub",
+  "mdi-currency-rupee",
+  "mdi-currency-sign",
+  "mdi-currency-thb",
+  "mdi-currency-try",
+  "mdi-currency-twd",
+  "mdi-currency-uah",
+  "mdi-currency-usd",
+  "mdi-currency-usd-off",
+  "mdi-current-ac",
+  "mdi-current-dc",
+  "mdi-cursor-default",
+  "mdi-cursor-default-click",
+  "mdi-cursor-default-click-outline",
+  "mdi-cursor-default-gesture",
+  "mdi-cursor-default-gesture-outline",
+  "mdi-cursor-default-outline",
+  "mdi-cursor-move",
+  "mdi-cursor-pointer",
+  "mdi-cursor-text",
+  "mdi-curtains",
+  "mdi-curtains-closed",
+  "mdi-cylinder",
+  "mdi-cylinder-off",
+  "mdi-dance-ballroom",
+  "mdi-dance-pole",
+  "mdi-data-matrix",
+  "mdi-data-matrix-edit",
+  "mdi-data-matrix-minus",
+  "mdi-data-matrix-plus",
+  "mdi-data-matrix-remove",
+  "mdi-data-matrix-scan",
+  "mdi-database",
+  "mdi-database-alert",
+  "mdi-database-alert-outline",
+  "mdi-database-arrow-down",
+  "mdi-database-arrow-down-outline",
+  "mdi-database-arrow-left",
+  "mdi-database-arrow-left-outline",
+  "mdi-database-arrow-right",
+  "mdi-database-arrow-right-outline",
+  "mdi-database-arrow-up",
+  "mdi-database-arrow-up-outline",
+  "mdi-database-check",
+  "mdi-database-check-outline",
+  "mdi-database-clock",
+  "mdi-database-clock-outline",
+  "mdi-database-cog",
+  "mdi-database-cog-outline",
+  "mdi-database-edit",
+  "mdi-database-edit-outline",
+  "mdi-database-export",
+  "mdi-database-export-outline",
+  "mdi-database-eye",
+  "mdi-database-eye-off",
+  "mdi-database-eye-off-outline",
+  "mdi-database-eye-outline",
+  "mdi-database-import",
+  "mdi-database-import-outline",
+  "mdi-database-lock",
+  "mdi-database-lock-outline",
+  "mdi-database-marker",
+  "mdi-database-marker-outline",
+  "mdi-database-minus",
+  "mdi-database-minus-outline",
+  "mdi-database-off",
+  "mdi-database-off-outline",
+  "mdi-database-outline",
+  "mdi-database-plus",
+  "mdi-database-plus-outline",
+  "mdi-database-refresh",
+  "mdi-database-refresh-outline",
+  "mdi-database-remove",
+  "mdi-database-remove-outline",
+  "mdi-database-search",
+  "mdi-database-search-outline",
+  "mdi-database-settings",
+  "mdi-database-settings-outline",
+  "mdi-database-sync",
+  "mdi-database-sync-outline",
+  "mdi-death-star",
+  "mdi-death-star-variant",
+  "mdi-deathly-hallows",
+  "mdi-debian",
+  "mdi-debug-step-into",
+  "mdi-debug-step-out",
+  "mdi-debug-step-over",
+  "mdi-decagram",
+  "mdi-decagram-outline",
+  "mdi-decimal",
+  "mdi-decimal-comma",
+  "mdi-decimal-comma-decrease",
+  "mdi-decimal-comma-increase",
+  "mdi-decimal-decrease",
+  "mdi-decimal-increase",
+  "mdi-delete",
+  "mdi-delete-alert",
+  "mdi-delete-alert-outline",
+  "mdi-delete-circle",
+  "mdi-delete-circle-outline",
+  "mdi-delete-clock",
+  "mdi-delete-clock-outline",
+  "mdi-delete-empty",
+  "mdi-delete-empty-outline",
+  "mdi-delete-forever",
+  "mdi-delete-forever-outline",
+  "mdi-delete-off",
+  "mdi-delete-off-outline",
+  "mdi-delete-outline",
+  "mdi-delete-restore",
+  "mdi-delete-sweep",
+  "mdi-delete-sweep-outline",
+  "mdi-delete-variant",
+  "mdi-delta",
+  "mdi-desk",
+  "mdi-desk-lamp",
+  "mdi-desk-lamp-off",
+  "mdi-desk-lamp-on",
+  "mdi-deskphone",
+  "mdi-desktop-classic",
+  "mdi-desktop-tower",
+  "mdi-desktop-tower-monitor",
+  "mdi-details",
+  "mdi-dev-to",
+  "mdi-developer-board",
+  "mdi-deviantart",
+  "mdi-devices",
+  "mdi-dharmachakra",
+  "mdi-diabetes",
+  "mdi-dialpad",
+  "mdi-diameter",
+  "mdi-diameter-outline",
+  "mdi-diameter-variant",
+  "mdi-diamond",
+  "mdi-diamond-outline",
+  "mdi-diamond-stone",
+  "mdi-diaper-outline",
+  "mdi-dice-1",
+  "mdi-dice-1-outline",
+  "mdi-dice-2",
+  "mdi-dice-2-outline",
+  "mdi-dice-3",
+  "mdi-dice-3-outline",
+  "mdi-dice-4",
+  "mdi-dice-4-outline",
+  "mdi-dice-5",
+  "mdi-dice-5-outline",
+  "mdi-dice-6",
+  "mdi-dice-6-outline",
+  "mdi-dice-d10",
+  "mdi-dice-d10-outline",
+  "mdi-dice-d12",
+  "mdi-dice-d12-outline",
+  "mdi-dice-d20",
+  "mdi-dice-d20-outline",
+  "mdi-dice-d4",
+  "mdi-dice-d4-outline",
+  "mdi-dice-d6",
+  "mdi-dice-d6-outline",
+  "mdi-dice-d8",
+  "mdi-dice-d8-outline",
+  "mdi-dice-multiple",
+  "mdi-dice-multiple-outline",
+  "mdi-digital-ocean",
+  "mdi-dip-switch",
+  "mdi-directions",
+  "mdi-directions-fork",
+  "mdi-disc",
+  "mdi-disc-alert",
+  "mdi-disc-player",
+  "mdi-dishwasher",
+  "mdi-dishwasher-alert",
+  "mdi-dishwasher-off",
+  "mdi-disqus",
+  "mdi-distribute-horizontal-center",
+  "mdi-distribute-horizontal-left",
+  "mdi-distribute-horizontal-right",
+  "mdi-distribute-vertical-bottom",
+  "mdi-distribute-vertical-center",
+  "mdi-distribute-vertical-top",
+  "mdi-diversify",
+  "mdi-diving",
+  "mdi-diving-flippers",
+  "mdi-diving-helmet",
+  "mdi-diving-scuba",
+  "mdi-diving-scuba-flag",
+  "mdi-diving-scuba-mask",
+  "mdi-diving-scuba-tank",
+  "mdi-diving-scuba-tank-multiple",
+  "mdi-diving-snorkel",
+  "mdi-division",
+  "mdi-division-box",
+  "mdi-dlna",
+  "mdi-dna",
+  "mdi-dns",
+  "mdi-dns-outline",
+  "mdi-dock-bottom",
+  "mdi-dock-left",
+  "mdi-dock-right",
+  "mdi-dock-top",
+  "mdi-dock-window",
+  "mdi-docker",
+  "mdi-doctor",
+  "mdi-dog",
+  "mdi-dog-service",
+  "mdi-dog-side",
+  "mdi-dog-side-off",
+  "mdi-dolby",
+  "mdi-dolly",
+  "mdi-dolphin",
+  "mdi-domain",
+  "mdi-domain-off",
+  "mdi-domain-plus",
+  "mdi-domain-remove",
+  "mdi-domain-switch",
+  "mdi-dome-light",
+  "mdi-domino-mask",
+  "mdi-donkey",
+  "mdi-door",
+  "mdi-door-closed",
+  "mdi-door-closed-cancel",
+  "mdi-door-closed-lock",
+  "mdi-door-open",
+  "mdi-door-sliding",
+  "mdi-door-sliding-lock",
+  "mdi-door-sliding-open",
+  "mdi-doorbell",
+  "mdi-doorbell-video",
+  "mdi-dot-net",
+  "mdi-dots-circle",
+  "mdi-dots-grid",
+  "mdi-dots-hexagon",
+  "mdi-dots-horizontal",
+  "mdi-dots-horizontal-circle",
+  "mdi-dots-horizontal-circle-outline",
+  "mdi-dots-square",
+  "mdi-dots-triangle",
+  "mdi-dots-vertical",
+  "mdi-dots-vertical-circle",
+  "mdi-dots-vertical-circle-outline",
+  "mdi-download",
+  "mdi-download-box",
+  "mdi-download-box-outline",
+  "mdi-download-circle",
+  "mdi-download-circle-outline",
+  "mdi-download-lock",
+  "mdi-download-lock-outline",
+  "mdi-download-multiple",
+  "mdi-download-multiple-outline",
+  "mdi-download-network",
+  "mdi-download-network-outline",
+  "mdi-download-off",
+  "mdi-download-off-outline",
+  "mdi-download-outline",
+  "mdi-drag",
+  "mdi-drag-horizontal",
+  "mdi-drag-horizontal-variant",
+  "mdi-drag-variant",
+  "mdi-drag-vertical",
+  "mdi-drag-vertical-variant",
+  "mdi-drama-masks",
+  "mdi-draw",
+  "mdi-draw-pen",
+  "mdi-drawing",
+  "mdi-drawing-box",
+  "mdi-dresser",
+  "mdi-dresser-outline",
+  "mdi-drone",
+  "mdi-dropbox",
+  "mdi-drupal",
+  "mdi-duck",
+  "mdi-dumbbell",
+  "mdi-dump-truck",
+  "mdi-ear-hearing",
+  "mdi-ear-hearing-loop",
+  "mdi-ear-hearing-off",
+  "mdi-earbuds",
+  "mdi-earbuds-off",
+  "mdi-earbuds-off-outline",
+  "mdi-earbuds-outline",
+  "mdi-earth",
+  "mdi-earth-arrow-down",
+  "mdi-earth-arrow-left",
+  "mdi-earth-arrow-right",
+  "mdi-earth-arrow-up",
+  "mdi-earth-box",
+  "mdi-earth-box-minus",
+  "mdi-earth-box-off",
+  "mdi-earth-box-plus",
+  "mdi-earth-box-remove",
+  "mdi-earth-minus",
+  "mdi-earth-off",
+  "mdi-earth-plus",
+  "mdi-earth-remove",
+  "mdi-egg",
+  "mdi-egg-easter",
+  "mdi-egg-fried",
+  "mdi-egg-off",
+  "mdi-egg-off-outline",
+  "mdi-egg-outline",
+  "mdi-eiffel-tower",
+  "mdi-eight-track",
+  "mdi-eject",
+  "mdi-eject-circle",
+  "mdi-eject-circle-outline",
+  "mdi-eject-outline",
+  "mdi-electric-switch",
+  "mdi-electric-switch-closed",
+  "mdi-electron-framework",
+  "mdi-elephant",
+  "mdi-elevation-decline",
+  "mdi-elevation-rise",
+  "mdi-elevator",
+  "mdi-elevator-down",
+  "mdi-elevator-passenger",
+  "mdi-elevator-passenger-off",
+  "mdi-elevator-passenger-off-outline",
+  "mdi-elevator-passenger-outline",
+  "mdi-elevator-up",
+  "mdi-ellipse",
+  "mdi-ellipse-outline",
+  "mdi-email",
+  "mdi-email-alert",
+  "mdi-email-alert-outline",
+  "mdi-email-arrow-left",
+  "mdi-email-arrow-left-outline",
+  "mdi-email-arrow-right",
+  "mdi-email-arrow-right-outline",
+  "mdi-email-box",
+  "mdi-email-check",
+  "mdi-email-check-outline",
+  "mdi-email-edit",
+  "mdi-email-edit-outline",
+  "mdi-email-fast",
+  "mdi-email-fast-outline",
+  "mdi-email-heart-outline",
+  "mdi-email-lock",
+  "mdi-email-lock-outline",
+  "mdi-email-mark-as-unread",
+  "mdi-email-minus",
+  "mdi-email-minus-outline",
+  "mdi-email-multiple",
+  "mdi-email-multiple-outline",
+  "mdi-email-newsletter",
+  "mdi-email-off",
+  "mdi-email-off-outline",
+  "mdi-email-open",
+  "mdi-email-open-heart-outline",
+  "mdi-email-open-multiple",
+  "mdi-email-open-multiple-outline",
+  "mdi-email-open-outline",
+  "mdi-email-outline",
+  "mdi-email-plus",
+  "mdi-email-plus-outline",
+  "mdi-email-remove",
+  "mdi-email-remove-outline",
+  "mdi-email-seal",
+  "mdi-email-seal-outline",
+  "mdi-email-search",
+  "mdi-email-search-outline",
+  "mdi-email-sync",
+  "mdi-email-sync-outline",
+  "mdi-email-variant",
+  "mdi-ember",
+  "mdi-emby",
+  "mdi-emoticon",
+  "mdi-emoticon-angry",
+  "mdi-emoticon-angry-outline",
+  "mdi-emoticon-confused",
+  "mdi-emoticon-confused-outline",
+  "mdi-emoticon-cool",
+  "mdi-emoticon-cool-outline",
+  "mdi-emoticon-cry",
+  "mdi-emoticon-cry-outline",
+  "mdi-emoticon-dead",
+  "mdi-emoticon-dead-outline",
+  "mdi-emoticon-devil",
+  "mdi-emoticon-devil-outline",
+  "mdi-emoticon-excited",
+  "mdi-emoticon-excited-outline",
+  "mdi-emoticon-frown",
+  "mdi-emoticon-frown-outline",
+  "mdi-emoticon-happy",
+  "mdi-emoticon-happy-outline",
+  "mdi-emoticon-kiss",
+  "mdi-emoticon-kiss-outline",
+  "mdi-emoticon-lol",
+  "mdi-emoticon-lol-outline",
+  "mdi-emoticon-minus",
+  "mdi-emoticon-minus-outline",
+  "mdi-emoticon-neutral",
+  "mdi-emoticon-neutral-outline",
+  "mdi-emoticon-outline",
+  "mdi-emoticon-plus",
+  "mdi-emoticon-plus-outline",
+  "mdi-emoticon-poop",
+  "mdi-emoticon-poop-outline",
+  "mdi-emoticon-remove",
+  "mdi-emoticon-remove-outline",
+  "mdi-emoticon-sad",
+  "mdi-emoticon-sad-outline",
+  "mdi-emoticon-sick",
+  "mdi-emoticon-sick-outline",
+  "mdi-emoticon-tongue",
+  "mdi-emoticon-tongue-outline",
+  "mdi-emoticon-wink",
+  "mdi-emoticon-wink-outline",
+  "mdi-engine",
+  "mdi-engine-off",
+  "mdi-engine-off-outline",
+  "mdi-engine-outline",
+  "mdi-epsilon",
+  "mdi-equal",
+  "mdi-equal-box",
+  "mdi-equalizer",
+  "mdi-equalizer-outline",
+  "mdi-eraser",
+  "mdi-eraser-variant",
+  "mdi-escalator",
+  "mdi-escalator-box",
+  "mdi-escalator-down",
+  "mdi-escalator-up",
+  "mdi-eslint",
+  "mdi-et",
+  "mdi-ethereum",
+  "mdi-ethernet",
+  "mdi-ethernet-cable",
+  "mdi-ethernet-cable-off",
+  "mdi-ethernet-off",
+  "mdi-ev-plug-ccs1",
+  "mdi-ev-plug-ccs2",
+  "mdi-ev-plug-chademo",
+  "mdi-ev-plug-tesla",
+  "mdi-ev-plug-type1",
+  "mdi-ev-plug-type2",
+  "mdi-ev-station",
+  "mdi-evernote",
+  "mdi-excavator",
+  "mdi-exclamation",
+  "mdi-exclamation-thick",
+  "mdi-exit-run",
+  "mdi-exit-to-app",
+  "mdi-expand-all",
+  "mdi-expand-all-outline",
+  "mdi-expansion-card",
+  "mdi-expansion-card-variant",
+  "mdi-exponent",
+  "mdi-exponent-box",
+  "mdi-export",
+  "mdi-export-variant",
+  "mdi-eye",
+  "mdi-eye-arrow-left",
+  "mdi-eye-arrow-left-outline",
+  "mdi-eye-arrow-right",
+  "mdi-eye-arrow-right-outline",
+  "mdi-eye-check",
+  "mdi-eye-check-outline",
+  "mdi-eye-circle",
+  "mdi-eye-circle-outline",
+  "mdi-eye-closed",
+  "mdi-eye-lock",
+  "mdi-eye-lock-open",
+  "mdi-eye-lock-open-outline",
+  "mdi-eye-lock-outline",
+  "mdi-eye-minus",
+  "mdi-eye-minus-outline",
+  "mdi-eye-off",
+  "mdi-eye-off-outline",
+  "mdi-eye-outline",
+  "mdi-eye-plus",
+  "mdi-eye-plus-outline",
+  "mdi-eye-refresh",
+  "mdi-eye-refresh-outline",
+  "mdi-eye-remove",
+  "mdi-eye-remove-outline",
+  "mdi-eye-settings",
+  "mdi-eye-settings-outline",
+  "mdi-eyedropper",
+  "mdi-eyedropper-minus",
+  "mdi-eyedropper-off",
+  "mdi-eyedropper-plus",
+  "mdi-eyedropper-remove",
+  "mdi-eyedropper-variant",
+  "mdi-face-agent",
+  "mdi-face-man",
+  "mdi-face-man-outline",
+  "mdi-face-man-profile",
+  "mdi-face-man-shimmer",
+  "mdi-face-man-shimmer-outline",
+  "mdi-face-mask",
+  "mdi-face-mask-outline",
+  "mdi-face-recognition",
+  "mdi-face-woman",
+  "mdi-face-woman-outline",
+  "mdi-face-woman-profile",
+  "mdi-face-woman-shimmer",
+  "mdi-face-woman-shimmer-outline",
+  "mdi-facebook",
+  "mdi-facebook-gaming",
+  "mdi-facebook-messenger",
+  "mdi-facebook-workplace",
+  "mdi-factory",
+  "mdi-family-tree",
+  "mdi-fan",
+  "mdi-fan-alert",
+  "mdi-fan-auto",
+  "mdi-fan-chevron-down",
+  "mdi-fan-chevron-up",
+  "mdi-fan-clock",
+  "mdi-fan-minus",
+  "mdi-fan-off",
+  "mdi-fan-plus",
+  "mdi-fan-remove",
+  "mdi-fan-speed-1",
+  "mdi-fan-speed-2",
+  "mdi-fan-speed-3",
+  "mdi-fast-forward",
+  "mdi-fast-forward-10",
+  "mdi-fast-forward-15",
+  "mdi-fast-forward-30",
+  "mdi-fast-forward-45",
+  "mdi-fast-forward-5",
+  "mdi-fast-forward-60",
+  "mdi-fast-forward-outline",
+  "mdi-faucet",
+  "mdi-faucet-variant",
+  "mdi-fax",
+  "mdi-feather",
+  "mdi-feature-search",
+  "mdi-feature-search-outline",
+  "mdi-fedora",
+  "mdi-fence",
+  "mdi-fence-electric",
+  "mdi-fencing",
+  "mdi-ferris-wheel",
+  "mdi-ferry",
+  "mdi-file",
+  "mdi-file-account",
+  "mdi-file-account-outline",
+  "mdi-file-alert",
+  "mdi-file-alert-outline",
+  "mdi-file-arrow-left-right",
+  "mdi-file-arrow-left-right-outline",
+  "mdi-file-arrow-up-down",
+  "mdi-file-arrow-up-down-outline",
+  "mdi-file-cabinet",
+  "mdi-file-cad",
+  "mdi-file-cad-box",
+  "mdi-file-cancel",
+  "mdi-file-cancel-outline",
+  "mdi-file-certificate",
+  "mdi-file-certificate-outline",
+  "mdi-file-chart",
+  "mdi-file-chart-check",
+  "mdi-file-chart-check-outline",
+  "mdi-file-chart-outline",
+  "mdi-file-check",
+  "mdi-file-check-outline",
+  "mdi-file-clock",
+  "mdi-file-clock-outline",
+  "mdi-file-cloud",
+  "mdi-file-cloud-outline",
+  "mdi-file-code",
+  "mdi-file-code-outline",
+  "mdi-file-cog",
+  "mdi-file-cog-outline",
+  "mdi-file-compare",
+  "mdi-file-delimited",
+  "mdi-file-delimited-outline",
+  "mdi-file-document",
+  "mdi-file-document-alert",
+  "mdi-file-document-alert-outline",
+  "mdi-file-document-arrow-right",
+  "mdi-file-document-arrow-right-outline",
+  "mdi-file-document-check",
+  "mdi-file-document-check-outline",
+  "mdi-file-document-edit",
+  "mdi-file-document-edit-outline",
+  "mdi-file-document-minus",
+  "mdi-file-document-minus-outline",
+  "mdi-file-document-multiple",
+  "mdi-file-document-multiple-outline",
+  "mdi-file-document-outline",
+  "mdi-file-document-plus",
+  "mdi-file-document-plus-outline",
+  "mdi-file-document-refresh",
+  "mdi-file-document-refresh-outline",
+  "mdi-file-document-remove",
+  "mdi-file-document-remove-outline",
+  "mdi-file-download",
+  "mdi-file-download-outline",
+  "mdi-file-edit",
+  "mdi-file-edit-outline",
+  "mdi-file-excel",
+  "mdi-file-excel-box",
+  "mdi-file-excel-box-outline",
+  "mdi-file-excel-outline",
+  "mdi-file-export",
+  "mdi-file-export-outline",
+  "mdi-file-eye",
+  "mdi-file-eye-outline",
+  "mdi-file-find",
+  "mdi-file-find-outline",
+  "mdi-file-gif-box",
+  "mdi-file-hidden",
+  "mdi-file-image",
+  "mdi-file-image-marker",
+  "mdi-file-image-marker-outline",
+  "mdi-file-image-minus",
+  "mdi-file-image-minus-outline",
+  "mdi-file-image-outline",
+  "mdi-file-image-plus",
+  "mdi-file-image-plus-outline",
+  "mdi-file-image-remove",
+  "mdi-file-image-remove-outline",
+  "mdi-file-import",
+  "mdi-file-import-outline",
+  "mdi-file-jpg-box",
+  "mdi-file-key",
+  "mdi-file-key-outline",
+  "mdi-file-link",
+  "mdi-file-link-outline",
+  "mdi-file-lock",
+  "mdi-file-lock-open",
+  "mdi-file-lock-open-outline",
+  "mdi-file-lock-outline",
+  "mdi-file-marker",
+  "mdi-file-marker-outline",
+  "mdi-file-minus",
+  "mdi-file-minus-outline",
+  "mdi-file-move",
+  "mdi-file-move-outline",
+  "mdi-file-multiple",
+  "mdi-file-multiple-outline",
+  "mdi-file-music",
+  "mdi-file-music-outline",
+  "mdi-file-outline",
+  "mdi-file-pdf-box",
+  "mdi-file-percent",
+  "mdi-file-percent-outline",
+  "mdi-file-phone",
+  "mdi-file-phone-outline",
+  "mdi-file-plus",
+  "mdi-file-plus-outline",
+  "mdi-file-png-box",
+  "mdi-file-powerpoint",
+  "mdi-file-powerpoint-box",
+  "mdi-file-powerpoint-box-outline",
+  "mdi-file-powerpoint-outline",
+  "mdi-file-presentation-box",
+  "mdi-file-question",
+  "mdi-file-question-outline",
+  "mdi-file-refresh",
+  "mdi-file-refresh-outline",
+  "mdi-file-remove",
+  "mdi-file-remove-outline",
+  "mdi-file-replace",
+  "mdi-file-replace-outline",
+  "mdi-file-restore",
+  "mdi-file-restore-outline",
+  "mdi-file-rotate-left",
+  "mdi-file-rotate-left-outline",
+  "mdi-file-rotate-right",
+  "mdi-file-rotate-right-outline",
+  "mdi-file-search",
+  "mdi-file-search-outline",
+  "mdi-file-send",
+  "mdi-file-send-outline",
+  "mdi-file-settings",
+  "mdi-file-settings-outline",
+  "mdi-file-sign",
+  "mdi-file-star",
+  "mdi-file-star-four-points",
+  "mdi-file-star-four-points-outline",
+  "mdi-file-star-outline",
+  "mdi-file-swap",
+  "mdi-file-swap-outline",
+  "mdi-file-sync",
+  "mdi-file-sync-outline",
+  "mdi-file-table",
+  "mdi-file-table-box",
+  "mdi-file-table-box-multiple",
+  "mdi-file-table-box-multiple-outline",
+  "mdi-file-table-box-outline",
+  "mdi-file-table-outline",
+  "mdi-file-tree",
+  "mdi-file-tree-outline",
+  "mdi-file-undo",
+  "mdi-file-undo-outline",
+  "mdi-file-upload",
+  "mdi-file-upload-outline",
+  "mdi-file-video",
+  "mdi-file-video-outline",
+  "mdi-file-word",
+  "mdi-file-word-box",
+  "mdi-file-word-box-outline",
+  "mdi-file-word-outline",
+  "mdi-file-xml-box",
+  "mdi-film",
+  "mdi-filmstrip",
+  "mdi-filmstrip-box",
+  "mdi-filmstrip-box-multiple",
+  "mdi-filmstrip-off",
+  "mdi-filter",
+  "mdi-filter-check",
+  "mdi-filter-check-outline",
+  "mdi-filter-cog",
+  "mdi-filter-cog-outline",
+  "mdi-filter-menu",
+  "mdi-filter-menu-outline",
+  "mdi-filter-minus",
+  "mdi-filter-minus-outline",
+  "mdi-filter-multiple",
+  "mdi-filter-multiple-outline",
+  "mdi-filter-off",
+  "mdi-filter-off-outline",
+  "mdi-filter-outline",
+  "mdi-filter-plus",
+  "mdi-filter-plus-outline",
+  "mdi-filter-remove",
+  "mdi-filter-remove-outline",
+  "mdi-filter-settings",
+  "mdi-filter-settings-outline",
+  "mdi-filter-variant",
+  "mdi-filter-variant-minus",
+  "mdi-filter-variant-plus",
+  "mdi-filter-variant-remove",
+  "mdi-finance",
+  "mdi-find-replace",
+  "mdi-fingerprint",
+  "mdi-fingerprint-off",
+  "mdi-fire",
+  "mdi-fire-alert",
+  "mdi-fire-circle",
+  "mdi-fire-extinguisher",
+  "mdi-fire-hydrant",
+  "mdi-fire-hydrant-alert",
+  "mdi-fire-hydrant-off",
+  "mdi-fire-off",
+  "mdi-fire-station",
+  "mdi-fire-truck",
+  "mdi-firebase",
+  "mdi-firefox",
+  "mdi-fireplace",
+  "mdi-fireplace-off",
+  "mdi-firewire",
+  "mdi-firework",
+  "mdi-firework-off",
+  "mdi-fish",
+  "mdi-fish-off",
+  "mdi-fishbowl",
+  "mdi-fishbowl-outline",
+  "mdi-fit-to-page",
+  "mdi-fit-to-page-outline",
+  "mdi-fit-to-screen",
+  "mdi-fit-to-screen-outline",
+  "mdi-flag",
+  "mdi-flag-checkered",
+  "mdi-flag-minus",
+  "mdi-flag-minus-outline",
+  "mdi-flag-off",
+  "mdi-flag-off-outline",
+  "mdi-flag-outline",
+  "mdi-flag-plus",
+  "mdi-flag-plus-outline",
+  "mdi-flag-remove",
+  "mdi-flag-remove-outline",
+  "mdi-flag-triangle",
+  "mdi-flag-variant",
+  "mdi-flag-variant-minus",
+  "mdi-flag-variant-minus-outline",
+  "mdi-flag-variant-off",
+  "mdi-flag-variant-off-outline",
+  "mdi-flag-variant-outline",
+  "mdi-flag-variant-plus",
+  "mdi-flag-variant-plus-outline",
+  "mdi-flag-variant-remove",
+  "mdi-flag-variant-remove-outline",
+  "mdi-flare",
+  "mdi-flash",
+  "mdi-flash-alert",
+  "mdi-flash-alert-outline",
+  "mdi-flash-auto",
+  "mdi-flash-off",
+  "mdi-flash-off-outline",
+  "mdi-flash-outline",
+  "mdi-flash-red-eye",
+  "mdi-flash-triangle",
+  "mdi-flash-triangle-outline",
+  "mdi-flashlight",
+  "mdi-flashlight-off",
+  "mdi-flask",
+  "mdi-flask-empty",
+  "mdi-flask-empty-minus",
+  "mdi-flask-empty-minus-outline",
+  "mdi-flask-empty-off",
+  "mdi-flask-empty-off-outline",
+  "mdi-flask-empty-outline",
+  "mdi-flask-empty-plus",
+  "mdi-flask-empty-plus-outline",
+  "mdi-flask-empty-remove",
+  "mdi-flask-empty-remove-outline",
+  "mdi-flask-minus",
+  "mdi-flask-minus-outline",
+  "mdi-flask-off",
+  "mdi-flask-off-outline",
+  "mdi-flask-outline",
+  "mdi-flask-plus",
+  "mdi-flask-plus-outline",
+  "mdi-flask-remove",
+  "mdi-flask-remove-outline",
+  "mdi-flask-round-bottom",
+  "mdi-flask-round-bottom-empty",
+  "mdi-flask-round-bottom-empty-outline",
+  "mdi-flask-round-bottom-outline",
+  "mdi-fleur-de-lis",
+  "mdi-flip-horizontal",
+  "mdi-flip-to-back",
+  "mdi-flip-to-front",
+  "mdi-flip-vertical",
+  "mdi-floor-lamp",
+  "mdi-floor-lamp-dual",
+  "mdi-floor-lamp-dual-outline",
+  "mdi-floor-lamp-outline",
+  "mdi-floor-lamp-torchiere",
+  "mdi-floor-lamp-torchiere-outline",
+  "mdi-floor-lamp-torchiere-variant",
+  "mdi-floor-lamp-torchiere-variant-outline",
+  "mdi-floor-plan",
+  "mdi-floppy",
+  "mdi-floppy-variant",
+  "mdi-flower",
+  "mdi-flower-outline",
+  "mdi-flower-pollen",
+  "mdi-flower-pollen-outline",
+  "mdi-flower-poppy",
+  "mdi-flower-tulip",
+  "mdi-flower-tulip-outline",
+  "mdi-focus-auto",
+  "mdi-focus-field",
+  "mdi-focus-field-horizontal",
+  "mdi-focus-field-vertical",
+  "mdi-folder",
+  "mdi-folder-account",
+  "mdi-folder-account-outline",
+  "mdi-folder-alert",
+  "mdi-folder-alert-outline",
+  "mdi-folder-arrow-down",
+  "mdi-folder-arrow-down-outline",
+  "mdi-folder-arrow-left",
+  "mdi-folder-arrow-left-outline",
+  "mdi-folder-arrow-left-right",
+  "mdi-folder-arrow-left-right-outline",
+  "mdi-folder-arrow-right",
+  "mdi-folder-arrow-right-outline",
+  "mdi-folder-arrow-up",
+  "mdi-folder-arrow-up-down",
+  "mdi-folder-arrow-up-down-outline",
+  "mdi-folder-arrow-up-outline",
+  "mdi-folder-cancel",
+  "mdi-folder-cancel-outline",
+  "mdi-folder-check",
+  "mdi-folder-check-outline",
+  "mdi-folder-clock",
+  "mdi-folder-clock-outline",
+  "mdi-folder-cog",
+  "mdi-folder-cog-outline",
+  "mdi-folder-download",
+  "mdi-folder-download-outline",
+  "mdi-folder-edit",
+  "mdi-folder-edit-outline",
+  "mdi-folder-eye",
+  "mdi-folder-eye-outline",
+  "mdi-folder-file",
+  "mdi-folder-file-outline",
+  "mdi-folder-google-drive",
+  "mdi-folder-heart",
+  "mdi-folder-heart-outline",
+  "mdi-folder-hidden",
+  "mdi-folder-home",
+  "mdi-folder-home-outline",
+  "mdi-folder-image",
+  "mdi-folder-information",
+  "mdi-folder-information-outline",
+  "mdi-folder-key",
+  "mdi-folder-key-network",
+  "mdi-folder-key-network-outline",
+  "mdi-folder-key-outline",
+  "mdi-folder-lock",
+  "mdi-folder-lock-open",
+  "mdi-folder-lock-open-outline",
+  "mdi-folder-lock-outline",
+  "mdi-folder-marker",
+  "mdi-folder-marker-outline",
+  "mdi-folder-minus",
+  "mdi-folder-minus-outline",
+  "mdi-folder-move",
+  "mdi-folder-move-outline",
+  "mdi-folder-multiple",
+  "mdi-folder-multiple-image",
+  "mdi-folder-multiple-outline",
+  "mdi-folder-multiple-plus",
+  "mdi-folder-multiple-plus-outline",
+  "mdi-folder-music",
+  "mdi-folder-music-outline",
+  "mdi-folder-network",
+  "mdi-folder-network-outline",
+  "mdi-folder-off",
+  "mdi-folder-off-outline",
+  "mdi-folder-open",
+  "mdi-folder-open-outline",
+  "mdi-folder-outline",
+  "mdi-folder-play",
+  "mdi-folder-play-outline",
+  "mdi-folder-plus",
+  "mdi-folder-plus-outline",
+  "mdi-folder-pound",
+  "mdi-folder-pound-outline",
+  "mdi-folder-question",
+  "mdi-folder-question-outline",
+  "mdi-folder-refresh",
+  "mdi-folder-refresh-outline",
+  "mdi-folder-remove",
+  "mdi-folder-remove-outline",
+  "mdi-folder-search",
+  "mdi-folder-search-outline",
+  "mdi-folder-settings",
+  "mdi-folder-settings-outline",
+  "mdi-folder-star",
+  "mdi-folder-star-multiple",
+  "mdi-folder-star-multiple-outline",
+  "mdi-folder-star-outline",
+  "mdi-folder-swap",
+  "mdi-folder-swap-outline",
+  "mdi-folder-sync",
+  "mdi-folder-sync-outline",
+  "mdi-folder-table",
+  "mdi-folder-table-outline",
+  "mdi-folder-text",
+  "mdi-folder-text-outline",
+  "mdi-folder-upload",
+  "mdi-folder-upload-outline",
+  "mdi-folder-wrench",
+  "mdi-folder-wrench-outline",
+  "mdi-folder-zip",
+  "mdi-folder-zip-outline",
+  "mdi-font-awesome",
+  "mdi-food",
+  "mdi-food-apple",
+  "mdi-food-apple-outline",
+  "mdi-food-croissant",
+  "mdi-food-drumstick",
+  "mdi-food-drumstick-off",
+  "mdi-food-drumstick-off-outline",
+  "mdi-food-drumstick-outline",
+  "mdi-food-fork-drink",
+  "mdi-food-halal",
+  "mdi-food-hot-dog",
+  "mdi-food-kosher",
+  "mdi-food-off",
+  "mdi-food-off-outline",
+  "mdi-food-outline",
+  "mdi-food-steak",
+  "mdi-food-steak-off",
+  "mdi-food-takeout-box",
+  "mdi-food-takeout-box-outline",
+  "mdi-food-turkey",
+  "mdi-food-variant",
+  "mdi-food-variant-off",
+  "mdi-foot-print",
+  "mdi-football",
+  "mdi-football-australian",
+  "mdi-football-helmet",
+  "mdi-forest",
+  "mdi-forest-outline",
+  "mdi-forklift",
+  "mdi-form-dropdown",
+  "mdi-form-select",
+  "mdi-form-textarea",
+  "mdi-form-textbox",
+  "mdi-form-textbox-lock",
+  "mdi-form-textbox-password",
+  "mdi-format-align-bottom",
+  "mdi-format-align-center",
+  "mdi-format-align-justify",
+  "mdi-format-align-left",
+  "mdi-format-align-middle",
+  "mdi-format-align-right",
+  "mdi-format-align-top",
+  "mdi-format-annotation-minus",
+  "mdi-format-annotation-plus",
+  "mdi-format-bold",
+  "mdi-format-clear",
+  "mdi-format-color-fill",
+  "mdi-format-color-highlight",
+  "mdi-format-color-marker-cancel",
+  "mdi-format-color-text",
+  "mdi-format-columns",
+  "mdi-format-float-center",
+  "mdi-format-float-left",
+  "mdi-format-float-none",
+  "mdi-format-float-right",
+  "mdi-format-font",
+  "mdi-format-font-size-decrease",
+  "mdi-format-font-size-increase",
+  "mdi-format-header-1",
+  "mdi-format-header-2",
+  "mdi-format-header-3",
+  "mdi-format-header-4",
+  "mdi-format-header-5",
+  "mdi-format-header-6",
+  "mdi-format-header-decrease",
+  "mdi-format-header-equal",
+  "mdi-format-header-increase",
+  "mdi-format-header-pound",
+  "mdi-format-horizontal-align-center",
+  "mdi-format-horizontal-align-left",
+  "mdi-format-horizontal-align-right",
+  "mdi-format-indent-decrease",
+  "mdi-format-indent-increase",
+  "mdi-format-italic",
+  "mdi-format-letter-case",
+  "mdi-format-letter-case-lower",
+  "mdi-format-letter-case-upper",
+  "mdi-format-letter-ends-with",
+  "mdi-format-letter-matches",
+  "mdi-format-letter-spacing",
+  "mdi-format-letter-spacing-variant",
+  "mdi-format-letter-starts-with",
+  "mdi-format-line-height",
+  "mdi-format-line-spacing",
+  "mdi-format-line-style",
+  "mdi-format-line-weight",
+  "mdi-format-list-bulleted",
+  "mdi-format-list-bulleted-square",
+  "mdi-format-list-bulleted-triangle",
+  "mdi-format-list-bulleted-type",
+  "mdi-format-list-checkbox",
+  "mdi-format-list-checks",
+  "mdi-format-list-group",
+  "mdi-format-list-group-plus",
+  "mdi-format-list-numbered",
+  "mdi-format-list-numbered-rtl",
+  "mdi-format-list-text",
+  "mdi-format-overline",
+  "mdi-format-page-break",
+  "mdi-format-page-split",
+  "mdi-format-paint",
+  "mdi-format-paragraph",
+  "mdi-format-paragraph-spacing",
+  "mdi-format-pilcrow",
+  "mdi-format-pilcrow-arrow-left",
+  "mdi-format-pilcrow-arrow-right",
+  "mdi-format-quote-close",
+  "mdi-format-quote-close-outline",
+  "mdi-format-quote-open",
+  "mdi-format-quote-open-outline",
+  "mdi-format-rotate-90",
+  "mdi-format-section",
+  "mdi-format-size",
+  "mdi-format-strikethrough",
+  "mdi-format-strikethrough-variant",
+  "mdi-format-subscript",
+  "mdi-format-superscript",
+  "mdi-format-text",
+  "mdi-format-text-rotation-angle-down",
+  "mdi-format-text-rotation-angle-up",
+  "mdi-format-text-rotation-down",
+  "mdi-format-text-rotation-down-vertical",
+  "mdi-format-text-rotation-none",
+  "mdi-format-text-rotation-up",
+  "mdi-format-text-rotation-vertical",
+  "mdi-format-text-variant",
+  "mdi-format-text-variant-outline",
+  "mdi-format-text-wrapping-clip",
+  "mdi-format-text-wrapping-overflow",
+  "mdi-format-text-wrapping-wrap",
+  "mdi-format-textbox",
+  "mdi-format-title",
+  "mdi-format-underline",
+  "mdi-format-underline-wavy",
+  "mdi-format-vertical-align-bottom",
+  "mdi-format-vertical-align-center",
+  "mdi-format-vertical-align-top",
+  "mdi-format-wrap-inline",
+  "mdi-format-wrap-square",
+  "mdi-format-wrap-tight",
+  "mdi-format-wrap-top-bottom",
+  "mdi-forum",
+  "mdi-forum-minus",
+  "mdi-forum-minus-outline",
+  "mdi-forum-outline",
+  "mdi-forum-plus",
+  "mdi-forum-plus-outline",
+  "mdi-forum-remove",
+  "mdi-forum-remove-outline",
+  "mdi-forward",
+  "mdi-forwardburger",
+  "mdi-fountain",
+  "mdi-fountain-pen",
+  "mdi-fountain-pen-tip",
+  "mdi-fraction-one-half",
+  "mdi-freebsd",
+  "mdi-french-fries",
+  "mdi-frequently-asked-questions",
+  "mdi-fridge",
+  "mdi-fridge-alert",
+  "mdi-fridge-alert-outline",
+  "mdi-fridge-bottom",
+  "mdi-fridge-industrial",
+  "mdi-fridge-industrial-alert",
+  "mdi-fridge-industrial-alert-outline",
+  "mdi-fridge-industrial-off",
+  "mdi-fridge-industrial-off-outline",
+  "mdi-fridge-industrial-outline",
+  "mdi-fridge-off",
+  "mdi-fridge-off-outline",
+  "mdi-fridge-outline",
+  "mdi-fridge-top",
+  "mdi-fridge-variant",
+  "mdi-fridge-variant-alert",
+  "mdi-fridge-variant-alert-outline",
+  "mdi-fridge-variant-off",
+  "mdi-fridge-variant-off-outline",
+  "mdi-fridge-variant-outline",
+  "mdi-fruit-cherries",
+  "mdi-fruit-cherries-off",
+  "mdi-fruit-citrus",
+  "mdi-fruit-citrus-off",
+  "mdi-fruit-grapes",
+  "mdi-fruit-grapes-outline",
+  "mdi-fruit-pear",
+  "mdi-fruit-pineapple",
+  "mdi-fruit-watermelon",
+  "mdi-fuel",
+  "mdi-fuel-cell",
+  "mdi-fullscreen",
+  "mdi-fullscreen-exit",
+  "mdi-function",
+  "mdi-function-variant",
+  "mdi-furigana-horizontal",
+  "mdi-furigana-vertical",
+  "mdi-fuse",
+  "mdi-fuse-alert",
+  "mdi-fuse-blade",
+  "mdi-fuse-off",
+  "mdi-gamepad",
+  "mdi-gamepad-circle",
+  "mdi-gamepad-circle-down",
+  "mdi-gamepad-circle-left",
+  "mdi-gamepad-circle-outline",
+  "mdi-gamepad-circle-right",
+  "mdi-gamepad-circle-up",
+  "mdi-gamepad-down",
+  "mdi-gamepad-left",
+  "mdi-gamepad-outline",
+  "mdi-gamepad-right",
+  "mdi-gamepad-round",
+  "mdi-gamepad-round-down",
+  "mdi-gamepad-round-left",
+  "mdi-gamepad-round-outline",
+  "mdi-gamepad-round-right",
+  "mdi-gamepad-round-up",
+  "mdi-gamepad-square",
+  "mdi-gamepad-square-outline",
+  "mdi-gamepad-up",
+  "mdi-gamepad-variant",
+  "mdi-gamepad-variant-outline",
+  "mdi-gamma",
+  "mdi-gantry-crane",
+  "mdi-garage",
+  "mdi-garage-alert",
+  "mdi-garage-alert-variant",
+  "mdi-garage-lock",
+  "mdi-garage-open",
+  "mdi-garage-open-variant",
+  "mdi-garage-variant",
+  "mdi-garage-variant-lock",
+  "mdi-gas-burner",
+  "mdi-gas-cylinder",
+  "mdi-gas-station",
+  "mdi-gas-station-in-use",
+  "mdi-gas-station-in-use-outline",
+  "mdi-gas-station-off",
+  "mdi-gas-station-off-outline",
+  "mdi-gas-station-outline",
+  "mdi-gate",
+  "mdi-gate-alert",
+  "mdi-gate-and",
+  "mdi-gate-arrow-left",
+  "mdi-gate-arrow-right",
+  "mdi-gate-buffer",
+  "mdi-gate-nand",
+  "mdi-gate-nor",
+  "mdi-gate-not",
+  "mdi-gate-open",
+  "mdi-gate-or",
+  "mdi-gate-xnor",
+  "mdi-gate-xor",
+  "mdi-gatsby",
+  "mdi-gauge",
+  "mdi-gauge-empty",
+  "mdi-gauge-full",
+  "mdi-gauge-low",
+  "mdi-gavel",
+  "mdi-gender-female",
+  "mdi-gender-male",
+  "mdi-gender-male-female",
+  "mdi-gender-male-female-variant",
+  "mdi-gender-non-binary",
+  "mdi-gender-transgender",
+  "mdi-generator-mobile",
+  "mdi-generator-portable",
+  "mdi-generator-stationary",
+  "mdi-gentoo",
+  "mdi-gesture",
+  "mdi-gesture-double-tap",
+  "mdi-gesture-pinch",
+  "mdi-gesture-spread",
+  "mdi-gesture-swipe",
+  "mdi-gesture-swipe-down",
+  "mdi-gesture-swipe-horizontal",
+  "mdi-gesture-swipe-left",
+  "mdi-gesture-swipe-right",
+  "mdi-gesture-swipe-up",
+  "mdi-gesture-swipe-vertical",
+  "mdi-gesture-tap",
+  "mdi-gesture-tap-box",
+  "mdi-gesture-tap-button",
+  "mdi-gesture-tap-hold",
+  "mdi-gesture-two-double-tap",
+  "mdi-gesture-two-tap",
+  "mdi-ghost",
+  "mdi-ghost-off",
+  "mdi-ghost-off-outline",
+  "mdi-ghost-outline",
+  "mdi-gift",
+  "mdi-gift-off",
+  "mdi-gift-off-outline",
+  "mdi-gift-open",
+  "mdi-gift-open-outline",
+  "mdi-gift-outline",
+  "mdi-git",
+  "mdi-github",
+  "mdi-gitlab",
+  "mdi-glass-cocktail",
+  "mdi-glass-cocktail-off",
+  "mdi-glass-flute",
+  "mdi-glass-fragile",
+  "mdi-glass-mug",
+  "mdi-glass-mug-off",
+  "mdi-glass-mug-variant",
+  "mdi-glass-mug-variant-off",
+  "mdi-glass-pint-outline",
+  "mdi-glass-stange",
+  "mdi-glass-tulip",
+  "mdi-glass-wine",
+  "mdi-glasses",
+  "mdi-globe-light",
+  "mdi-globe-light-outline",
+  "mdi-globe-model",
+  "mdi-gmail",
+  "mdi-gnome",
+  "mdi-go-kart",
+  "mdi-go-kart-track",
+  "mdi-gog",
+  "mdi-gold",
+  "mdi-golf",
+  "mdi-golf-cart",
+  "mdi-golf-tee",
+  "mdi-gondola",
+  "mdi-goodreads",
+  "mdi-google",
+  "mdi-google-ads",
+  "mdi-google-analytics",
+  "mdi-google-assistant",
+  "mdi-google-cardboard",
+  "mdi-google-chrome",
+  "mdi-google-circles",
+  "mdi-google-circles-communities",
+  "mdi-google-circles-extended",
+  "mdi-google-circles-group",
+  "mdi-google-classroom",
+  "mdi-google-cloud",
+  "mdi-google-downasaur",
+  "mdi-google-drive",
+  "mdi-google-earth",
+  "mdi-google-fit",
+  "mdi-google-glass",
+  "mdi-google-hangouts",
+  "mdi-google-keep",
+  "mdi-google-lens",
+  "mdi-google-maps",
+  "mdi-google-my-business",
+  "mdi-google-nearby",
+  "mdi-google-play",
+  "mdi-google-plus",
+  "mdi-google-podcast",
+  "mdi-google-spreadsheet",
+  "mdi-google-street-view",
+  "mdi-google-translate",
+  "mdi-gradient-horizontal",
+  "mdi-gradient-vertical",
+  "mdi-grain",
+  "mdi-graph",
+  "mdi-graph-outline",
+  "mdi-graphql",
+  "mdi-grass",
+  "mdi-grave-stone",
+  "mdi-grease-pencil",
+  "mdi-greater-than",
+  "mdi-greater-than-or-equal",
+  "mdi-greenhouse",
+  "mdi-grid",
+  "mdi-grid-large",
+  "mdi-grid-off",
+  "mdi-grill",
+  "mdi-grill-outline",
+  "mdi-group",
+  "mdi-guitar-acoustic",
+  "mdi-guitar-electric",
+  "mdi-guitar-pick",
+  "mdi-guitar-pick-outline",
+  "mdi-guy-fawkes-mask",
+  "mdi-gymnastics",
+  "mdi-hail",
+  "mdi-hair-dryer",
+  "mdi-hair-dryer-outline",
+  "mdi-halloween",
+  "mdi-hamburger",
+  "mdi-hamburger-check",
+  "mdi-hamburger-minus",
+  "mdi-hamburger-off",
+  "mdi-hamburger-plus",
+  "mdi-hamburger-remove",
+  "mdi-hammer",
+  "mdi-hammer-screwdriver",
+  "mdi-hammer-sickle",
+  "mdi-hammer-wrench",
+  "mdi-hand-back-left",
+  "mdi-hand-back-left-off",
+  "mdi-hand-back-left-off-outline",
+  "mdi-hand-back-left-outline",
+  "mdi-hand-back-right",
+  "mdi-hand-back-right-off",
+  "mdi-hand-back-right-off-outline",
+  "mdi-hand-back-right-outline",
+  "mdi-hand-clap",
+  "mdi-hand-clap-off",
+  "mdi-hand-coin",
+  "mdi-hand-coin-outline",
+  "mdi-hand-cycle",
+  "mdi-hand-extended",
+  "mdi-hand-extended-outline",
+  "mdi-hand-front-left",
+  "mdi-hand-front-left-outline",
+  "mdi-hand-front-right",
+  "mdi-hand-front-right-outline",
+  "mdi-hand-heart",
+  "mdi-hand-heart-outline",
+  "mdi-hand-okay",
+  "mdi-hand-peace",
+  "mdi-hand-peace-variant",
+  "mdi-hand-pointing-down",
+  "mdi-hand-pointing-left",
+  "mdi-hand-pointing-right",
+  "mdi-hand-pointing-up",
+  "mdi-hand-saw",
+  "mdi-hand-wash",
+  "mdi-hand-wash-outline",
+  "mdi-hand-water",
+  "mdi-hand-wave",
+  "mdi-hand-wave-outline",
+  "mdi-handball",
+  "mdi-handcuffs",
+  "mdi-hands-pray",
+  "mdi-handshake",
+  "mdi-handshake-outline",
+  "mdi-hanger",
+  "mdi-hard-hat",
+  "mdi-harddisk",
+  "mdi-harddisk-plus",
+  "mdi-harddisk-remove",
+  "mdi-hat-fedora",
+  "mdi-hazard-lights",
+  "mdi-hdmi-port",
+  "mdi-hdr",
+  "mdi-hdr-off",
+  "mdi-head",
+  "mdi-head-alert",
+  "mdi-head-alert-outline",
+  "mdi-head-check",
+  "mdi-head-check-outline",
+  "mdi-head-cog",
+  "mdi-head-cog-outline",
+  "mdi-head-dots-horizontal",
+  "mdi-head-dots-horizontal-outline",
+  "mdi-head-flash",
+  "mdi-head-flash-outline",
+  "mdi-head-heart",
+  "mdi-head-heart-outline",
+  "mdi-head-lightbulb",
+  "mdi-head-lightbulb-outline",
+  "mdi-head-minus",
+  "mdi-head-minus-outline",
+  "mdi-head-outline",
+  "mdi-head-plus",
+  "mdi-head-plus-outline",
+  "mdi-head-question",
+  "mdi-head-question-outline",
+  "mdi-head-remove",
+  "mdi-head-remove-outline",
+  "mdi-head-snowflake",
+  "mdi-head-snowflake-outline",
+  "mdi-head-sync",
+  "mdi-head-sync-outline",
+  "mdi-headphones",
+  "mdi-headphones-bluetooth",
+  "mdi-headphones-box",
+  "mdi-headphones-off",
+  "mdi-headphones-settings",
+  "mdi-headset",
+  "mdi-headset-dock",
+  "mdi-headset-off",
+  "mdi-heart",
+  "mdi-heart-box",
+  "mdi-heart-box-outline",
+  "mdi-heart-broken",
+  "mdi-heart-broken-outline",
+  "mdi-heart-circle",
+  "mdi-heart-circle-outline",
+  "mdi-heart-cog",
+  "mdi-heart-cog-outline",
+  "mdi-heart-flash",
+  "mdi-heart-half",
+  "mdi-heart-half-full",
+  "mdi-heart-half-outline",
+  "mdi-heart-minus",
+  "mdi-heart-minus-outline",
+  "mdi-heart-multiple",
+  "mdi-heart-multiple-outline",
+  "mdi-heart-off",
+  "mdi-heart-off-outline",
+  "mdi-heart-outline",
+  "mdi-heart-plus",
+  "mdi-heart-plus-outline",
+  "mdi-heart-pulse",
+  "mdi-heart-remove",
+  "mdi-heart-remove-outline",
+  "mdi-heart-search",
+  "mdi-heart-settings",
+  "mdi-heart-settings-outline",
+  "mdi-heat-pump",
+  "mdi-heat-pump-outline",
+  "mdi-heat-wave",
+  "mdi-heating-coil",
+  "mdi-helicopter",
+  "mdi-help",
+  "mdi-help-box",
+  "mdi-help-box-multiple",
+  "mdi-help-box-multiple-outline",
+  "mdi-help-box-outline",
+  "mdi-help-circle",
+  "mdi-help-circle-outline",
+  "mdi-help-network",
+  "mdi-help-network-outline",
+  "mdi-help-rhombus",
+  "mdi-help-rhombus-outline",
+  "mdi-hexadecimal",
+  "mdi-hexagon",
+  "mdi-hexagon-multiple",
+  "mdi-hexagon-multiple-outline",
+  "mdi-hexagon-outline",
+  "mdi-hexagon-slice-1",
+  "mdi-hexagon-slice-2",
+  "mdi-hexagon-slice-3",
+  "mdi-hexagon-slice-4",
+  "mdi-hexagon-slice-5",
+  "mdi-hexagon-slice-6",
+  "mdi-hexagram",
+  "mdi-hexagram-outline",
+  "mdi-high-definition",
+  "mdi-high-definition-box",
+  "mdi-highway",
+  "mdi-hiking",
+  "mdi-history",
+  "mdi-hockey-puck",
+  "mdi-hockey-sticks",
+  "mdi-hololens",
+  "mdi-home",
+  "mdi-home-account",
+  "mdi-home-alert",
+  "mdi-home-alert-outline",
+  "mdi-home-analytics",
+  "mdi-home-assistant",
+  "mdi-home-automation",
+  "mdi-home-battery",
+  "mdi-home-battery-outline",
+  "mdi-home-circle",
+  "mdi-home-circle-outline",
+  "mdi-home-city",
+  "mdi-home-city-outline",
+  "mdi-home-clock",
+  "mdi-home-clock-outline",
+  "mdi-home-edit",
+  "mdi-home-edit-outline",
+  "mdi-home-export-outline",
+  "mdi-home-flood",
+  "mdi-home-floor-0",
+  "mdi-home-floor-1",
+  "mdi-home-floor-2",
+  "mdi-home-floor-3",
+  "mdi-home-floor-a",
+  "mdi-home-floor-b",
+  "mdi-home-floor-g",
+  "mdi-home-floor-l",
+  "mdi-home-floor-negative-1",
+  "mdi-home-group",
+  "mdi-home-group-minus",
+  "mdi-home-group-plus",
+  "mdi-home-group-remove",
+  "mdi-home-heart",
+  "mdi-home-import-outline",
+  "mdi-home-lightbulb",
+  "mdi-home-lightbulb-outline",
+  "mdi-home-lightning-bolt",
+  "mdi-home-lightning-bolt-outline",
+  "mdi-home-lock",
+  "mdi-home-lock-open",
+  "mdi-home-map-marker",
+  "mdi-home-minus",
+  "mdi-home-minus-outline",
+  "mdi-home-modern",
+  "mdi-home-off",
+  "mdi-home-off-outline",
+  "mdi-home-outline",
+  "mdi-home-percent",
+  "mdi-home-percent-outline",
+  "mdi-home-plus",
+  "mdi-home-plus-outline",
+  "mdi-home-remove",
+  "mdi-home-remove-outline",
+  "mdi-home-roof",
+  "mdi-home-search",
+  "mdi-home-search-outline",
+  "mdi-home-silo",
+  "mdi-home-silo-outline",
+  "mdi-home-sound-in",
+  "mdi-home-sound-in-outline",
+  "mdi-home-sound-out",
+  "mdi-home-sound-out-outline",
+  "mdi-home-switch",
+  "mdi-home-switch-outline",
+  "mdi-home-thermometer",
+  "mdi-home-thermometer-outline",
+  "mdi-home-variant",
+  "mdi-home-variant-outline",
+  "mdi-hook",
+  "mdi-hook-off",
+  "mdi-hoop-house",
+  "mdi-hops",
+  "mdi-horizontal-rotate-clockwise",
+  "mdi-horizontal-rotate-counterclockwise",
+  "mdi-horse",
+  "mdi-horse-human",
+  "mdi-horse-variant",
+  "mdi-horse-variant-fast",
+  "mdi-horseshoe",
+  "mdi-hospital",
+  "mdi-hospital-box",
+  "mdi-hospital-box-outline",
+  "mdi-hospital-building",
+  "mdi-hospital-marker",
+  "mdi-hot-tub",
+  "mdi-hours-12",
+  "mdi-hours-24",
+  "mdi-hub",
+  "mdi-hub-outline",
+  "mdi-hubspot",
+  "mdi-hulu",
+  "mdi-human",
+  "mdi-human-baby-changing-table",
+  "mdi-human-cane",
+  "mdi-human-capacity-decrease",
+  "mdi-human-capacity-increase",
+  "mdi-human-child",
+  "mdi-human-dolly",
+  "mdi-human-edit",
+  "mdi-human-female",
+  "mdi-human-female-boy",
+  "mdi-human-female-dance",
+  "mdi-human-female-female",
+  "mdi-human-female-female-child",
+  "mdi-human-female-girl",
+  "mdi-human-greeting",
+  "mdi-human-greeting-proximity",
+  "mdi-human-greeting-variant",
+  "mdi-human-handsdown",
+  "mdi-human-handsup",
+  "mdi-human-male",
+  "mdi-human-male-board",
+  "mdi-human-male-board-poll",
+  "mdi-human-male-boy",
+  "mdi-human-male-child",
+  "mdi-human-male-female",
+  "mdi-human-male-female-child",
+  "mdi-human-male-girl",
+  "mdi-human-male-height",
+  "mdi-human-male-height-variant",
+  "mdi-human-male-male",
+  "mdi-human-male-male-child",
+  "mdi-human-non-binary",
+  "mdi-human-pregnant",
+  "mdi-human-queue",
+  "mdi-human-scooter",
+  "mdi-human-walker",
+  "mdi-human-wheelchair",
+  "mdi-human-white-cane",
+  "mdi-humble-bundle",
+  "mdi-hvac",
+  "mdi-hvac-off",
+  "mdi-hydraulic-oil-level",
+  "mdi-hydraulic-oil-temperature",
+  "mdi-hydro-power",
+  "mdi-hydrogen-station",
+  "mdi-ice-cream",
+  "mdi-ice-cream-off",
+  "mdi-ice-pop",
+  "mdi-id-card",
+  "mdi-identifier",
+  "mdi-ideogram-cjk",
+  "mdi-ideogram-cjk-variant",
+  "mdi-image",
+  "mdi-image-album",
+  "mdi-image-area",
+  "mdi-image-area-close",
+  "mdi-image-auto-adjust",
+  "mdi-image-broken",
+  "mdi-image-broken-variant",
+  "mdi-image-check",
+  "mdi-image-check-outline",
+  "mdi-image-edit",
+  "mdi-image-edit-outline",
+  "mdi-image-filter-black-white",
+  "mdi-image-filter-center-focus",
+  "mdi-image-filter-center-focus-strong",
+  "mdi-image-filter-center-focus-strong-outline",
+  "mdi-image-filter-center-focus-weak",
+  "mdi-image-filter-drama",
+  "mdi-image-filter-drama-outline",
+  "mdi-image-filter-frames",
+  "mdi-image-filter-hdr",
+  "mdi-image-filter-hdr-outline",
+  "mdi-image-filter-none",
+  "mdi-image-filter-tilt-shift",
+  "mdi-image-filter-vintage",
+  "mdi-image-frame",
+  "mdi-image-lock",
+  "mdi-image-lock-outline",
+  "mdi-image-marker",
+  "mdi-image-marker-outline",
+  "mdi-image-minus",
+  "mdi-image-minus-outline",
+  "mdi-image-move",
+  "mdi-image-multiple",
+  "mdi-image-multiple-outline",
+  "mdi-image-off",
+  "mdi-image-off-outline",
+  "mdi-image-outline",
+  "mdi-image-plus",
+  "mdi-image-plus-outline",
+  "mdi-image-refresh",
+  "mdi-image-refresh-outline",
+  "mdi-image-remove",
+  "mdi-image-remove-outline",
+  "mdi-image-search",
+  "mdi-image-search-outline",
+  "mdi-image-size-select-actual",
+  "mdi-image-size-select-large",
+  "mdi-image-size-select-small",
+  "mdi-image-sync",
+  "mdi-image-sync-outline",
+  "mdi-image-text",
+  "mdi-import",
+  "mdi-inbox",
+  "mdi-inbox-arrow-down",
+  "mdi-inbox-arrow-down-outline",
+  "mdi-inbox-arrow-up",
+  "mdi-inbox-arrow-up-outline",
+  "mdi-inbox-full",
+  "mdi-inbox-full-outline",
+  "mdi-inbox-multiple",
+  "mdi-inbox-multiple-outline",
+  "mdi-inbox-outline",
+  "mdi-inbox-remove",
+  "mdi-inbox-remove-outline",
+  "mdi-incognito",
+  "mdi-incognito-circle",
+  "mdi-incognito-circle-off",
+  "mdi-incognito-off",
+  "mdi-induction",
+  "mdi-infinity",
+  "mdi-information",
+  "mdi-information-box",
+  "mdi-information-box-outline",
+  "mdi-information-off",
+  "mdi-information-off-outline",
+  "mdi-information-outline",
+  "mdi-information-slab-box",
+  "mdi-information-slab-box-outline",
+  "mdi-information-slab-circle",
+  "mdi-information-slab-circle-outline",
+  "mdi-information-slab-symbol",
+  "mdi-information-symbol",
+  "mdi-information-variant",
+  "mdi-information-variant-box",
+  "mdi-information-variant-box-outline",
+  "mdi-information-variant-circle",
+  "mdi-information-variant-circle-outline",
+  "mdi-instagram",
+  "mdi-instrument-triangle",
+  "mdi-integrated-circuit-chip",
+  "mdi-invert-colors",
+  "mdi-invert-colors-off",
+  "mdi-invoice",
+  "mdi-invoice-arrow-left",
+  "mdi-invoice-arrow-left-outline",
+  "mdi-invoice-arrow-right",
+  "mdi-invoice-arrow-right-outline",
+  "mdi-invoice-check",
+  "mdi-invoice-check-outline",
+  "mdi-invoice-clock",
+  "mdi-invoice-clock-outline",
+  "mdi-invoice-edit",
+  "mdi-invoice-edit-outline",
+  "mdi-invoice-export-outline",
+  "mdi-invoice-fast",
+  "mdi-invoice-fast-outline",
+  "mdi-invoice-import",
+  "mdi-invoice-import-outline",
+  "mdi-invoice-list",
+  "mdi-invoice-list-outline",
+  "mdi-invoice-minus",
+  "mdi-invoice-minus-outline",
+  "mdi-invoice-multiple",
+  "mdi-invoice-multiple-outline",
+  "mdi-invoice-outline",
+  "mdi-invoice-plus",
+  "mdi-invoice-plus-outline",
+  "mdi-invoice-remove",
+  "mdi-invoice-remove-outline",
+  "mdi-invoice-send",
+  "mdi-invoice-send-outline",
+  "mdi-invoice-text",
+  "mdi-invoice-text-arrow-left",
+  "mdi-invoice-text-arrow-left-outline",
+  "mdi-invoice-text-arrow-right",
+  "mdi-invoice-text-arrow-right-outline",
+  "mdi-invoice-text-check",
+  "mdi-invoice-text-check-outline",
+  "mdi-invoice-text-clock",
+  "mdi-invoice-text-clock-outline",
+  "mdi-invoice-text-edit",
+  "mdi-invoice-text-edit-outline",
+  "mdi-invoice-text-fast",
+  "mdi-invoice-text-fast-outline",
+  "mdi-invoice-text-minus",
+  "mdi-invoice-text-minus-outline",
+  "mdi-invoice-text-multiple",
+  "mdi-invoice-text-multiple-outline",
+  "mdi-invoice-text-outline",
+  "mdi-invoice-text-plus",
+  "mdi-invoice-text-plus-outline",
+  "mdi-invoice-text-remove",
+  "mdi-invoice-text-remove-outline",
+  "mdi-invoice-text-send",
+  "mdi-invoice-text-send-outline",
+  "mdi-iobroker",
+  "mdi-ip",
+  "mdi-ip-network",
+  "mdi-ip-network-outline",
+  "mdi-ip-outline",
+  "mdi-ipod",
+  "mdi-iron",
+  "mdi-iron-board",
+  "mdi-iron-outline",
+  "mdi-island",
+  "mdi-island-variant",
+  "mdi-iv-bag",
+  "mdi-jabber",
+  "mdi-jeepney",
+  "mdi-jellyfish",
+  "mdi-jellyfish-outline",
+  "mdi-jira",
+  "mdi-jquery",
+  "mdi-jsfiddle",
+  "mdi-jump-rope",
+  "mdi-kabaddi",
+  "mdi-kangaroo",
+  "mdi-karate",
+  "mdi-kayaking",
+  "mdi-keg",
+  "mdi-kettle",
+  "mdi-kettle-alert",
+  "mdi-kettle-alert-outline",
+  "mdi-kettle-off",
+  "mdi-kettle-off-outline",
+  "mdi-kettle-outline",
+  "mdi-kettle-pour-over",
+  "mdi-kettle-steam",
+  "mdi-kettle-steam-outline",
+  "mdi-kettlebell",
+  "mdi-key",
+  "mdi-key-alert",
+  "mdi-key-alert-outline",
+  "mdi-key-arrow-right",
+  "mdi-key-chain",
+  "mdi-key-chain-variant",
+  "mdi-key-change",
+  "mdi-key-link",
+  "mdi-key-minus",
+  "mdi-key-outline",
+  "mdi-key-plus",
+  "mdi-key-remove",
+  "mdi-key-star",
+  "mdi-key-variant",
+  "mdi-key-wireless",
+  "mdi-keyboard",
+  "mdi-keyboard-backspace",
+  "mdi-keyboard-caps",
+  "mdi-keyboard-close",
+  "mdi-keyboard-close-outline",
+  "mdi-keyboard-esc",
+  "mdi-keyboard-f1",
+  "mdi-keyboard-f10",
+  "mdi-keyboard-f11",
+  "mdi-keyboard-f12",
+  "mdi-keyboard-f2",
+  "mdi-keyboard-f3",
+  "mdi-keyboard-f4",
+  "mdi-keyboard-f5",
+  "mdi-keyboard-f6",
+  "mdi-keyboard-f7",
+  "mdi-keyboard-f8",
+  "mdi-keyboard-f9",
+  "mdi-keyboard-off",
+  "mdi-keyboard-off-outline",
+  "mdi-keyboard-outline",
+  "mdi-keyboard-return",
+  "mdi-keyboard-settings",
+  "mdi-keyboard-settings-outline",
+  "mdi-keyboard-space",
+  "mdi-keyboard-tab",
+  "mdi-keyboard-tab-reverse",
+  "mdi-keyboard-variant",
+  "mdi-khanda",
+  "mdi-kickstarter",
+  "mdi-kite",
+  "mdi-kite-outline",
+  "mdi-kitesurfing",
+  "mdi-klingon",
+  "mdi-knife",
+  "mdi-knife-military",
+  "mdi-knob",
+  "mdi-koala",
+  "mdi-kodi",
+  "mdi-kubernetes",
+  "mdi-label",
+  "mdi-label-multiple",
+  "mdi-label-multiple-outline",
+  "mdi-label-off",
+  "mdi-label-off-outline",
+  "mdi-label-outline",
+  "mdi-label-percent",
+  "mdi-label-percent-outline",
+  "mdi-label-variant",
+  "mdi-label-variant-outline",
+  "mdi-ladder",
+  "mdi-ladybug",
+  "mdi-lambda",
+  "mdi-lamp",
+  "mdi-lamp-outline",
+  "mdi-lamps",
+  "mdi-lamps-outline",
+  "mdi-lan",
+  "mdi-lan-check",
+  "mdi-lan-connect",
+  "mdi-lan-disconnect",
+  "mdi-lan-pending",
+  "mdi-land-fields",
+  "mdi-land-plots",
+  "mdi-land-plots-circle",
+  "mdi-land-plots-circle-variant",
+  "mdi-land-plots-marker",
+  "mdi-land-rows-horizontal",
+  "mdi-land-rows-vertical",
+  "mdi-landslide",
+  "mdi-landslide-outline",
+  "mdi-language-c",
+  "mdi-language-cpp",
+  "mdi-language-csharp",
+  "mdi-language-css3",
+  "mdi-language-fortran",
+  "mdi-language-go",
+  "mdi-language-haskell",
+  "mdi-language-html5",
+  "mdi-language-java",
+  "mdi-language-javascript",
+  "mdi-language-kotlin",
+  "mdi-language-lua",
+  "mdi-language-markdown",
+  "mdi-language-markdown-outline",
+  "mdi-language-php",
+  "mdi-language-python",
+  "mdi-language-r",
+  "mdi-language-ruby",
+  "mdi-language-ruby-on-rails",
+  "mdi-language-rust",
+  "mdi-language-swift",
+  "mdi-language-typescript",
+  "mdi-language-xaml",
+  "mdi-laptop",
+  "mdi-laptop-account",
+  "mdi-laptop-off",
+  "mdi-laravel",
+  "mdi-laser-pointer",
+  "mdi-lasso",
+  "mdi-lastpass",
+  "mdi-latitude",
+  "mdi-launch",
+  "mdi-lava-lamp",
+  "mdi-layers",
+  "mdi-layers-edit",
+  "mdi-layers-minus",
+  "mdi-layers-off",
+  "mdi-layers-off-outline",
+  "mdi-layers-outline",
+  "mdi-layers-plus",
+  "mdi-layers-remove",
+  "mdi-layers-search",
+  "mdi-layers-search-outline",
+  "mdi-layers-triple",
+  "mdi-layers-triple-outline",
+  "mdi-lead-pencil",
+  "mdi-leaf",
+  "mdi-leaf-circle",
+  "mdi-leaf-circle-outline",
+  "mdi-leaf-maple",
+  "mdi-leaf-maple-off",
+  "mdi-leaf-off",
+  "mdi-leak",
+  "mdi-leak-off",
+  "mdi-lectern",
+  "mdi-led-off",
+  "mdi-led-on",
+  "mdi-led-outline",
+  "mdi-led-strip",
+  "mdi-led-strip-variant",
+  "mdi-led-strip-variant-off",
+  "mdi-led-variant-off",
+  "mdi-led-variant-on",
+  "mdi-led-variant-outline",
+  "mdi-leek",
+  "mdi-less-than",
+  "mdi-less-than-or-equal",
+  "mdi-library",
+  "mdi-library-outline",
+  "mdi-library-shelves",
+  "mdi-license",
+  "mdi-lifebuoy",
+  "mdi-light-flood-down",
+  "mdi-light-flood-up",
+  "mdi-light-recessed",
+  "mdi-light-switch",
+  "mdi-light-switch-off",
+  "mdi-lightbulb",
+  "mdi-lightbulb-alert",
+  "mdi-lightbulb-alert-outline",
+  "mdi-lightbulb-auto",
+  "mdi-lightbulb-auto-outline",
+  "mdi-lightbulb-cfl",
+  "mdi-lightbulb-cfl-off",
+  "mdi-lightbulb-cfl-spiral",
+  "mdi-lightbulb-cfl-spiral-off",
+  "mdi-lightbulb-fluorescent-tube",
+  "mdi-lightbulb-fluorescent-tube-outline",
+  "mdi-lightbulb-group",
+  "mdi-lightbulb-group-off",
+  "mdi-lightbulb-group-off-outline",
+  "mdi-lightbulb-group-outline",
+  "mdi-lightbulb-multiple",
+  "mdi-lightbulb-multiple-off",
+  "mdi-lightbulb-multiple-off-outline",
+  "mdi-lightbulb-multiple-outline",
+  "mdi-lightbulb-night",
+  "mdi-lightbulb-night-outline",
+  "mdi-lightbulb-off",
+  "mdi-lightbulb-off-outline",
+  "mdi-lightbulb-on",
+  "mdi-lightbulb-on-10",
+  "mdi-lightbulb-on-20",
+  "mdi-lightbulb-on-30",
+  "mdi-lightbulb-on-40",
+  "mdi-lightbulb-on-50",
+  "mdi-lightbulb-on-60",
+  "mdi-lightbulb-on-70",
+  "mdi-lightbulb-on-80",
+  "mdi-lightbulb-on-90",
+  "mdi-lightbulb-on-outline",
+  "mdi-lightbulb-outline",
+  "mdi-lightbulb-question",
+  "mdi-lightbulb-question-outline",
+  "mdi-lightbulb-spot",
+  "mdi-lightbulb-spot-off",
+  "mdi-lightbulb-variant",
+  "mdi-lightbulb-variant-outline",
+  "mdi-lighthouse",
+  "mdi-lighthouse-on",
+  "mdi-lightning-bolt",
+  "mdi-lightning-bolt-circle",
+  "mdi-lightning-bolt-outline",
+  "mdi-line-scan",
+  "mdi-lingerie",
+  "mdi-link",
+  "mdi-link-box",
+  "mdi-link-box-outline",
+  "mdi-link-box-variant",
+  "mdi-link-box-variant-outline",
+  "mdi-link-circle",
+  "mdi-link-circle-outline",
+  "mdi-link-edit",
+  "mdi-link-lock",
+  "mdi-link-off",
+  "mdi-link-plus",
+  "mdi-link-variant",
+  "mdi-link-variant-minus",
+  "mdi-link-variant-off",
+  "mdi-link-variant-plus",
+  "mdi-link-variant-remove",
+  "mdi-linkedin",
+  "mdi-linux",
+  "mdi-linux-mint",
+  "mdi-lipstick",
+  "mdi-liquid-spot",
+  "mdi-liquor",
+  "mdi-list-box",
+  "mdi-list-box-outline",
+  "mdi-list-status",
+  "mdi-litecoin",
+  "mdi-loading",
+  "mdi-location-enter",
+  "mdi-location-exit",
+  "mdi-lock",
+  "mdi-lock-alert",
+  "mdi-lock-alert-outline",
+  "mdi-lock-check",
+  "mdi-lock-check-outline",
+  "mdi-lock-clock",
+  "mdi-lock-minus",
+  "mdi-lock-minus-outline",
+  "mdi-lock-off",
+  "mdi-lock-off-outline",
+  "mdi-lock-open",
+  "mdi-lock-open-alert",
+  "mdi-lock-open-alert-outline",
+  "mdi-lock-open-check",
+  "mdi-lock-open-check-outline",
+  "mdi-lock-open-minus",
+  "mdi-lock-open-minus-outline",
+  "mdi-lock-open-outline",
+  "mdi-lock-open-plus",
+  "mdi-lock-open-plus-outline",
+  "mdi-lock-open-remove",
+  "mdi-lock-open-remove-outline",
+  "mdi-lock-open-variant",
+  "mdi-lock-open-variant-outline",
+  "mdi-lock-outline",
+  "mdi-lock-pattern",
+  "mdi-lock-percent",
+  "mdi-lock-percent-open",
+  "mdi-lock-percent-open-outline",
+  "mdi-lock-percent-open-variant",
+  "mdi-lock-percent-open-variant-outline",
+  "mdi-lock-percent-outline",
+  "mdi-lock-plus",
+  "mdi-lock-plus-outline",
+  "mdi-lock-question",
+  "mdi-lock-remove",
+  "mdi-lock-remove-outline",
+  "mdi-lock-reset",
+  "mdi-lock-smart",
+  "mdi-locker",
+  "mdi-locker-multiple",
+  "mdi-login",
+  "mdi-login-variant",
+  "mdi-logout",
+  "mdi-logout-variant",
+  "mdi-longitude",
+  "mdi-looks",
+  "mdi-lotion",
+  "mdi-lotion-outline",
+  "mdi-lotion-plus",
+  "mdi-lotion-plus-outline",
+  "mdi-loupe",
+  "mdi-lumx",
+  "mdi-lungs",
+  "mdi-mace",
+  "mdi-magazine-pistol",
+  "mdi-magazine-rifle",
+  "mdi-magic-staff",
+  "mdi-magnet",
+  "mdi-magnet-on",
+  "mdi-magnify",
+  "mdi-magnify-close",
+  "mdi-magnify-expand",
+  "mdi-magnify-minus",
+  "mdi-magnify-minus-cursor",
+  "mdi-magnify-minus-outline",
+  "mdi-magnify-plus",
+  "mdi-magnify-plus-cursor",
+  "mdi-magnify-plus-outline",
+  "mdi-magnify-remove-cursor",
+  "mdi-magnify-remove-outline",
+  "mdi-magnify-scan",
+  "mdi-mail",
+  "mdi-mailbox",
+  "mdi-mailbox-open",
+  "mdi-mailbox-open-outline",
+  "mdi-mailbox-open-up",
+  "mdi-mailbox-open-up-outline",
+  "mdi-mailbox-outline",
+  "mdi-mailbox-up",
+  "mdi-mailbox-up-outline",
+  "mdi-manjaro",
+  "mdi-map",
+  "mdi-map-check",
+  "mdi-map-check-outline",
+  "mdi-map-clock",
+  "mdi-map-clock-outline",
+  "mdi-map-legend",
+  "mdi-map-marker",
+  "mdi-map-marker-account",
+  "mdi-map-marker-account-outline",
+  "mdi-map-marker-alert",
+  "mdi-map-marker-alert-outline",
+  "mdi-map-marker-check",
+  "mdi-map-marker-check-outline",
+  "mdi-map-marker-circle",
+  "mdi-map-marker-distance",
+  "mdi-map-marker-down",
+  "mdi-map-marker-left",
+  "mdi-map-marker-left-outline",
+  "mdi-map-marker-minus",
+  "mdi-map-marker-minus-outline",
+  "mdi-map-marker-multiple",
+  "mdi-map-marker-multiple-outline",
+  "mdi-map-marker-off",
+  "mdi-map-marker-off-outline",
+  "mdi-map-marker-outline",
+  "mdi-map-marker-path",
+  "mdi-map-marker-plus",
+  "mdi-map-marker-plus-outline",
+  "mdi-map-marker-question",
+  "mdi-map-marker-question-outline",
+  "mdi-map-marker-radius",
+  "mdi-map-marker-radius-outline",
+  "mdi-map-marker-remove",
+  "mdi-map-marker-remove-outline",
+  "mdi-map-marker-remove-variant",
+  "mdi-map-marker-right",
+  "mdi-map-marker-right-outline",
+  "mdi-map-marker-star",
+  "mdi-map-marker-star-outline",
+  "mdi-map-marker-up",
+  "mdi-map-minus",
+  "mdi-map-outline",
+  "mdi-map-plus",
+  "mdi-map-search",
+  "mdi-map-search-outline",
+  "mdi-mapbox",
+  "mdi-margin",
+  "mdi-marker",
+  "mdi-marker-cancel",
+  "mdi-marker-check",
+  "mdi-mastodon",
+  "mdi-material-design",
+  "mdi-material-ui",
+  "mdi-math-compass",
+  "mdi-math-cos",
+  "mdi-math-integral",
+  "mdi-math-integral-box",
+  "mdi-math-log",
+  "mdi-math-norm",
+  "mdi-math-norm-box",
+  "mdi-math-sin",
+  "mdi-math-tan",
+  "mdi-matrix",
+  "mdi-medal",
+  "mdi-medal-outline",
+  "mdi-medical-bag",
+  "mdi-medical-cotton-swab",
+  "mdi-medication",
+  "mdi-medication-outline",
+  "mdi-meditation",
+  "mdi-memory",
+  "mdi-memory-arrow-down",
+  "mdi-menorah",
+  "mdi-menorah-fire",
+  "mdi-menu",
+  "mdi-menu-close",
+  "mdi-menu-down",
+  "mdi-menu-down-outline",
+  "mdi-menu-left",
+  "mdi-menu-left-outline",
+  "mdi-menu-open",
+  "mdi-menu-right",
+  "mdi-menu-right-outline",
+  "mdi-menu-swap",
+  "mdi-menu-swap-outline",
+  "mdi-menu-up",
+  "mdi-menu-up-outline",
+  "mdi-merge",
+  "mdi-message",
+  "mdi-message-alert",
+  "mdi-message-alert-outline",
+  "mdi-message-arrow-left",
+  "mdi-message-arrow-left-outline",
+  "mdi-message-arrow-right",
+  "mdi-message-arrow-right-outline",
+  "mdi-message-badge",
+  "mdi-message-badge-outline",
+  "mdi-message-bookmark",
+  "mdi-message-bookmark-outline",
+  "mdi-message-bulleted",
+  "mdi-message-bulleted-off",
+  "mdi-message-check",
+  "mdi-message-check-outline",
+  "mdi-message-cog",
+  "mdi-message-cog-outline",
+  "mdi-message-draw",
+  "mdi-message-fast",
+  "mdi-message-fast-outline",
+  "mdi-message-flash",
+  "mdi-message-flash-outline",
+  "mdi-message-image",
+  "mdi-message-image-outline",
+  "mdi-message-lock",
+  "mdi-message-lock-outline",
+  "mdi-message-minus",
+  "mdi-message-minus-outline",
+  "mdi-message-off",
+  "mdi-message-off-outline",
+  "mdi-message-outline",
+  "mdi-message-plus",
+  "mdi-message-plus-outline",
+  "mdi-message-processing",
+  "mdi-message-processing-outline",
+  "mdi-message-question",
+  "mdi-message-question-outline",
+  "mdi-message-reply",
+  "mdi-message-reply-outline",
+  "mdi-message-reply-text",
+  "mdi-message-reply-text-outline",
+  "mdi-message-settings",
+  "mdi-message-settings-outline",
+  "mdi-message-star",
+  "mdi-message-star-outline",
+  "mdi-message-text",
+  "mdi-message-text-clock",
+  "mdi-message-text-clock-outline",
+  "mdi-message-text-fast",
+  "mdi-message-text-fast-outline",
+  "mdi-message-text-lock",
+  "mdi-message-text-lock-outline",
+  "mdi-message-text-outline",
+  "mdi-message-video",
+  "mdi-meteor",
+  "mdi-meter-electric",
+  "mdi-meter-electric-outline",
+  "mdi-meter-gas",
+  "mdi-meter-gas-outline",
+  "mdi-metronome",
+  "mdi-metronome-tick",
+  "mdi-micro-sd",
+  "mdi-microphone",
+  "mdi-microphone-message",
+  "mdi-microphone-message-off",
+  "mdi-microphone-minus",
+  "mdi-microphone-off",
+  "mdi-microphone-outline",
+  "mdi-microphone-plus",
+  "mdi-microphone-question",
+  "mdi-microphone-question-outline",
+  "mdi-microphone-settings",
+  "mdi-microphone-variant",
+  "mdi-microphone-variant-off",
+  "mdi-microscope",
+  "mdi-microsoft",
+  "mdi-microsoft-access",
+  "mdi-microsoft-azure",
+  "mdi-microsoft-azure-devops",
+  "mdi-microsoft-bing",
+  "mdi-microsoft-dynamics-365",
+  "mdi-microsoft-edge",
+  "mdi-microsoft-excel",
+  "mdi-microsoft-internet-explorer",
+  "mdi-microsoft-office",
+  "mdi-microsoft-onedrive",
+  "mdi-microsoft-onenote",
+  "mdi-microsoft-outlook",
+  "mdi-microsoft-powerpoint",
+  "mdi-microsoft-sharepoint",
+  "mdi-microsoft-teams",
+  "mdi-microsoft-visual-studio",
+  "mdi-microsoft-visual-studio-code",
+  "mdi-microsoft-windows",
+  "mdi-microsoft-windows-classic",
+  "mdi-microsoft-word",
+  "mdi-microsoft-xbox",
+  "mdi-microsoft-xbox-controller",
+  "mdi-microsoft-xbox-controller-battery-alert",
+  "mdi-microsoft-xbox-controller-battery-charging",
+  "mdi-microsoft-xbox-controller-battery-empty",
+  "mdi-microsoft-xbox-controller-battery-full",
+  "mdi-microsoft-xbox-controller-battery-low",
+  "mdi-microsoft-xbox-controller-battery-medium",
+  "mdi-microsoft-xbox-controller-battery-unknown",
+  "mdi-microsoft-xbox-controller-menu",
+  "mdi-microsoft-xbox-controller-off",
+  "mdi-microsoft-xbox-controller-view",
+  "mdi-microwave",
+  "mdi-microwave-off",
+  "mdi-middleware",
+  "mdi-middleware-outline",
+  "mdi-midi",
+  "mdi-midi-port",
+  "mdi-mine",
+  "mdi-minecraft",
+  "mdi-mini-sd",
+  "mdi-minidisc",
+  "mdi-minus",
+  "mdi-minus-box",
+  "mdi-minus-box-multiple",
+  "mdi-minus-box-multiple-outline",
+  "mdi-minus-box-outline",
+  "mdi-minus-circle",
+  "mdi-minus-circle-multiple",
+  "mdi-minus-circle-multiple-outline",
+  "mdi-minus-circle-off",
+  "mdi-minus-circle-off-outline",
+  "mdi-minus-circle-outline",
+  "mdi-minus-network",
+  "mdi-minus-network-outline",
+  "mdi-minus-thick",
+  "mdi-mirror",
+  "mdi-mirror-rectangle",
+  "mdi-mirror-variant",
+  "mdi-mixed-martial-arts",
+  "mdi-mixed-reality",
+  "mdi-molecule",
+  "mdi-molecule-co",
+  "mdi-molecule-co2",
+  "mdi-monitor",
+  "mdi-monitor-account",
+  "mdi-monitor-arrow-down",
+  "mdi-monitor-arrow-down-variant",
+  "mdi-monitor-cellphone",
+  "mdi-monitor-cellphone-star",
+  "mdi-monitor-dashboard",
+  "mdi-monitor-edit",
+  "mdi-monitor-eye",
+  "mdi-monitor-lock",
+  "mdi-monitor-multiple",
+  "mdi-monitor-off",
+  "mdi-monitor-screenshot",
+  "mdi-monitor-share",
+  "mdi-monitor-shimmer",
+  "mdi-monitor-small",
+  "mdi-monitor-speaker",
+  "mdi-monitor-speaker-off",
+  "mdi-monitor-star",
+  "mdi-monitor-vertical",
+  "mdi-moon-first-quarter",
+  "mdi-moon-full",
+  "mdi-moon-last-quarter",
+  "mdi-moon-new",
+  "mdi-moon-waning-crescent",
+  "mdi-moon-waning-gibbous",
+  "mdi-moon-waxing-crescent",
+  "mdi-moon-waxing-gibbous",
+  "mdi-moped",
+  "mdi-moped-electric",
+  "mdi-moped-electric-outline",
+  "mdi-moped-outline",
+  "mdi-more",
+  "mdi-mortar-pestle",
+  "mdi-mortar-pestle-plus",
+  "mdi-mosque",
+  "mdi-mosque-outline",
+  "mdi-mother-heart",
+  "mdi-mother-nurse",
+  "mdi-motion",
+  "mdi-motion-outline",
+  "mdi-motion-pause",
+  "mdi-motion-pause-outline",
+  "mdi-motion-play",
+  "mdi-motion-play-outline",
+  "mdi-motion-sensor",
+  "mdi-motion-sensor-off",
+  "mdi-motorbike",
+  "mdi-motorbike-electric",
+  "mdi-motorbike-off",
+  "mdi-mouse",
+  "mdi-mouse-bluetooth",
+  "mdi-mouse-left-click",
+  "mdi-mouse-left-click-outline",
+  "mdi-mouse-move-down",
+  "mdi-mouse-move-up",
+  "mdi-mouse-move-vertical",
+  "mdi-mouse-off",
+  "mdi-mouse-outline",
+  "mdi-mouse-right-click",
+  "mdi-mouse-right-click-outline",
+  "mdi-mouse-scroll-wheel",
+  "mdi-mouse-variant",
+  "mdi-mouse-variant-off",
+  "mdi-move-resize",
+  "mdi-move-resize-variant",
+  "mdi-movie",
+  "mdi-movie-check",
+  "mdi-movie-check-outline",
+  "mdi-movie-cog",
+  "mdi-movie-cog-outline",
+  "mdi-movie-edit",
+  "mdi-movie-edit-outline",
+  "mdi-movie-filter",
+  "mdi-movie-filter-outline",
+  "mdi-movie-minus",
+  "mdi-movie-minus-outline",
+  "mdi-movie-off",
+  "mdi-movie-off-outline",
+  "mdi-movie-open",
+  "mdi-movie-open-check",
+  "mdi-movie-open-check-outline",
+  "mdi-movie-open-cog",
+  "mdi-movie-open-cog-outline",
+  "mdi-movie-open-edit",
+  "mdi-movie-open-edit-outline",
+  "mdi-movie-open-minus",
+  "mdi-movie-open-minus-outline",
+  "mdi-movie-open-off",
+  "mdi-movie-open-off-outline",
+  "mdi-movie-open-outline",
+  "mdi-movie-open-play",
+  "mdi-movie-open-play-outline",
+  "mdi-movie-open-plus",
+  "mdi-movie-open-plus-outline",
+  "mdi-movie-open-remove",
+  "mdi-movie-open-remove-outline",
+  "mdi-movie-open-settings",
+  "mdi-movie-open-settings-outline",
+  "mdi-movie-open-star",
+  "mdi-movie-open-star-outline",
+  "mdi-movie-outline",
+  "mdi-movie-play",
+  "mdi-movie-play-outline",
+  "mdi-movie-plus",
+  "mdi-movie-plus-outline",
+  "mdi-movie-remove",
+  "mdi-movie-remove-outline",
+  "mdi-movie-roll",
+  "mdi-movie-search",
+  "mdi-movie-search-outline",
+  "mdi-movie-settings",
+  "mdi-movie-settings-outline",
+  "mdi-movie-star",
+  "mdi-movie-star-outline",
+  "mdi-mower",
+  "mdi-mower-bag",
+  "mdi-mower-bag-on",
+  "mdi-mower-on",
+  "mdi-muffin",
+  "mdi-multicast",
+  "mdi-multimedia",
+  "mdi-multiplication",
+  "mdi-multiplication-box",
+  "mdi-mushroom",
+  "mdi-mushroom-off",
+  "mdi-mushroom-off-outline",
+  "mdi-mushroom-outline",
+  "mdi-music",
+  "mdi-music-accidental-double-flat",
+  "mdi-music-accidental-double-sharp",
+  "mdi-music-accidental-flat",
+  "mdi-music-accidental-natural",
+  "mdi-music-accidental-sharp",
+  "mdi-music-box",
+  "mdi-music-box-multiple",
+  "mdi-music-box-multiple-outline",
+  "mdi-music-box-outline",
+  "mdi-music-circle",
+  "mdi-music-circle-outline",
+  "mdi-music-clef-alto",
+  "mdi-music-clef-bass",
+  "mdi-music-clef-treble",
+  "mdi-music-note",
+  "mdi-music-note-bluetooth",
+  "mdi-music-note-bluetooth-off",
+  "mdi-music-note-eighth",
+  "mdi-music-note-eighth-dotted",
+  "mdi-music-note-half",
+  "mdi-music-note-half-dotted",
+  "mdi-music-note-minus",
+  "mdi-music-note-off",
+  "mdi-music-note-off-outline",
+  "mdi-music-note-outline",
+  "mdi-music-note-plus",
+  "mdi-music-note-quarter",
+  "mdi-music-note-quarter-dotted",
+  "mdi-music-note-sixteenth",
+  "mdi-music-note-sixteenth-dotted",
+  "mdi-music-note-whole",
+  "mdi-music-note-whole-dotted",
+  "mdi-music-off",
+  "mdi-music-rest-eighth",
+  "mdi-music-rest-half",
+  "mdi-music-rest-quarter",
+  "mdi-music-rest-sixteenth",
+  "mdi-music-rest-whole",
+  "mdi-mustache",
+  "mdi-nail",
+  "mdi-nas",
+  "mdi-nativescript",
+  "mdi-nature",
+  "mdi-nature-outline",
+  "mdi-nature-people",
+  "mdi-nature-people-outline",
+  "mdi-navigation",
+  "mdi-navigation-outline",
+  "mdi-navigation-variant",
+  "mdi-navigation-variant-outline",
+  "mdi-near-me",
+  "mdi-necklace",
+  "mdi-needle",
+  "mdi-needle-off",
+  "mdi-netflix",
+  "mdi-network",
+  "mdi-network-off",
+  "mdi-network-off-outline",
+  "mdi-network-outline",
+  "mdi-network-pos",
+  "mdi-network-strength-1",
+  "mdi-network-strength-1-alert",
+  "mdi-network-strength-2",
+  "mdi-network-strength-2-alert",
+  "mdi-network-strength-3",
+  "mdi-network-strength-3-alert",
+  "mdi-network-strength-4",
+  "mdi-network-strength-4-alert",
+  "mdi-network-strength-4-cog",
+  "mdi-network-strength-off",
+  "mdi-network-strength-off-outline",
+  "mdi-network-strength-outline",
+  "mdi-new-box",
+  "mdi-newspaper",
+  "mdi-newspaper-check",
+  "mdi-newspaper-minus",
+  "mdi-newspaper-plus",
+  "mdi-newspaper-remove",
+  "mdi-newspaper-variant",
+  "mdi-newspaper-variant-multiple",
+  "mdi-newspaper-variant-multiple-outline",
+  "mdi-newspaper-variant-outline",
+  "mdi-nfc",
+  "mdi-nfc-search-variant",
+  "mdi-nfc-tap",
+  "mdi-nfc-variant",
+  "mdi-nfc-variant-off",
+  "mdi-ninja",
+  "mdi-nintendo-game-boy",
+  "mdi-nintendo-switch",
+  "mdi-nintendo-wii",
+  "mdi-nintendo-wiiu",
+  "mdi-nix",
+  "mdi-nodejs",
+  "mdi-noodles",
+  "mdi-not-equal",
+  "mdi-not-equal-variant",
+  "mdi-note",
+  "mdi-note-alert",
+  "mdi-note-alert-outline",
+  "mdi-note-check",
+  "mdi-note-check-outline",
+  "mdi-note-edit",
+  "mdi-note-edit-outline",
+  "mdi-note-minus",
+  "mdi-note-minus-outline",
+  "mdi-note-multiple",
+  "mdi-note-multiple-outline",
+  "mdi-note-off",
+  "mdi-note-off-outline",
+  "mdi-note-outline",
+  "mdi-note-plus",
+  "mdi-note-plus-outline",
+  "mdi-note-remove",
+  "mdi-note-remove-outline",
+  "mdi-note-search",
+  "mdi-note-search-outline",
+  "mdi-note-text",
+  "mdi-note-text-outline",
+  "mdi-notebook",
+  "mdi-notebook-check",
+  "mdi-notebook-check-outline",
+  "mdi-notebook-edit",
+  "mdi-notebook-edit-outline",
+  "mdi-notebook-heart",
+  "mdi-notebook-heart-outline",
+  "mdi-notebook-minus",
+  "mdi-notebook-minus-outline",
+  "mdi-notebook-multiple",
+  "mdi-notebook-outline",
+  "mdi-notebook-plus",
+  "mdi-notebook-plus-outline",
+  "mdi-notebook-remove",
+  "mdi-notebook-remove-outline",
+  "mdi-notification-clear-all",
+  "mdi-npm",
+  "mdi-nuke",
+  "mdi-null",
+  "mdi-numeric",
+  "mdi-numeric-0",
+  "mdi-numeric-0-box",
+  "mdi-numeric-0-box-multiple",
+  "mdi-numeric-0-box-multiple-outline",
+  "mdi-numeric-0-box-outline",
+  "mdi-numeric-0-circle",
+  "mdi-numeric-0-circle-outline",
+  "mdi-numeric-1",
+  "mdi-numeric-1-box",
+  "mdi-numeric-1-box-multiple",
+  "mdi-numeric-1-box-multiple-outline",
+  "mdi-numeric-1-box-outline",
+  "mdi-numeric-1-circle",
+  "mdi-numeric-1-circle-outline",
+  "mdi-numeric-10",
+  "mdi-numeric-10-box",
+  "mdi-numeric-10-box-multiple",
+  "mdi-numeric-10-box-multiple-outline",
+  "mdi-numeric-10-box-outline",
+  "mdi-numeric-10-circle",
+  "mdi-numeric-10-circle-outline",
+  "mdi-numeric-2",
+  "mdi-numeric-2-box",
+  "mdi-numeric-2-box-multiple",
+  "mdi-numeric-2-box-multiple-outline",
+  "mdi-numeric-2-box-outline",
+  "mdi-numeric-2-circle",
+  "mdi-numeric-2-circle-outline",
+  "mdi-numeric-3",
+  "mdi-numeric-3-box",
+  "mdi-numeric-3-box-multiple",
+  "mdi-numeric-3-box-multiple-outline",
+  "mdi-numeric-3-box-outline",
+  "mdi-numeric-3-circle",
+  "mdi-numeric-3-circle-outline",
+  "mdi-numeric-4",
+  "mdi-numeric-4-box",
+  "mdi-numeric-4-box-multiple",
+  "mdi-numeric-4-box-multiple-outline",
+  "mdi-numeric-4-box-outline",
+  "mdi-numeric-4-circle",
+  "mdi-numeric-4-circle-outline",
+  "mdi-numeric-5",
+  "mdi-numeric-5-box",
+  "mdi-numeric-5-box-multiple",
+  "mdi-numeric-5-box-multiple-outline",
+  "mdi-numeric-5-box-outline",
+  "mdi-numeric-5-circle",
+  "mdi-numeric-5-circle-outline",
+  "mdi-numeric-6",
+  "mdi-numeric-6-box",
+  "mdi-numeric-6-box-multiple",
+  "mdi-numeric-6-box-multiple-outline",
+  "mdi-numeric-6-box-outline",
+  "mdi-numeric-6-circle",
+  "mdi-numeric-6-circle-outline",
+  "mdi-numeric-7",
+  "mdi-numeric-7-box",
+  "mdi-numeric-7-box-multiple",
+  "mdi-numeric-7-box-multiple-outline",
+  "mdi-numeric-7-box-outline",
+  "mdi-numeric-7-circle",
+  "mdi-numeric-7-circle-outline",
+  "mdi-numeric-8",
+  "mdi-numeric-8-box",
+  "mdi-numeric-8-box-multiple",
+  "mdi-numeric-8-box-multiple-outline",
+  "mdi-numeric-8-box-outline",
+  "mdi-numeric-8-circle",
+  "mdi-numeric-8-circle-outline",
+  "mdi-numeric-9",
+  "mdi-numeric-9-box",
+  "mdi-numeric-9-box-multiple",
+  "mdi-numeric-9-box-multiple-outline",
+  "mdi-numeric-9-box-outline",
+  "mdi-numeric-9-circle",
+  "mdi-numeric-9-circle-outline",
+  "mdi-numeric-9-plus",
+  "mdi-numeric-9-plus-box",
+  "mdi-numeric-9-plus-box-multiple",
+  "mdi-numeric-9-plus-box-multiple-outline",
+  "mdi-numeric-9-plus-box-outline",
+  "mdi-numeric-9-plus-circle",
+  "mdi-numeric-9-plus-circle-outline",
+  "mdi-numeric-negative-1",
+  "mdi-numeric-off",
+  "mdi-numeric-positive-1",
+  "mdi-nut",
+  "mdi-nutrition",
+  "mdi-nuxt",
+  "mdi-oar",
+  "mdi-ocarina",
+  "mdi-oci",
+  "mdi-ocr",
+  "mdi-octagon",
+  "mdi-octagon-outline",
+  "mdi-octagram",
+  "mdi-octagram-edit",
+  "mdi-octagram-edit-outline",
+  "mdi-octagram-minus",
+  "mdi-octagram-minus-outline",
+  "mdi-octagram-outline",
+  "mdi-octagram-plus",
+  "mdi-octagram-plus-outline",
+  "mdi-octahedron",
+  "mdi-octahedron-off",
+  "mdi-odnoklassniki",
+  "mdi-offer",
+  "mdi-office-building",
+  "mdi-office-building-cog",
+  "mdi-office-building-cog-outline",
+  "mdi-office-building-marker",
+  "mdi-office-building-marker-outline",
+  "mdi-office-building-minus",
+  "mdi-office-building-minus-outline",
+  "mdi-office-building-outline",
+  "mdi-office-building-plus",
+  "mdi-office-building-plus-outline",
+  "mdi-office-building-remove",
+  "mdi-office-building-remove-outline",
+  "mdi-oil",
+  "mdi-oil-lamp",
+  "mdi-oil-level",
+  "mdi-oil-temperature",
+  "mdi-om",
+  "mdi-omega",
+  "mdi-one-up",
+  "mdi-onepassword",
+  "mdi-opacity",
+  "mdi-open-in-app",
+  "mdi-open-in-new",
+  "mdi-open-source-initiative",
+  "mdi-openid",
+  "mdi-opera",
+  "mdi-orbit",
+  "mdi-orbit-variant",
+  "mdi-order-alphabetical-ascending",
+  "mdi-order-alphabetical-descending",
+  "mdi-order-bool-ascending",
+  "mdi-order-bool-ascending-variant",
+  "mdi-order-bool-descending",
+  "mdi-order-bool-descending-variant",
+  "mdi-order-numeric-ascending",
+  "mdi-order-numeric-descending",
+  "mdi-origin",
+  "mdi-ornament",
+  "mdi-ornament-variant",
+  "mdi-outdoor-lamp",
+  "mdi-overscan",
+  "mdi-owl",
+  "mdi-pac-man",
+  "mdi-package",
+  "mdi-package-check",
+  "mdi-package-down",
+  "mdi-package-up",
+  "mdi-package-variant",
+  "mdi-package-variant-closed",
+  "mdi-package-variant-closed-check",
+  "mdi-package-variant-closed-minus",
+  "mdi-package-variant-closed-plus",
+  "mdi-package-variant-closed-remove",
+  "mdi-package-variant-minus",
+  "mdi-package-variant-plus",
+  "mdi-package-variant-remove",
+  "mdi-page-first",
+  "mdi-page-last",
+  "mdi-page-layout-body",
+  "mdi-page-layout-footer",
+  "mdi-page-layout-header",
+  "mdi-page-layout-header-footer",
+  "mdi-page-layout-sidebar-left",
+  "mdi-page-layout-sidebar-right",
+  "mdi-page-next",
+  "mdi-page-next-outline",
+  "mdi-page-previous",
+  "mdi-page-previous-outline",
+  "mdi-pail",
+  "mdi-pail-minus",
+  "mdi-pail-minus-outline",
+  "mdi-pail-off",
+  "mdi-pail-off-outline",
+  "mdi-pail-outline",
+  "mdi-pail-plus",
+  "mdi-pail-plus-outline",
+  "mdi-pail-remove",
+  "mdi-pail-remove-outline",
+  "mdi-palette",
+  "mdi-palette-advanced",
+  "mdi-palette-outline",
+  "mdi-palette-swatch",
+  "mdi-palette-swatch-outline",
+  "mdi-palette-swatch-variant",
+  "mdi-palm-tree",
+  "mdi-pan",
+  "mdi-pan-bottom-left",
+  "mdi-pan-bottom-right",
+  "mdi-pan-down",
+  "mdi-pan-horizontal",
+  "mdi-pan-left",
+  "mdi-pan-right",
+  "mdi-pan-top-left",
+  "mdi-pan-top-right",
+  "mdi-pan-up",
+  "mdi-pan-vertical",
+  "mdi-panda",
+  "mdi-pandora",
+  "mdi-panorama",
+  "mdi-panorama-fisheye",
+  "mdi-panorama-horizontal",
+  "mdi-panorama-horizontal-outline",
+  "mdi-panorama-outline",
+  "mdi-panorama-sphere",
+  "mdi-panorama-sphere-outline",
+  "mdi-panorama-variant",
+  "mdi-panorama-variant-outline",
+  "mdi-panorama-vertical",
+  "mdi-panorama-vertical-outline",
+  "mdi-panorama-wide-angle",
+  "mdi-panorama-wide-angle-outline",
+  "mdi-paper-cut-vertical",
+  "mdi-paper-roll",
+  "mdi-paper-roll-outline",
+  "mdi-paperclip",
+  "mdi-paperclip-check",
+  "mdi-paperclip-lock",
+  "mdi-paperclip-minus",
+  "mdi-paperclip-off",
+  "mdi-paperclip-plus",
+  "mdi-paperclip-remove",
+  "mdi-parachute",
+  "mdi-parachute-outline",
+  "mdi-paragliding",
+  "mdi-parking",
+  "mdi-party-popper",
+  "mdi-passport",
+  "mdi-passport-alert",
+  "mdi-passport-biometric",
+  "mdi-passport-cancel",
+  "mdi-passport-check",
+  "mdi-passport-minus",
+  "mdi-passport-plus",
+  "mdi-passport-remove",
+  "mdi-pasta",
+  "mdi-patio-heater",
+  "mdi-patreon",
+  "mdi-pause",
+  "mdi-pause-box",
+  "mdi-pause-box-outline",
+  "mdi-pause-circle",
+  "mdi-pause-circle-outline",
+  "mdi-pause-octagon",
+  "mdi-pause-octagon-outline",
+  "mdi-paw",
+  "mdi-paw-off",
+  "mdi-paw-off-outline",
+  "mdi-paw-outline",
+  "mdi-peace",
+  "mdi-peanut",
+  "mdi-peanut-off",
+  "mdi-peanut-off-outline",
+  "mdi-peanut-outline",
+  "mdi-pen",
+  "mdi-pen-lock",
+  "mdi-pen-minus",
+  "mdi-pen-off",
+  "mdi-pen-plus",
+  "mdi-pen-remove",
+  "mdi-pencil",
+  "mdi-pencil-box",
+  "mdi-pencil-box-multiple",
+  "mdi-pencil-box-multiple-outline",
+  "mdi-pencil-box-outline",
+  "mdi-pencil-circle",
+  "mdi-pencil-circle-outline",
+  "mdi-pencil-lock",
+  "mdi-pencil-lock-outline",
+  "mdi-pencil-minus",
+  "mdi-pencil-minus-outline",
+  "mdi-pencil-off",
+  "mdi-pencil-off-outline",
+  "mdi-pencil-outline",
+  "mdi-pencil-plus",
+  "mdi-pencil-plus-outline",
+  "mdi-pencil-remove",
+  "mdi-pencil-remove-outline",
+  "mdi-pencil-ruler",
+  "mdi-pencil-ruler-outline",
+  "mdi-penguin",
+  "mdi-pentagon",
+  "mdi-pentagon-outline",
+  "mdi-pentagram",
+  "mdi-percent",
+  "mdi-percent-box",
+  "mdi-percent-box-outline",
+  "mdi-percent-circle",
+  "mdi-percent-circle-outline",
+  "mdi-percent-outline",
+  "mdi-periodic-table",
+  "mdi-perspective-less",
+  "mdi-perspective-more",
+  "mdi-ph",
+  "mdi-phone",
+  "mdi-phone-alert",
+  "mdi-phone-alert-outline",
+  "mdi-phone-bluetooth",
+  "mdi-phone-bluetooth-outline",
+  "mdi-phone-cancel",
+  "mdi-phone-cancel-outline",
+  "mdi-phone-check",
+  "mdi-phone-check-outline",
+  "mdi-phone-classic",
+  "mdi-phone-classic-off",
+  "mdi-phone-clock",
+  "mdi-phone-dial",
+  "mdi-phone-dial-outline",
+  "mdi-phone-forward",
+  "mdi-phone-forward-outline",
+  "mdi-phone-hangup",
+  "mdi-phone-hangup-outline",
+  "mdi-phone-in-talk",
+  "mdi-phone-in-talk-outline",
+  "mdi-phone-incoming",
+  "mdi-phone-incoming-outgoing",
+  "mdi-phone-incoming-outgoing-outline",
+  "mdi-phone-incoming-outline",
+  "mdi-phone-lock",
+  "mdi-phone-lock-outline",
+  "mdi-phone-log",
+  "mdi-phone-log-outline",
+  "mdi-phone-message",
+  "mdi-phone-message-outline",
+  "mdi-phone-minus",
+  "mdi-phone-minus-outline",
+  "mdi-phone-missed",
+  "mdi-phone-missed-outline",
+  "mdi-phone-off",
+  "mdi-phone-off-outline",
+  "mdi-phone-outgoing",
+  "mdi-phone-outgoing-outline",
+  "mdi-phone-outline",
+  "mdi-phone-paused",
+  "mdi-phone-paused-outline",
+  "mdi-phone-plus",
+  "mdi-phone-plus-outline",
+  "mdi-phone-refresh",
+  "mdi-phone-refresh-outline",
+  "mdi-phone-remove",
+  "mdi-phone-remove-outline",
+  "mdi-phone-return",
+  "mdi-phone-return-outline",
+  "mdi-phone-ring",
+  "mdi-phone-ring-outline",
+  "mdi-phone-rotate-landscape",
+  "mdi-phone-rotate-portrait",
+  "mdi-phone-settings",
+  "mdi-phone-settings-outline",
+  "mdi-phone-sync",
+  "mdi-phone-sync-outline",
+  "mdi-phone-voip",
+  "mdi-pi",
+  "mdi-pi-box",
+  "mdi-pi-hole",
+  "mdi-piano",
+  "mdi-piano-off",
+  "mdi-pickaxe",
+  "mdi-picture-in-picture-bottom-right",
+  "mdi-picture-in-picture-bottom-right-outline",
+  "mdi-picture-in-picture-top-right",
+  "mdi-picture-in-picture-top-right-outline",
+  "mdi-pier",
+  "mdi-pier-crane",
+  "mdi-pig",
+  "mdi-pig-variant",
+  "mdi-pig-variant-outline",
+  "mdi-piggy-bank",
+  "mdi-piggy-bank-outline",
+  "mdi-pill",
+  "mdi-pill-multiple",
+  "mdi-pill-off",
+  "mdi-pillar",
+  "mdi-pin",
+  "mdi-pin-off",
+  "mdi-pin-off-outline",
+  "mdi-pin-outline",
+  "mdi-pine-tree",
+  "mdi-pine-tree-box",
+  "mdi-pine-tree-fire",
+  "mdi-pine-tree-variant",
+  "mdi-pine-tree-variant-outline",
+  "mdi-pinterest",
+  "mdi-pinwheel",
+  "mdi-pinwheel-outline",
+  "mdi-pipe",
+  "mdi-pipe-disconnected",
+  "mdi-pipe-leak",
+  "mdi-pipe-valve",
+  "mdi-pipe-wrench",
+  "mdi-pirate",
+  "mdi-pistol",
+  "mdi-piston",
+  "mdi-pitchfork",
+  "mdi-pizza",
+  "mdi-plane-car",
+  "mdi-plane-train",
+  "mdi-play",
+  "mdi-play-box",
+  "mdi-play-box-edit-outline",
+  "mdi-play-box-lock",
+  "mdi-play-box-lock-open",
+  "mdi-play-box-lock-open-outline",
+  "mdi-play-box-lock-outline",
+  "mdi-play-box-multiple",
+  "mdi-play-box-multiple-outline",
+  "mdi-play-box-outline",
+  "mdi-play-circle",
+  "mdi-play-circle-outline",
+  "mdi-play-network",
+  "mdi-play-network-outline",
+  "mdi-play-outline",
+  "mdi-play-pause",
+  "mdi-play-protected-content",
+  "mdi-play-speed",
+  "mdi-playlist-check",
+  "mdi-playlist-edit",
+  "mdi-playlist-minus",
+  "mdi-playlist-music",
+  "mdi-playlist-music-outline",
+  "mdi-playlist-play",
+  "mdi-playlist-plus",
+  "mdi-playlist-remove",
+  "mdi-playlist-star",
+  "mdi-plex",
+  "mdi-pliers",
+  "mdi-plus",
+  "mdi-plus-box",
+  "mdi-plus-box-multiple",
+  "mdi-plus-box-multiple-outline",
+  "mdi-plus-box-outline",
+  "mdi-plus-circle",
+  "mdi-plus-circle-multiple",
+  "mdi-plus-circle-multiple-outline",
+  "mdi-plus-circle-outline",
+  "mdi-plus-lock",
+  "mdi-plus-lock-open",
+  "mdi-plus-minus",
+  "mdi-plus-minus-box",
+  "mdi-plus-minus-variant",
+  "mdi-plus-network",
+  "mdi-plus-network-outline",
+  "mdi-plus-outline",
+  "mdi-plus-thick",
+  "mdi-pocket",
+  "mdi-podcast",
+  "mdi-podium",
+  "mdi-podium-bronze",
+  "mdi-podium-gold",
+  "mdi-podium-silver",
+  "mdi-point-of-sale",
+  "mdi-pokeball",
+  "mdi-pokemon-go",
+  "mdi-poker-chip",
+  "mdi-polaroid",
+  "mdi-police-badge",
+  "mdi-police-badge-outline",
+  "mdi-police-station",
+  "mdi-poll",
+  "mdi-polo",
+  "mdi-polymer",
+  "mdi-pool",
+  "mdi-pool-thermometer",
+  "mdi-popcorn",
+  "mdi-post",
+  "mdi-post-lamp",
+  "mdi-post-outline",
+  "mdi-postage-stamp",
+  "mdi-pot",
+  "mdi-pot-mix",
+  "mdi-pot-mix-outline",
+  "mdi-pot-outline",
+  "mdi-pot-steam",
+  "mdi-pot-steam-outline",
+  "mdi-pound",
+  "mdi-pound-box",
+  "mdi-pound-box-outline",
+  "mdi-power",
+  "mdi-power-cycle",
+  "mdi-power-off",
+  "mdi-power-on",
+  "mdi-power-plug",
+  "mdi-power-plug-battery",
+  "mdi-power-plug-battery-outline",
+  "mdi-power-plug-off",
+  "mdi-power-plug-off-outline",
+  "mdi-power-plug-outline",
+  "mdi-power-settings",
+  "mdi-power-sleep",
+  "mdi-power-socket",
+  "mdi-power-socket-au",
+  "mdi-power-socket-ch",
+  "mdi-power-socket-de",
+  "mdi-power-socket-eu",
+  "mdi-power-socket-fr",
+  "mdi-power-socket-it",
+  "mdi-power-socket-jp",
+  "mdi-power-socket-uk",
+  "mdi-power-socket-us",
+  "mdi-power-standby",
+  "mdi-powershell",
+  "mdi-prescription",
+  "mdi-presentation",
+  "mdi-presentation-play",
+  "mdi-pretzel",
+  "mdi-printer",
+  "mdi-printer-3d",
+  "mdi-printer-3d-nozzle",
+  "mdi-printer-3d-nozzle-alert",
+  "mdi-printer-3d-nozzle-alert-outline",
+  "mdi-printer-3d-nozzle-heat",
+  "mdi-printer-3d-nozzle-heat-outline",
+  "mdi-printer-3d-nozzle-off",
+  "mdi-printer-3d-nozzle-off-outline",
+  "mdi-printer-3d-nozzle-outline",
+  "mdi-printer-3d-off",
+  "mdi-printer-alert",
+  "mdi-printer-check",
+  "mdi-printer-eye",
+  "mdi-printer-off",
+  "mdi-printer-off-outline",
+  "mdi-printer-outline",
+  "mdi-printer-pos",
+  "mdi-printer-pos-alert",
+  "mdi-printer-pos-alert-outline",
+  "mdi-printer-pos-cancel",
+  "mdi-printer-pos-cancel-outline",
+  "mdi-printer-pos-check",
+  "mdi-printer-pos-check-outline",
+  "mdi-printer-pos-cog",
+  "mdi-printer-pos-cog-outline",
+  "mdi-printer-pos-edit",
+  "mdi-printer-pos-edit-outline",
+  "mdi-printer-pos-minus",
+  "mdi-printer-pos-minus-outline",
+  "mdi-printer-pos-network",
+  "mdi-printer-pos-network-outline",
+  "mdi-printer-pos-off",
+  "mdi-printer-pos-off-outline",
+  "mdi-printer-pos-outline",
+  "mdi-printer-pos-pause",
+  "mdi-printer-pos-pause-outline",
+  "mdi-printer-pos-play",
+  "mdi-printer-pos-play-outline",
+  "mdi-printer-pos-plus",
+  "mdi-printer-pos-plus-outline",
+  "mdi-printer-pos-refresh",
+  "mdi-printer-pos-refresh-outline",
+  "mdi-printer-pos-remove",
+  "mdi-printer-pos-remove-outline",
+  "mdi-printer-pos-star",
+  "mdi-printer-pos-star-outline",
+  "mdi-printer-pos-stop",
+  "mdi-printer-pos-stop-outline",
+  "mdi-printer-pos-sync",
+  "mdi-printer-pos-sync-outline",
+  "mdi-printer-pos-wrench",
+  "mdi-printer-pos-wrench-outline",
+  "mdi-printer-search",
+  "mdi-printer-settings",
+  "mdi-printer-wireless",
+  "mdi-priority-high",
+  "mdi-priority-low",
+  "mdi-professional-hexagon",
+  "mdi-progress-alert",
+  "mdi-progress-check",
+  "mdi-progress-clock",
+  "mdi-progress-close",
+  "mdi-progress-download",
+  "mdi-progress-helper",
+  "mdi-progress-pencil",
+  "mdi-progress-question",
+  "mdi-progress-star",
+  "mdi-progress-star-four-points",
+  "mdi-progress-tag",
+  "mdi-progress-upload",
+  "mdi-progress-wrench",
+  "mdi-projector",
+  "mdi-projector-off",
+  "mdi-projector-screen",
+  "mdi-projector-screen-off",
+  "mdi-projector-screen-off-outline",
+  "mdi-projector-screen-outline",
+  "mdi-projector-screen-variant",
+  "mdi-projector-screen-variant-off",
+  "mdi-projector-screen-variant-off-outline",
+  "mdi-projector-screen-variant-outline",
+  "mdi-propane-tank",
+  "mdi-propane-tank-outline",
+  "mdi-protocol",
+  "mdi-publish",
+  "mdi-publish-off",
+  "mdi-pulse",
+  "mdi-pump",
+  "mdi-pump-off",
+  "mdi-pumpkin",
+  "mdi-purse",
+  "mdi-purse-outline",
+  "mdi-puzzle",
+  "mdi-puzzle-check",
+  "mdi-puzzle-check-outline",
+  "mdi-puzzle-edit",
+  "mdi-puzzle-edit-outline",
+  "mdi-puzzle-heart",
+  "mdi-puzzle-heart-outline",
+  "mdi-puzzle-minus",
+  "mdi-puzzle-minus-outline",
+  "mdi-puzzle-outline",
+  "mdi-puzzle-plus",
+  "mdi-puzzle-plus-outline",
+  "mdi-puzzle-remove",
+  "mdi-puzzle-remove-outline",
+  "mdi-puzzle-star",
+  "mdi-puzzle-star-outline",
+  "mdi-pyramid",
+  "mdi-pyramid-off",
+  "mdi-qi",
+  "mdi-qqchat",
+  "mdi-qrcode",
+  "mdi-qrcode-edit",
+  "mdi-qrcode-minus",
+  "mdi-qrcode-plus",
+  "mdi-qrcode-remove",
+  "mdi-qrcode-scan",
+  "mdi-quadcopter",
+  "mdi-quality-high",
+  "mdi-quality-low",
+  "mdi-quality-medium",
+  "mdi-queue-first-in-last-out",
+  "mdi-quora",
+  "mdi-rabbit",
+  "mdi-rabbit-variant",
+  "mdi-rabbit-variant-outline",
+  "mdi-racing-helmet",
+  "mdi-racquetball",
+  "mdi-radar",
+  "mdi-radiator",
+  "mdi-radiator-disabled",
+  "mdi-radiator-off",
+  "mdi-radio",
+  "mdi-radio-am",
+  "mdi-radio-fm",
+  "mdi-radio-handheld",
+  "mdi-radio-off",
+  "mdi-radio-tower",
+  "mdi-radioactive",
+  "mdi-radioactive-circle",
+  "mdi-radioactive-circle-outline",
+  "mdi-radioactive-off",
+  "mdi-radiobox-blank",
+  "mdi-radiobox-indeterminate-variant",
+  "mdi-radiobox-marked",
+  "mdi-radiology-box",
+  "mdi-radiology-box-outline",
+  "mdi-radius",
+  "mdi-radius-outline",
+  "mdi-railroad-light",
+  "mdi-rake",
+  "mdi-raspberry-pi",
+  "mdi-raw",
+  "mdi-raw-off",
+  "mdi-ray-end",
+  "mdi-ray-end-arrow",
+  "mdi-ray-start",
+  "mdi-ray-start-arrow",
+  "mdi-ray-start-end",
+  "mdi-ray-start-vertex-end",
+  "mdi-ray-vertex",
+  "mdi-razor-double-edge",
+  "mdi-razor-single-edge",
+  "mdi-react",
+  "mdi-read",
+  "mdi-receipt",
+  "mdi-receipt-clock",
+  "mdi-receipt-clock-outline",
+  "mdi-receipt-outline",
+  "mdi-receipt-send",
+  "mdi-receipt-send-outline",
+  "mdi-receipt-text",
+  "mdi-receipt-text-arrow-left",
+  "mdi-receipt-text-arrow-left-outline",
+  "mdi-receipt-text-arrow-right",
+  "mdi-receipt-text-arrow-right-outline",
+  "mdi-receipt-text-check",
+  "mdi-receipt-text-check-outline",
+  "mdi-receipt-text-clock",
+  "mdi-receipt-text-clock-outline",
+  "mdi-receipt-text-edit",
+  "mdi-receipt-text-edit-outline",
+  "mdi-receipt-text-minus",
+  "mdi-receipt-text-minus-outline",
+  "mdi-receipt-text-outline",
+  "mdi-receipt-text-plus",
+  "mdi-receipt-text-plus-outline",
+  "mdi-receipt-text-remove",
+  "mdi-receipt-text-remove-outline",
+  "mdi-receipt-text-send",
+  "mdi-receipt-text-send-outline",
+  "mdi-record",
+  "mdi-record-circle",
+  "mdi-record-circle-outline",
+  "mdi-record-player",
+  "mdi-record-rec",
+  "mdi-rectangle",
+  "mdi-rectangle-outline",
+  "mdi-recycle",
+  "mdi-recycle-variant",
+  "mdi-reddit",
+  "mdi-redhat",
+  "mdi-redo",
+  "mdi-redo-variant",
+  "mdi-reflect-horizontal",
+  "mdi-reflect-vertical",
+  "mdi-refresh",
+  "mdi-refresh-auto",
+  "mdi-refresh-circle",
+  "mdi-regex",
+  "mdi-registered-trademark",
+  "mdi-reiterate",
+  "mdi-relation-many-to-many",
+  "mdi-relation-many-to-one",
+  "mdi-relation-many-to-one-or-many",
+  "mdi-relation-many-to-only-one",
+  "mdi-relation-many-to-zero-or-many",
+  "mdi-relation-many-to-zero-or-one",
+  "mdi-relation-one-or-many-to-many",
+  "mdi-relation-one-or-many-to-one",
+  "mdi-relation-one-or-many-to-one-or-many",
+  "mdi-relation-one-or-many-to-only-one",
+  "mdi-relation-one-or-many-to-zero-or-many",
+  "mdi-relation-one-or-many-to-zero-or-one",
+  "mdi-relation-one-to-many",
+  "mdi-relation-one-to-one",
+  "mdi-relation-one-to-one-or-many",
+  "mdi-relation-one-to-only-one",
+  "mdi-relation-one-to-zero-or-many",
+  "mdi-relation-one-to-zero-or-one",
+  "mdi-relation-only-one-to-many",
+  "mdi-relation-only-one-to-one",
+  "mdi-relation-only-one-to-one-or-many",
+  "mdi-relation-only-one-to-only-one",
+  "mdi-relation-only-one-to-zero-or-many",
+  "mdi-relation-only-one-to-zero-or-one",
+  "mdi-relation-zero-or-many-to-many",
+  "mdi-relation-zero-or-many-to-one",
+  "mdi-relation-zero-or-many-to-one-or-many",
+  "mdi-relation-zero-or-many-to-only-one",
+  "mdi-relation-zero-or-many-to-zero-or-many",
+  "mdi-relation-zero-or-many-to-zero-or-one",
+  "mdi-relation-zero-or-one-to-many",
+  "mdi-relation-zero-or-one-to-one",
+  "mdi-relation-zero-or-one-to-one-or-many",
+  "mdi-relation-zero-or-one-to-only-one",
+  "mdi-relation-zero-or-one-to-zero-or-many",
+  "mdi-relation-zero-or-one-to-zero-or-one",
+  "mdi-relative-scale",
+  "mdi-reload",
+  "mdi-reload-alert",
+  "mdi-reminder",
+  "mdi-remote",
+  "mdi-remote-desktop",
+  "mdi-remote-off",
+  "mdi-remote-tv",
+  "mdi-remote-tv-off",
+  "mdi-rename",
+  "mdi-rename-box",
+  "mdi-rename-box-outline",
+  "mdi-rename-outline",
+  "mdi-reorder-horizontal",
+  "mdi-reorder-vertical",
+  "mdi-repeat",
+  "mdi-repeat-off",
+  "mdi-repeat-once",
+  "mdi-repeat-variant",
+  "mdi-replay",
+  "mdi-reply",
+  "mdi-reply-all",
+  "mdi-reply-all-outline",
+  "mdi-reply-circle",
+  "mdi-reply-outline",
+  "mdi-reproduction",
+  "mdi-resistor",
+  "mdi-resistor-nodes",
+  "mdi-resize",
+  "mdi-resize-bottom-right",
+  "mdi-responsive",
+  "mdi-restart",
+  "mdi-restart-alert",
+  "mdi-restart-off",
+  "mdi-restore",
+  "mdi-restore-alert",
+  "mdi-rewind",
+  "mdi-rewind-10",
+  "mdi-rewind-15",
+  "mdi-rewind-30",
+  "mdi-rewind-45",
+  "mdi-rewind-5",
+  "mdi-rewind-60",
+  "mdi-rewind-outline",
+  "mdi-rhombus",
+  "mdi-rhombus-medium",
+  "mdi-rhombus-medium-outline",
+  "mdi-rhombus-outline",
+  "mdi-rhombus-split",
+  "mdi-rhombus-split-outline",
+  "mdi-ribbon",
+  "mdi-rice",
+  "mdi-rickshaw",
+  "mdi-rickshaw-electric",
+  "mdi-ring",
+  "mdi-rivet",
+  "mdi-road",
+  "mdi-road-variant",
+  "mdi-robber",
+  "mdi-robot",
+  "mdi-robot-angry",
+  "mdi-robot-angry-outline",
+  "mdi-robot-confused",
+  "mdi-robot-confused-outline",
+  "mdi-robot-dead",
+  "mdi-robot-dead-outline",
+  "mdi-robot-excited",
+  "mdi-robot-excited-outline",
+  "mdi-robot-happy",
+  "mdi-robot-happy-outline",
+  "mdi-robot-industrial",
+  "mdi-robot-industrial-outline",
+  "mdi-robot-love",
+  "mdi-robot-love-outline",
+  "mdi-robot-mower",
+  "mdi-robot-mower-outline",
+  "mdi-robot-off",
+  "mdi-robot-off-outline",
+  "mdi-robot-outline",
+  "mdi-robot-vacuum",
+  "mdi-robot-vacuum-alert",
+  "mdi-robot-vacuum-off",
+  "mdi-robot-vacuum-variant",
+  "mdi-robot-vacuum-variant-alert",
+  "mdi-robot-vacuum-variant-off",
+  "mdi-rocket",
+  "mdi-rocket-launch",
+  "mdi-rocket-launch-outline",
+  "mdi-rocket-outline",
+  "mdi-rodent",
+  "mdi-roller-shade",
+  "mdi-roller-shade-closed",
+  "mdi-roller-skate",
+  "mdi-roller-skate-off",
+  "mdi-rollerblade",
+  "mdi-rollerblade-off",
+  "mdi-rollupjs",
+  "mdi-rolodex",
+  "mdi-rolodex-outline",
+  "mdi-roman-numeral-1",
+  "mdi-roman-numeral-10",
+  "mdi-roman-numeral-2",
+  "mdi-roman-numeral-3",
+  "mdi-roman-numeral-4",
+  "mdi-roman-numeral-5",
+  "mdi-roman-numeral-6",
+  "mdi-roman-numeral-7",
+  "mdi-roman-numeral-8",
+  "mdi-roman-numeral-9",
+  "mdi-room-service",
+  "mdi-room-service-outline",
+  "mdi-rotate-360",
+  "mdi-rotate-3d",
+  "mdi-rotate-3d-variant",
+  "mdi-rotate-left",
+  "mdi-rotate-left-variant",
+  "mdi-rotate-orbit",
+  "mdi-rotate-right",
+  "mdi-rotate-right-variant",
+  "mdi-rounded-corner",
+  "mdi-router",
+  "mdi-router-network",
+  "mdi-router-network-wireless",
+  "mdi-router-wireless",
+  "mdi-router-wireless-off",
+  "mdi-router-wireless-settings",
+  "mdi-routes",
+  "mdi-routes-clock",
+  "mdi-rowing",
+  "mdi-rss",
+  "mdi-rss-box",
+  "mdi-rss-off",
+  "mdi-rug",
+  "mdi-rugby",
+  "mdi-ruler",
+  "mdi-ruler-square",
+  "mdi-ruler-square-compass",
+  "mdi-run",
+  "mdi-run-fast",
+  "mdi-rv-truck",
+  "mdi-sack",
+  "mdi-sack-outline",
+  "mdi-sack-percent",
+  "mdi-safe",
+  "mdi-safe-square",
+  "mdi-safe-square-outline",
+  "mdi-safety-goggles",
+  "mdi-sail-boat",
+  "mdi-sail-boat-sink",
+  "mdi-sale",
+  "mdi-sale-outline",
+  "mdi-salesforce",
+  "mdi-sass",
+  "mdi-satellite",
+  "mdi-satellite-uplink",
+  "mdi-satellite-variant",
+  "mdi-sausage",
+  "mdi-sausage-off",
+  "mdi-saw-blade",
+  "mdi-sawtooth-wave",
+  "mdi-saxophone",
+  "mdi-scale",
+  "mdi-scale-balance",
+  "mdi-scale-bathroom",
+  "mdi-scale-off",
+  "mdi-scale-unbalanced",
+  "mdi-scan-helper",
+  "mdi-scanner",
+  "mdi-scanner-off",
+  "mdi-scatter-plot",
+  "mdi-scatter-plot-outline",
+  "mdi-scent",
+  "mdi-scent-off",
+  "mdi-school",
+  "mdi-school-outline",
+  "mdi-scissors-cutting",
+  "mdi-scooter",
+  "mdi-scooter-electric",
+  "mdi-scoreboard",
+  "mdi-scoreboard-outline",
+  "mdi-screen-rotation",
+  "mdi-screen-rotation-lock",
+  "mdi-screw-flat-top",
+  "mdi-screw-lag",
+  "mdi-screw-machine-flat-top",
+  "mdi-screw-machine-round-top",
+  "mdi-screw-round-top",
+  "mdi-screwdriver",
+  "mdi-script",
+  "mdi-script-outline",
+  "mdi-script-text",
+  "mdi-script-text-key",
+  "mdi-script-text-key-outline",
+  "mdi-script-text-outline",
+  "mdi-script-text-play",
+  "mdi-script-text-play-outline",
+  "mdi-sd",
+  "mdi-seal",
+  "mdi-seal-variant",
+  "mdi-search-web",
+  "mdi-seat",
+  "mdi-seat-flat",
+  "mdi-seat-flat-angled",
+  "mdi-seat-individual-suite",
+  "mdi-seat-legroom-extra",
+  "mdi-seat-legroom-normal",
+  "mdi-seat-legroom-reduced",
+  "mdi-seat-outline",
+  "mdi-seat-passenger",
+  "mdi-seat-recline-extra",
+  "mdi-seat-recline-normal",
+  "mdi-seatbelt",
+  "mdi-security",
+  "mdi-security-network",
+  "mdi-seed",
+  "mdi-seed-off",
+  "mdi-seed-off-outline",
+  "mdi-seed-outline",
+  "mdi-seed-plus",
+  "mdi-seed-plus-outline",
+  "mdi-seesaw",
+  "mdi-segment",
+  "mdi-select",
+  "mdi-select-all",
+  "mdi-select-arrow-down",
+  "mdi-select-arrow-up",
+  "mdi-select-color",
+  "mdi-select-compare",
+  "mdi-select-drag",
+  "mdi-select-group",
+  "mdi-select-inverse",
+  "mdi-select-marker",
+  "mdi-select-multiple",
+  "mdi-select-multiple-marker",
+  "mdi-select-off",
+  "mdi-select-place",
+  "mdi-select-remove",
+  "mdi-select-search",
+  "mdi-selection",
+  "mdi-selection-drag",
+  "mdi-selection-ellipse",
+  "mdi-selection-ellipse-arrow-inside",
+  "mdi-selection-ellipse-remove",
+  "mdi-selection-marker",
+  "mdi-selection-multiple",
+  "mdi-selection-multiple-marker",
+  "mdi-selection-off",
+  "mdi-selection-remove",
+  "mdi-selection-search",
+  "mdi-semantic-web",
+  "mdi-send",
+  "mdi-send-check",
+  "mdi-send-check-outline",
+  "mdi-send-circle",
+  "mdi-send-circle-outline",
+  "mdi-send-clock",
+  "mdi-send-clock-outline",
+  "mdi-send-lock",
+  "mdi-send-lock-outline",
+  "mdi-send-outline",
+  "mdi-send-variant",
+  "mdi-send-variant-clock",
+  "mdi-send-variant-clock-outline",
+  "mdi-send-variant-outline",
+  "mdi-serial-port",
+  "mdi-server",
+  "mdi-server-minus",
+  "mdi-server-minus-outline",
+  "mdi-server-network",
+  "mdi-server-network-off",
+  "mdi-server-network-outline",
+  "mdi-server-off",
+  "mdi-server-outline",
+  "mdi-server-plus",
+  "mdi-server-plus-outline",
+  "mdi-server-remove",
+  "mdi-server-security",
+  "mdi-set-all",
+  "mdi-set-center",
+  "mdi-set-center-right",
+  "mdi-set-left",
+  "mdi-set-left-center",
+  "mdi-set-left-right",
+  "mdi-set-merge",
+  "mdi-set-none",
+  "mdi-set-right",
+  "mdi-set-split",
+  "mdi-set-square",
+  "mdi-set-top-box",
+  "mdi-settings-helper",
+  "mdi-shaker",
+  "mdi-shaker-outline",
+  "mdi-shape",
+  "mdi-shape-circle-plus",
+  "mdi-shape-outline",
+  "mdi-shape-oval-plus",
+  "mdi-shape-plus",
+  "mdi-shape-plus-outline",
+  "mdi-shape-polygon-plus",
+  "mdi-shape-rectangle-plus",
+  "mdi-shape-square-plus",
+  "mdi-shape-square-rounded-plus",
+  "mdi-share",
+  "mdi-share-all",
+  "mdi-share-all-outline",
+  "mdi-share-circle",
+  "mdi-share-off",
+  "mdi-share-off-outline",
+  "mdi-share-outline",
+  "mdi-share-variant",
+  "mdi-share-variant-outline",
+  "mdi-shark",
+  "mdi-shark-fin",
+  "mdi-shark-fin-outline",
+  "mdi-shark-off",
+  "mdi-sheep",
+  "mdi-shield",
+  "mdi-shield-account",
+  "mdi-shield-account-outline",
+  "mdi-shield-account-variant",
+  "mdi-shield-account-variant-outline",
+  "mdi-shield-airplane",
+  "mdi-shield-airplane-outline",
+  "mdi-shield-alert",
+  "mdi-shield-alert-outline",
+  "mdi-shield-bug",
+  "mdi-shield-bug-outline",
+  "mdi-shield-car",
+  "mdi-shield-check",
+  "mdi-shield-check-outline",
+  "mdi-shield-cross",
+  "mdi-shield-cross-outline",
+  "mdi-shield-crown",
+  "mdi-shield-crown-outline",
+  "mdi-shield-edit",
+  "mdi-shield-edit-outline",
+  "mdi-shield-half",
+  "mdi-shield-half-full",
+  "mdi-shield-home",
+  "mdi-shield-home-outline",
+  "mdi-shield-key",
+  "mdi-shield-key-outline",
+  "mdi-shield-link-variant",
+  "mdi-shield-link-variant-outline",
+  "mdi-shield-lock",
+  "mdi-shield-lock-open",
+  "mdi-shield-lock-open-outline",
+  "mdi-shield-lock-outline",
+  "mdi-shield-moon",
+  "mdi-shield-moon-outline",
+  "mdi-shield-off",
+  "mdi-shield-off-outline",
+  "mdi-shield-outline",
+  "mdi-shield-plus",
+  "mdi-shield-plus-outline",
+  "mdi-shield-refresh",
+  "mdi-shield-refresh-outline",
+  "mdi-shield-remove",
+  "mdi-shield-remove-outline",
+  "mdi-shield-search",
+  "mdi-shield-star",
+  "mdi-shield-star-outline",
+  "mdi-shield-sun",
+  "mdi-shield-sun-outline",
+  "mdi-shield-sword",
+  "mdi-shield-sword-outline",
+  "mdi-shield-sync",
+  "mdi-shield-sync-outline",
+  "mdi-shimmer",
+  "mdi-ship-wheel",
+  "mdi-shipping-pallet",
+  "mdi-shoe-ballet",
+  "mdi-shoe-cleat",
+  "mdi-shoe-formal",
+  "mdi-shoe-heel",
+  "mdi-shoe-print",
+  "mdi-shoe-sneaker",
+  "mdi-shopping",
+  "mdi-shopping-music",
+  "mdi-shopping-outline",
+  "mdi-shopping-search",
+  "mdi-shopping-search-outline",
+  "mdi-shore",
+  "mdi-shovel",
+  "mdi-shovel-off",
+  "mdi-shower",
+  "mdi-shower-head",
+  "mdi-shredder",
+  "mdi-shuffle",
+  "mdi-shuffle-disabled",
+  "mdi-shuffle-variant",
+  "mdi-shuriken",
+  "mdi-sickle",
+  "mdi-sigma",
+  "mdi-sigma-lower",
+  "mdi-sign-caution",
+  "mdi-sign-direction",
+  "mdi-sign-direction-minus",
+  "mdi-sign-direction-plus",
+  "mdi-sign-direction-remove",
+  "mdi-sign-language",
+  "mdi-sign-language-outline",
+  "mdi-sign-pole",
+  "mdi-sign-real-estate",
+  "mdi-sign-text",
+  "mdi-sign-yield",
+  "mdi-signal",
+  "mdi-signal-2g",
+  "mdi-signal-3g",
+  "mdi-signal-4g",
+  "mdi-signal-5g",
+  "mdi-signal-cellular-1",
+  "mdi-signal-cellular-2",
+  "mdi-signal-cellular-3",
+  "mdi-signal-cellular-outline",
+  "mdi-signal-distance-variant",
+  "mdi-signal-hspa",
+  "mdi-signal-hspa-plus",
+  "mdi-signal-off",
+  "mdi-signal-variant",
+  "mdi-signature",
+  "mdi-signature-freehand",
+  "mdi-signature-image",
+  "mdi-signature-text",
+  "mdi-silo",
+  "mdi-silo-outline",
+  "mdi-silverware",
+  "mdi-silverware-clean",
+  "mdi-silverware-fork",
+  "mdi-silverware-fork-knife",
+  "mdi-silverware-spoon",
+  "mdi-silverware-variant",
+  "mdi-sim",
+  "mdi-sim-alert",
+  "mdi-sim-alert-outline",
+  "mdi-sim-off",
+  "mdi-sim-off-outline",
+  "mdi-sim-outline",
+  "mdi-simple-icons",
+  "mdi-sina-weibo",
+  "mdi-sine-wave",
+  "mdi-sitemap",
+  "mdi-sitemap-outline",
+  "mdi-size-l",
+  "mdi-size-m",
+  "mdi-size-s",
+  "mdi-size-xl",
+  "mdi-size-xs",
+  "mdi-size-xxl",
+  "mdi-size-xxs",
+  "mdi-size-xxxl",
+  "mdi-skate",
+  "mdi-skate-off",
+  "mdi-skateboard",
+  "mdi-skateboarding",
+  "mdi-skew-less",
+  "mdi-skew-more",
+  "mdi-ski",
+  "mdi-ski-cross-country",
+  "mdi-ski-water",
+  "mdi-skip-backward",
+  "mdi-skip-backward-outline",
+  "mdi-skip-forward",
+  "mdi-skip-forward-outline",
+  "mdi-skip-next",
+  "mdi-skip-next-circle",
+  "mdi-skip-next-circle-outline",
+  "mdi-skip-next-outline",
+  "mdi-skip-previous",
+  "mdi-skip-previous-circle",
+  "mdi-skip-previous-circle-outline",
+  "mdi-skip-previous-outline",
+  "mdi-skull",
+  "mdi-skull-crossbones",
+  "mdi-skull-crossbones-outline",
+  "mdi-skull-outline",
+  "mdi-skull-scan",
+  "mdi-skull-scan-outline",
+  "mdi-skype",
+  "mdi-skype-business",
+  "mdi-slack",
+  "mdi-slash-forward",
+  "mdi-slash-forward-box",
+  "mdi-sledding",
+  "mdi-sleep",
+  "mdi-sleep-off",
+  "mdi-slide",
+  "mdi-slope-downhill",
+  "mdi-slope-uphill",
+  "mdi-slot-machine",
+  "mdi-slot-machine-outline",
+  "mdi-smart-card",
+  "mdi-smart-card-off",
+  "mdi-smart-card-off-outline",
+  "mdi-smart-card-outline",
+  "mdi-smart-card-reader",
+  "mdi-smart-card-reader-outline",
+  "mdi-smog",
+  "mdi-smoke",
+  "mdi-smoke-detector",
+  "mdi-smoke-detector-alert",
+  "mdi-smoke-detector-alert-outline",
+  "mdi-smoke-detector-off",
+  "mdi-smoke-detector-off-outline",
+  "mdi-smoke-detector-outline",
+  "mdi-smoke-detector-variant",
+  "mdi-smoke-detector-variant-alert",
+  "mdi-smoke-detector-variant-off",
+  "mdi-smoking",
+  "mdi-smoking-off",
+  "mdi-smoking-pipe",
+  "mdi-smoking-pipe-off",
+  "mdi-snail",
+  "mdi-snake",
+  "mdi-snapchat",
+  "mdi-snowboard",
+  "mdi-snowflake",
+  "mdi-snowflake-alert",
+  "mdi-snowflake-check",
+  "mdi-snowflake-melt",
+  "mdi-snowflake-off",
+  "mdi-snowflake-thermometer",
+  "mdi-snowflake-variant",
+  "mdi-snowman",
+  "mdi-snowmobile",
+  "mdi-snowshoeing",
+  "mdi-soccer",
+  "mdi-soccer-field",
+  "mdi-social-distance-2-meters",
+  "mdi-social-distance-6-feet",
+  "mdi-sofa",
+  "mdi-sofa-outline",
+  "mdi-sofa-single",
+  "mdi-sofa-single-outline",
+  "mdi-solar-panel",
+  "mdi-solar-panel-large",
+  "mdi-solar-power",
+  "mdi-solar-power-variant",
+  "mdi-solar-power-variant-outline",
+  "mdi-soldering-iron",
+  "mdi-solid",
+  "mdi-sony-playstation",
+  "mdi-sort",
+  "mdi-sort-alphabetical-ascending",
+  "mdi-sort-alphabetical-ascending-variant",
+  "mdi-sort-alphabetical-descending",
+  "mdi-sort-alphabetical-descending-variant",
+  "mdi-sort-alphabetical-variant",
+  "mdi-sort-ascending",
+  "mdi-sort-bool-ascending",
+  "mdi-sort-bool-ascending-variant",
+  "mdi-sort-bool-descending",
+  "mdi-sort-bool-descending-variant",
+  "mdi-sort-calendar-ascending",
+  "mdi-sort-calendar-descending",
+  "mdi-sort-clock-ascending",
+  "mdi-sort-clock-ascending-outline",
+  "mdi-sort-clock-descending",
+  "mdi-sort-clock-descending-outline",
+  "mdi-sort-descending",
+  "mdi-sort-numeric-ascending",
+  "mdi-sort-numeric-ascending-variant",
+  "mdi-sort-numeric-descending",
+  "mdi-sort-numeric-descending-variant",
+  "mdi-sort-numeric-variant",
+  "mdi-sort-reverse-variant",
+  "mdi-sort-variant",
+  "mdi-sort-variant-lock",
+  "mdi-sort-variant-lock-open",
+  "mdi-sort-variant-off",
+  "mdi-sort-variant-remove",
+  "mdi-soundbar",
+  "mdi-soundcloud",
+  "mdi-source-branch",
+  "mdi-source-branch-check",
+  "mdi-source-branch-minus",
+  "mdi-source-branch-plus",
+  "mdi-source-branch-refresh",
+  "mdi-source-branch-remove",
+  "mdi-source-branch-sync",
+  "mdi-source-commit",
+  "mdi-source-commit-end",
+  "mdi-source-commit-end-local",
+  "mdi-source-commit-local",
+  "mdi-source-commit-next-local",
+  "mdi-source-commit-start",
+  "mdi-source-commit-start-next-local",
+  "mdi-source-fork",
+  "mdi-source-merge",
+  "mdi-source-pull",
+  "mdi-source-repository",
+  "mdi-source-repository-multiple",
+  "mdi-soy-sauce",
+  "mdi-soy-sauce-off",
+  "mdi-spa",
+  "mdi-spa-outline",
+  "mdi-space-invaders",
+  "mdi-space-station",
+  "mdi-spade",
+  "mdi-speaker",
+  "mdi-speaker-bluetooth",
+  "mdi-speaker-message",
+  "mdi-speaker-multiple",
+  "mdi-speaker-off",
+  "mdi-speaker-pause",
+  "mdi-speaker-play",
+  "mdi-speaker-stop",
+  "mdi-speaker-wireless",
+  "mdi-spear",
+  "mdi-speedometer",
+  "mdi-speedometer-medium",
+  "mdi-speedometer-slow",
+  "mdi-spellcheck",
+  "mdi-sphere",
+  "mdi-sphere-off",
+  "mdi-spider",
+  "mdi-spider-outline",
+  "mdi-spider-thread",
+  "mdi-spider-web",
+  "mdi-spirit-level",
+  "mdi-spoon-sugar",
+  "mdi-spotify",
+  "mdi-spotlight",
+  "mdi-spotlight-beam",
+  "mdi-spray",
+  "mdi-spray-bottle",
+  "mdi-sprinkler",
+  "mdi-sprinkler-fire",
+  "mdi-sprinkler-variant",
+  "mdi-sprout",
+  "mdi-sprout-outline",
+  "mdi-square",
+  "mdi-square-circle",
+  "mdi-square-circle-outline",
+  "mdi-square-edit-outline",
+  "mdi-square-medium",
+  "mdi-square-medium-outline",
+  "mdi-square-off",
+  "mdi-square-off-outline",
+  "mdi-square-opacity",
+  "mdi-square-outline",
+  "mdi-square-root",
+  "mdi-square-root-box",
+  "mdi-square-rounded",
+  "mdi-square-rounded-badge",
+  "mdi-square-rounded-badge-outline",
+  "mdi-square-rounded-outline",
+  "mdi-square-small",
+  "mdi-square-wave",
+  "mdi-squeegee",
+  "mdi-ssh",
+  "mdi-stack-exchange",
+  "mdi-stack-overflow",
+  "mdi-stackpath",
+  "mdi-stadium",
+  "mdi-stadium-outline",
+  "mdi-stadium-variant",
+  "mdi-stairs",
+  "mdi-stairs-box",
+  "mdi-stairs-down",
+  "mdi-stairs-up",
+  "mdi-stamper",
+  "mdi-standard-definition",
+  "mdi-star",
+  "mdi-star-box",
+  "mdi-star-box-multiple",
+  "mdi-star-box-multiple-outline",
+  "mdi-star-box-outline",
+  "mdi-star-check",
+  "mdi-star-check-outline",
+  "mdi-star-circle",
+  "mdi-star-circle-outline",
+  "mdi-star-cog",
+  "mdi-star-cog-outline",
+  "mdi-star-crescent",
+  "mdi-star-david",
+  "mdi-star-face",
+  "mdi-star-four-points",
+  "mdi-star-four-points-box",
+  "mdi-star-four-points-box-outline",
+  "mdi-star-four-points-circle",
+  "mdi-star-four-points-circle-outline",
+  "mdi-star-four-points-outline",
+  "mdi-star-four-points-small",
+  "mdi-star-half",
+  "mdi-star-half-full",
+  "mdi-star-minus",
+  "mdi-star-minus-outline",
+  "mdi-star-off",
+  "mdi-star-off-outline",
+  "mdi-star-outline",
+  "mdi-star-plus",
+  "mdi-star-plus-outline",
+  "mdi-star-remove",
+  "mdi-star-remove-outline",
+  "mdi-star-settings",
+  "mdi-star-settings-outline",
+  "mdi-star-shooting",
+  "mdi-star-shooting-outline",
+  "mdi-star-three-points",
+  "mdi-star-three-points-outline",
+  "mdi-state-machine",
+  "mdi-steam",
+  "mdi-steering",
+  "mdi-steering-off",
+  "mdi-step-backward",
+  "mdi-step-backward-2",
+  "mdi-step-forward",
+  "mdi-step-forward-2",
+  "mdi-stethoscope",
+  "mdi-sticker",
+  "mdi-sticker-alert",
+  "mdi-sticker-alert-outline",
+  "mdi-sticker-check",
+  "mdi-sticker-check-outline",
+  "mdi-sticker-circle-outline",
+  "mdi-sticker-emoji",
+  "mdi-sticker-minus",
+  "mdi-sticker-minus-outline",
+  "mdi-sticker-outline",
+  "mdi-sticker-plus",
+  "mdi-sticker-plus-outline",
+  "mdi-sticker-remove",
+  "mdi-sticker-remove-outline",
+  "mdi-sticker-text",
+  "mdi-sticker-text-outline",
+  "mdi-stocking",
+  "mdi-stomach",
+  "mdi-stool",
+  "mdi-stool-outline",
+  "mdi-stop",
+  "mdi-stop-circle",
+  "mdi-stop-circle-outline",
+  "mdi-storage-tank",
+  "mdi-storage-tank-outline",
+  "mdi-store",
+  "mdi-store-24-hour",
+  "mdi-store-alert",
+  "mdi-store-alert-outline",
+  "mdi-store-check",
+  "mdi-store-check-outline",
+  "mdi-store-clock",
+  "mdi-store-clock-outline",
+  "mdi-store-cog",
+  "mdi-store-cog-outline",
+  "mdi-store-edit",
+  "mdi-store-edit-outline",
+  "mdi-store-marker",
+  "mdi-store-marker-outline",
+  "mdi-store-minus",
+  "mdi-store-minus-outline",
+  "mdi-store-off",
+  "mdi-store-off-outline",
+  "mdi-store-outline",
+  "mdi-store-plus",
+  "mdi-store-plus-outline",
+  "mdi-store-remove",
+  "mdi-store-remove-outline",
+  "mdi-store-search",
+  "mdi-store-search-outline",
+  "mdi-store-settings",
+  "mdi-store-settings-outline",
+  "mdi-storefront",
+  "mdi-storefront-check",
+  "mdi-storefront-check-outline",
+  "mdi-storefront-edit",
+  "mdi-storefront-edit-outline",
+  "mdi-storefront-minus",
+  "mdi-storefront-minus-outline",
+  "mdi-storefront-outline",
+  "mdi-storefront-plus",
+  "mdi-storefront-plus-outline",
+  "mdi-storefront-remove",
+  "mdi-storefront-remove-outline",
+  "mdi-stove",
+  "mdi-strategy",
+  "mdi-stretch-to-page",
+  "mdi-stretch-to-page-outline",
+  "mdi-string-lights",
+  "mdi-string-lights-off",
+  "mdi-subdirectory-arrow-left",
+  "mdi-subdirectory-arrow-right",
+  "mdi-submarine",
+  "mdi-subtitles",
+  "mdi-subtitles-outline",
+  "mdi-subway",
+  "mdi-subway-alert-variant",
+  "mdi-subway-variant",
+  "mdi-summit",
+  "mdi-sun-angle",
+  "mdi-sun-angle-outline",
+  "mdi-sun-clock",
+  "mdi-sun-clock-outline",
+  "mdi-sun-compass",
+  "mdi-sun-snowflake",
+  "mdi-sun-snowflake-variant",
+  "mdi-sun-thermometer",
+  "mdi-sun-thermometer-outline",
+  "mdi-sun-wireless",
+  "mdi-sun-wireless-outline",
+  "mdi-sunglasses",
+  "mdi-surfing",
+  "mdi-surround-sound",
+  "mdi-surround-sound-2-0",
+  "mdi-surround-sound-2-1",
+  "mdi-surround-sound-3-1",
+  "mdi-surround-sound-5-1",
+  "mdi-surround-sound-5-1-2",
+  "mdi-surround-sound-7-1",
+  "mdi-svg",
+  "mdi-swap-horizontal",
+  "mdi-swap-horizontal-bold",
+  "mdi-swap-horizontal-circle",
+  "mdi-swap-horizontal-circle-outline",
+  "mdi-swap-horizontal-hidden",
+  "mdi-swap-horizontal-variant",
+  "mdi-swap-vertical",
+  "mdi-swap-vertical-bold",
+  "mdi-swap-vertical-circle",
+  "mdi-swap-vertical-circle-outline",
+  "mdi-swap-vertical-variant",
+  "mdi-swim",
+  "mdi-switch",
+  "mdi-sword",
+  "mdi-sword-cross",
+  "mdi-syllabary-hangul",
+  "mdi-syllabary-hiragana",
+  "mdi-syllabary-katakana",
+  "mdi-syllabary-katakana-halfwidth",
+  "mdi-symbol",
+  "mdi-symfony",
+  "mdi-synagogue",
+  "mdi-synagogue-outline",
+  "mdi-sync",
+  "mdi-sync-alert",
+  "mdi-sync-circle",
+  "mdi-sync-off",
+  "mdi-tab",
+  "mdi-tab-minus",
+  "mdi-tab-plus",
+  "mdi-tab-remove",
+  "mdi-tab-search",
+  "mdi-tab-unselected",
+  "mdi-table",
+  "mdi-table-account",
+  "mdi-table-alert",
+  "mdi-table-arrow-down",
+  "mdi-table-arrow-left",
+  "mdi-table-arrow-right",
+  "mdi-table-arrow-up",
+  "mdi-table-border",
+  "mdi-table-cancel",
+  "mdi-table-chair",
+  "mdi-table-check",
+  "mdi-table-clock",
+  "mdi-table-cog",
+  "mdi-table-column",
+  "mdi-table-column-plus-after",
+  "mdi-table-column-plus-before",
+  "mdi-table-column-remove",
+  "mdi-table-column-width",
+  "mdi-table-edit",
+  "mdi-table-eye",
+  "mdi-table-eye-off",
+  "mdi-table-filter",
+  "mdi-table-furniture",
+  "mdi-table-headers-eye",
+  "mdi-table-headers-eye-off",
+  "mdi-table-heart",
+  "mdi-table-key",
+  "mdi-table-large",
+  "mdi-table-large-plus",
+  "mdi-table-large-remove",
+  "mdi-table-lock",
+  "mdi-table-merge-cells",
+  "mdi-table-minus",
+  "mdi-table-multiple",
+  "mdi-table-network",
+  "mdi-table-of-contents",
+  "mdi-table-off",
+  "mdi-table-picnic",
+  "mdi-table-pivot",
+  "mdi-table-plus",
+  "mdi-table-question",
+  "mdi-table-refresh",
+  "mdi-table-remove",
+  "mdi-table-row",
+  "mdi-table-row-height",
+  "mdi-table-row-plus-after",
+  "mdi-table-row-plus-before",
+  "mdi-table-row-remove",
+  "mdi-table-search",
+  "mdi-table-settings",
+  "mdi-table-split-cell",
+  "mdi-table-star",
+  "mdi-table-sync",
+  "mdi-table-tennis",
+  "mdi-tablet",
+  "mdi-tablet-cellphone",
+  "mdi-tablet-dashboard",
+  "mdi-taco",
+  "mdi-tag",
+  "mdi-tag-arrow-down",
+  "mdi-tag-arrow-down-outline",
+  "mdi-tag-arrow-left",
+  "mdi-tag-arrow-left-outline",
+  "mdi-tag-arrow-right",
+  "mdi-tag-arrow-right-outline",
+  "mdi-tag-arrow-up",
+  "mdi-tag-arrow-up-outline",
+  "mdi-tag-check",
+  "mdi-tag-check-outline",
+  "mdi-tag-edit",
+  "mdi-tag-edit-outline",
+  "mdi-tag-faces",
+  "mdi-tag-heart",
+  "mdi-tag-heart-outline",
+  "mdi-tag-hidden",
+  "mdi-tag-minus",
+  "mdi-tag-minus-outline",
+  "mdi-tag-multiple",
+  "mdi-tag-multiple-outline",
+  "mdi-tag-off",
+  "mdi-tag-off-outline",
+  "mdi-tag-outline",
+  "mdi-tag-plus",
+  "mdi-tag-plus-outline",
+  "mdi-tag-remove",
+  "mdi-tag-remove-outline",
+  "mdi-tag-search",
+  "mdi-tag-search-outline",
+  "mdi-tag-text",
+  "mdi-tag-text-outline",
+  "mdi-tailwind",
+  "mdi-tally-mark-1",
+  "mdi-tally-mark-2",
+  "mdi-tally-mark-3",
+  "mdi-tally-mark-4",
+  "mdi-tally-mark-5",
+  "mdi-tangram",
+  "mdi-tank",
+  "mdi-tanker-truck",
+  "mdi-tape-drive",
+  "mdi-tape-measure",
+  "mdi-target",
+  "mdi-target-account",
+  "mdi-target-variant",
+  "mdi-taxi",
+  "mdi-tea",
+  "mdi-tea-outline",
+  "mdi-teamviewer",
+  "mdi-teddy-bear",
+  "mdi-telescope",
+  "mdi-television",
+  "mdi-television-ambient-light",
+  "mdi-television-box",
+  "mdi-television-classic",
+  "mdi-television-classic-off",
+  "mdi-television-guide",
+  "mdi-television-off",
+  "mdi-television-pause",
+  "mdi-television-play",
+  "mdi-television-shimmer",
+  "mdi-television-speaker",
+  "mdi-television-speaker-off",
+  "mdi-television-stop",
+  "mdi-temperature-celsius",
+  "mdi-temperature-fahrenheit",
+  "mdi-temperature-kelvin",
+  "mdi-temple-buddhist",
+  "mdi-temple-buddhist-outline",
+  "mdi-temple-hindu",
+  "mdi-temple-hindu-outline",
+  "mdi-tennis",
+  "mdi-tennis-ball",
+  "mdi-tennis-ball-outline",
+  "mdi-tent",
+  "mdi-terraform",
+  "mdi-terrain",
+  "mdi-test-tube",
+  "mdi-test-tube-empty",
+  "mdi-test-tube-off",
+  "mdi-text",
+  "mdi-text-account",
+  "mdi-text-box",
+  "mdi-text-box-check",
+  "mdi-text-box-check-outline",
+  "mdi-text-box-edit",
+  "mdi-text-box-edit-outline",
+  "mdi-text-box-minus",
+  "mdi-text-box-minus-outline",
+  "mdi-text-box-multiple",
+  "mdi-text-box-multiple-outline",
+  "mdi-text-box-outline",
+  "mdi-text-box-plus",
+  "mdi-text-box-plus-outline",
+  "mdi-text-box-remove",
+  "mdi-text-box-remove-outline",
+  "mdi-text-box-search",
+  "mdi-text-box-search-outline",
+  "mdi-text-long",
+  "mdi-text-recognition",
+  "mdi-text-search",
+  "mdi-text-search-variant",
+  "mdi-text-shadow",
+  "mdi-text-short",
+  "mdi-texture",
+  "mdi-texture-box",
+  "mdi-theater",
+  "mdi-theme-light-dark",
+  "mdi-thermometer",
+  "mdi-thermometer-alert",
+  "mdi-thermometer-auto",
+  "mdi-thermometer-bluetooth",
+  "mdi-thermometer-check",
+  "mdi-thermometer-chevron-down",
+  "mdi-thermometer-chevron-up",
+  "mdi-thermometer-high",
+  "mdi-thermometer-lines",
+  "mdi-thermometer-low",
+  "mdi-thermometer-minus",
+  "mdi-thermometer-off",
+  "mdi-thermometer-plus",
+  "mdi-thermometer-probe",
+  "mdi-thermometer-probe-off",
+  "mdi-thermometer-water",
+  "mdi-thermostat",
+  "mdi-thermostat-auto",
+  "mdi-thermostat-box",
+  "mdi-thermostat-box-auto",
+  "mdi-thermostat-cog",
+  "mdi-thought-bubble",
+  "mdi-thought-bubble-outline",
+  "mdi-thumb-down",
+  "mdi-thumb-down-outline",
+  "mdi-thumb-up",
+  "mdi-thumb-up-outline",
+  "mdi-thumbs-up-down",
+  "mdi-thumbs-up-down-outline",
+  "mdi-ticket",
+  "mdi-ticket-account",
+  "mdi-ticket-confirmation",
+  "mdi-ticket-confirmation-outline",
+  "mdi-ticket-outline",
+  "mdi-ticket-percent",
+  "mdi-ticket-percent-outline",
+  "mdi-tie",
+  "mdi-tilde",
+  "mdi-tilde-off",
+  "mdi-timelapse",
+  "mdi-timeline",
+  "mdi-timeline-alert",
+  "mdi-timeline-alert-outline",
+  "mdi-timeline-check",
+  "mdi-timeline-check-outline",
+  "mdi-timeline-clock",
+  "mdi-timeline-clock-outline",
+  "mdi-timeline-minus",
+  "mdi-timeline-minus-outline",
+  "mdi-timeline-outline",
+  "mdi-timeline-plus",
+  "mdi-timeline-plus-outline",
+  "mdi-timeline-question",
+  "mdi-timeline-question-outline",
+  "mdi-timeline-remove",
+  "mdi-timeline-remove-outline",
+  "mdi-timeline-text",
+  "mdi-timeline-text-outline",
+  "mdi-timer",
+  "mdi-timer-10",
+  "mdi-timer-3",
+  "mdi-timer-alert",
+  "mdi-timer-alert-outline",
+  "mdi-timer-cancel",
+  "mdi-timer-cancel-outline",
+  "mdi-timer-check",
+  "mdi-timer-check-outline",
+  "mdi-timer-cog",
+  "mdi-timer-cog-outline",
+  "mdi-timer-edit",
+  "mdi-timer-edit-outline",
+  "mdi-timer-lock",
+  "mdi-timer-lock-open",
+  "mdi-timer-lock-open-outline",
+  "mdi-timer-lock-outline",
+  "mdi-timer-marker",
+  "mdi-timer-marker-outline",
+  "mdi-timer-minus",
+  "mdi-timer-minus-outline",
+  "mdi-timer-music",
+  "mdi-timer-music-outline",
+  "mdi-timer-off",
+  "mdi-timer-off-outline",
+  "mdi-timer-outline",
+  "mdi-timer-pause",
+  "mdi-timer-pause-outline",
+  "mdi-timer-play",
+  "mdi-timer-play-outline",
+  "mdi-timer-plus",
+  "mdi-timer-plus-outline",
+  "mdi-timer-refresh",
+  "mdi-timer-refresh-outline",
+  "mdi-timer-remove",
+  "mdi-timer-remove-outline",
+  "mdi-timer-sand",
+  "mdi-timer-sand-complete",
+  "mdi-timer-sand-empty",
+  "mdi-timer-sand-full",
+  "mdi-timer-sand-paused",
+  "mdi-timer-settings",
+  "mdi-timer-settings-outline",
+  "mdi-timer-star",
+  "mdi-timer-star-outline",
+  "mdi-timer-stop",
+  "mdi-timer-stop-outline",
+  "mdi-timer-sync",
+  "mdi-timer-sync-outline",
+  "mdi-timetable",
+  "mdi-tire",
+  "mdi-toaster",
+  "mdi-toaster-off",
+  "mdi-toaster-oven",
+  "mdi-toggle-switch",
+  "mdi-toggle-switch-off",
+  "mdi-toggle-switch-off-outline",
+  "mdi-toggle-switch-outline",
+  "mdi-toggle-switch-variant",
+  "mdi-toggle-switch-variant-off",
+  "mdi-toilet",
+  "mdi-toolbox",
+  "mdi-toolbox-outline",
+  "mdi-tools",
+  "mdi-tooltip",
+  "mdi-tooltip-account",
+  "mdi-tooltip-cellphone",
+  "mdi-tooltip-check",
+  "mdi-tooltip-check-outline",
+  "mdi-tooltip-edit",
+  "mdi-tooltip-edit-outline",
+  "mdi-tooltip-image",
+  "mdi-tooltip-image-outline",
+  "mdi-tooltip-minus",
+  "mdi-tooltip-minus-outline",
+  "mdi-tooltip-outline",
+  "mdi-tooltip-plus",
+  "mdi-tooltip-plus-outline",
+  "mdi-tooltip-question",
+  "mdi-tooltip-question-outline",
+  "mdi-tooltip-remove",
+  "mdi-tooltip-remove-outline",
+  "mdi-tooltip-text",
+  "mdi-tooltip-text-outline",
+  "mdi-tooth",
+  "mdi-tooth-outline",
+  "mdi-toothbrush",
+  "mdi-toothbrush-electric",
+  "mdi-toothbrush-paste",
+  "mdi-torch",
+  "mdi-tortoise",
+  "mdi-toslink",
+  "mdi-touch-text-outline",
+  "mdi-tournament",
+  "mdi-tow-truck",
+  "mdi-tower-beach",
+  "mdi-tower-fire",
+  "mdi-town-hall",
+  "mdi-toy-brick",
+  "mdi-toy-brick-marker",
+  "mdi-toy-brick-marker-outline",
+  "mdi-toy-brick-minus",
+  "mdi-toy-brick-minus-outline",
+  "mdi-toy-brick-outline",
+  "mdi-toy-brick-plus",
+  "mdi-toy-brick-plus-outline",
+  "mdi-toy-brick-remove",
+  "mdi-toy-brick-remove-outline",
+  "mdi-toy-brick-search",
+  "mdi-toy-brick-search-outline",
+  "mdi-track-light",
+  "mdi-track-light-off",
+  "mdi-trackpad",
+  "mdi-trackpad-lock",
+  "mdi-tractor",
+  "mdi-tractor-variant",
+  "mdi-trademark",
+  "mdi-traffic-cone",
+  "mdi-traffic-light",
+  "mdi-traffic-light-outline",
+  "mdi-train",
+  "mdi-train-bus",
+  "mdi-train-car",
+  "mdi-train-car-autorack",
+  "mdi-train-car-box",
+  "mdi-train-car-box-full",
+  "mdi-train-car-box-open",
+  "mdi-train-car-caboose",
+  "mdi-train-car-centerbeam",
+  "mdi-train-car-centerbeam-full",
+  "mdi-train-car-container",
+  "mdi-train-car-flatbed",
+  "mdi-train-car-flatbed-car",
+  "mdi-train-car-flatbed-tank",
+  "mdi-train-car-gondola",
+  "mdi-train-car-gondola-full",
+  "mdi-train-car-hopper",
+  "mdi-train-car-hopper-covered",
+  "mdi-train-car-hopper-full",
+  "mdi-train-car-intermodal",
+  "mdi-train-car-passenger",
+  "mdi-train-car-passenger-door",
+  "mdi-train-car-passenger-door-open",
+  "mdi-train-car-passenger-variant",
+  "mdi-train-car-tank",
+  "mdi-train-variant",
+  "mdi-tram",
+  "mdi-tram-side",
+  "mdi-transcribe",
+  "mdi-transcribe-close",
+  "mdi-transfer",
+  "mdi-transfer-down",
+  "mdi-transfer-left",
+  "mdi-transfer-right",
+  "mdi-transfer-up",
+  "mdi-transit-connection",
+  "mdi-transit-connection-horizontal",
+  "mdi-transit-connection-variant",
+  "mdi-transit-detour",
+  "mdi-transit-skip",
+  "mdi-transit-transfer",
+  "mdi-transition",
+  "mdi-transition-masked",
+  "mdi-translate",
+  "mdi-translate-off",
+  "mdi-translate-variant",
+  "mdi-transmission-tower",
+  "mdi-transmission-tower-export",
+  "mdi-transmission-tower-import",
+  "mdi-transmission-tower-off",
+  "mdi-trash-can",
+  "mdi-trash-can-outline",
+  "mdi-tray",
+  "mdi-tray-alert",
+  "mdi-tray-arrow-down",
+  "mdi-tray-arrow-up",
+  "mdi-tray-full",
+  "mdi-tray-minus",
+  "mdi-tray-plus",
+  "mdi-tray-remove",
+  "mdi-treasure-chest",
+  "mdi-treasure-chest-outline",
+  "mdi-tree",
+  "mdi-tree-outline",
+  "mdi-trello",
+  "mdi-trending-down",
+  "mdi-trending-neutral",
+  "mdi-trending-up",
+  "mdi-triangle",
+  "mdi-triangle-down",
+  "mdi-triangle-down-outline",
+  "mdi-triangle-outline",
+  "mdi-triangle-small-down",
+  "mdi-triangle-small-up",
+  "mdi-triangle-wave",
+  "mdi-triforce",
+  "mdi-trophy",
+  "mdi-trophy-award",
+  "mdi-trophy-broken",
+  "mdi-trophy-outline",
+  "mdi-trophy-variant",
+  "mdi-trophy-variant-outline",
+  "mdi-truck",
+  "mdi-truck-alert",
+  "mdi-truck-alert-outline",
+  "mdi-truck-cargo-container",
+  "mdi-truck-check",
+  "mdi-truck-check-outline",
+  "mdi-truck-delivery",
+  "mdi-truck-delivery-outline",
+  "mdi-truck-fast",
+  "mdi-truck-fast-outline",
+  "mdi-truck-flatbed",
+  "mdi-truck-minus",
+  "mdi-truck-minus-outline",
+  "mdi-truck-off-road",
+  "mdi-truck-off-road-off",
+  "mdi-truck-outline",
+  "mdi-truck-plus",
+  "mdi-truck-plus-outline",
+  "mdi-truck-remove",
+  "mdi-truck-remove-outline",
+  "mdi-truck-snowflake",
+  "mdi-truck-trailer",
+  "mdi-trumpet",
+  "mdi-tshirt-crew",
+  "mdi-tshirt-crew-outline",
+  "mdi-tshirt-v",
+  "mdi-tshirt-v-outline",
+  "mdi-tsunami",
+  "mdi-tumble-dryer",
+  "mdi-tumble-dryer-alert",
+  "mdi-tumble-dryer-off",
+  "mdi-tune",
+  "mdi-tune-variant",
+  "mdi-tune-vertical",
+  "mdi-tune-vertical-variant",
+  "mdi-tunnel",
+  "mdi-tunnel-outline",
+  "mdi-turbine",
+  "mdi-turkey",
+  "mdi-turnstile",
+  "mdi-turnstile-outline",
+  "mdi-turtle",
+  "mdi-twitch",
+  "mdi-twitter",
+  "mdi-two-factor-authentication",
+  "mdi-typewriter",
+  "mdi-ubisoft",
+  "mdi-ubuntu",
+  "mdi-ufo",
+  "mdi-ufo-outline",
+  "mdi-ultra-high-definition",
+  "mdi-umbraco",
+  "mdi-umbrella",
+  "mdi-umbrella-beach",
+  "mdi-umbrella-beach-outline",
+  "mdi-umbrella-closed",
+  "mdi-umbrella-closed-outline",
+  "mdi-umbrella-closed-variant",
+  "mdi-umbrella-outline",
+  "mdi-underwear-outline",
+  "mdi-undo",
+  "mdi-undo-variant",
+  "mdi-unfold-less-horizontal",
+  "mdi-unfold-less-vertical",
+  "mdi-unfold-more-horizontal",
+  "mdi-unfold-more-vertical",
+  "mdi-ungroup",
+  "mdi-unicode",
+  "mdi-unicorn",
+  "mdi-unicorn-variant",
+  "mdi-unicycle",
+  "mdi-unity",
+  "mdi-unreal",
+  "mdi-update",
+  "mdi-upload",
+  "mdi-upload-box",
+  "mdi-upload-box-outline",
+  "mdi-upload-circle",
+  "mdi-upload-circle-outline",
+  "mdi-upload-lock",
+  "mdi-upload-lock-outline",
+  "mdi-upload-multiple",
+  "mdi-upload-multiple-outline",
+  "mdi-upload-network",
+  "mdi-upload-network-outline",
+  "mdi-upload-off",
+  "mdi-upload-off-outline",
+  "mdi-upload-outline",
+  "mdi-usb",
+  "mdi-usb-c-port",
+  "mdi-usb-flash-drive",
+  "mdi-usb-flash-drive-outline",
+  "mdi-usb-port",
+  "mdi-vacuum",
+  "mdi-vacuum-outline",
+  "mdi-valve",
+  "mdi-valve-closed",
+  "mdi-valve-open",
+  "mdi-van-passenger",
+  "mdi-van-utility",
+  "mdi-vanish",
+  "mdi-vanish-quarter",
+  "mdi-vanity-light",
+  "mdi-variable",
+  "mdi-variable-box",
+  "mdi-vector-arrange-above",
+  "mdi-vector-arrange-below",
+  "mdi-vector-bezier",
+  "mdi-vector-circle",
+  "mdi-vector-circle-variant",
+  "mdi-vector-combine",
+  "mdi-vector-curve",
+  "mdi-vector-difference",
+  "mdi-vector-difference-ab",
+  "mdi-vector-difference-ba",
+  "mdi-vector-ellipse",
+  "mdi-vector-intersection",
+  "mdi-vector-line",
+  "mdi-vector-link",
+  "mdi-vector-point",
+  "mdi-vector-point-edit",
+  "mdi-vector-point-minus",
+  "mdi-vector-point-plus",
+  "mdi-vector-point-select",
+  "mdi-vector-polygon",
+  "mdi-vector-polygon-variant",
+  "mdi-vector-polyline",
+  "mdi-vector-polyline-edit",
+  "mdi-vector-polyline-minus",
+  "mdi-vector-polyline-plus",
+  "mdi-vector-polyline-remove",
+  "mdi-vector-radius",
+  "mdi-vector-rectangle",
+  "mdi-vector-selection",
+  "mdi-vector-square",
+  "mdi-vector-square-close",
+  "mdi-vector-square-edit",
+  "mdi-vector-square-minus",
+  "mdi-vector-square-open",
+  "mdi-vector-square-plus",
+  "mdi-vector-square-remove",
+  "mdi-vector-triangle",
+  "mdi-vector-union",
+  "mdi-vhs",
+  "mdi-vibrate",
+  "mdi-vibrate-off",
+  "mdi-video",
+  "mdi-video-2d",
+  "mdi-video-3d",
+  "mdi-video-3d-off",
+  "mdi-video-3d-variant",
+  "mdi-video-4k-box",
+  "mdi-video-account",
+  "mdi-video-box",
+  "mdi-video-box-off",
+  "mdi-video-check",
+  "mdi-video-check-outline",
+  "mdi-video-high-definition",
+  "mdi-video-image",
+  "mdi-video-input-antenna",
+  "mdi-video-input-component",
+  "mdi-video-input-hdmi",
+  "mdi-video-input-scart",
+  "mdi-video-input-svideo",
+  "mdi-video-marker",
+  "mdi-video-marker-outline",
+  "mdi-video-minus",
+  "mdi-video-minus-outline",
+  "mdi-video-off",
+  "mdi-video-off-outline",
+  "mdi-video-outline",
+  "mdi-video-plus",
+  "mdi-video-plus-outline",
+  "mdi-video-stabilization",
+  "mdi-video-standard-definition",
+  "mdi-video-switch",
+  "mdi-video-switch-outline",
+  "mdi-video-vintage",
+  "mdi-video-wireless",
+  "mdi-video-wireless-outline",
+  "mdi-view-agenda",
+  "mdi-view-agenda-outline",
+  "mdi-view-array",
+  "mdi-view-array-outline",
+  "mdi-view-carousel",
+  "mdi-view-carousel-outline",
+  "mdi-view-column",
+  "mdi-view-column-outline",
+  "mdi-view-comfy",
+  "mdi-view-comfy-outline",
+  "mdi-view-compact",
+  "mdi-view-compact-outline",
+  "mdi-view-dashboard",
+  "mdi-view-dashboard-edit",
+  "mdi-view-dashboard-edit-outline",
+  "mdi-view-dashboard-outline",
+  "mdi-view-dashboard-variant",
+  "mdi-view-dashboard-variant-outline",
+  "mdi-view-day",
+  "mdi-view-day-outline",
+  "mdi-view-gallery",
+  "mdi-view-gallery-outline",
+  "mdi-view-grid",
+  "mdi-view-grid-compact",
+  "mdi-view-grid-outline",
+  "mdi-view-grid-plus",
+  "mdi-view-grid-plus-outline",
+  "mdi-view-headline",
+  "mdi-view-list",
+  "mdi-view-list-outline",
+  "mdi-view-module",
+  "mdi-view-module-outline",
+  "mdi-view-parallel",
+  "mdi-view-parallel-outline",
+  "mdi-view-quilt",
+  "mdi-view-quilt-outline",
+  "mdi-view-sequential",
+  "mdi-view-sequential-outline",
+  "mdi-view-split-horizontal",
+  "mdi-view-split-vertical",
+  "mdi-view-stream",
+  "mdi-view-stream-outline",
+  "mdi-view-week",
+  "mdi-view-week-outline",
+  "mdi-vimeo",
+  "mdi-violin",
+  "mdi-virtual-reality",
+  "mdi-virus",
+  "mdi-virus-off",
+  "mdi-virus-off-outline",
+  "mdi-virus-outline",
+  "mdi-vlc",
+  "mdi-voicemail",
+  "mdi-volcano",
+  "mdi-volcano-outline",
+  "mdi-volleyball",
+  "mdi-volume-equal",
+  "mdi-volume-high",
+  "mdi-volume-low",
+  "mdi-volume-medium",
+  "mdi-volume-minus",
+  "mdi-volume-mute",
+  "mdi-volume-off",
+  "mdi-volume-plus",
+  "mdi-volume-source",
+  "mdi-volume-variant-off",
+  "mdi-volume-vibrate",
+  "mdi-vote",
+  "mdi-vote-outline",
+  "mdi-vpn",
+  "mdi-vuejs",
+  "mdi-vuetify",
+  "mdi-walk",
+  "mdi-wall",
+  "mdi-wall-fire",
+  "mdi-wall-sconce",
+  "mdi-wall-sconce-flat",
+  "mdi-wall-sconce-flat-outline",
+  "mdi-wall-sconce-flat-variant",
+  "mdi-wall-sconce-flat-variant-outline",
+  "mdi-wall-sconce-outline",
+  "mdi-wall-sconce-round",
+  "mdi-wall-sconce-round-outline",
+  "mdi-wall-sconce-round-variant",
+  "mdi-wall-sconce-round-variant-outline",
+  "mdi-wallet",
+  "mdi-wallet-bifold",
+  "mdi-wallet-bifold-outline",
+  "mdi-wallet-giftcard",
+  "mdi-wallet-membership",
+  "mdi-wallet-outline",
+  "mdi-wallet-plus",
+  "mdi-wallet-plus-outline",
+  "mdi-wallet-travel",
+  "mdi-wallpaper",
+  "mdi-wan",
+  "mdi-wardrobe",
+  "mdi-wardrobe-outline",
+  "mdi-warehouse",
+  "mdi-washing-machine",
+  "mdi-washing-machine-alert",
+  "mdi-washing-machine-off",
+  "mdi-watch",
+  "mdi-watch-export",
+  "mdi-watch-export-variant",
+  "mdi-watch-import",
+  "mdi-watch-import-variant",
+  "mdi-watch-variant",
+  "mdi-watch-vibrate",
+  "mdi-watch-vibrate-off",
+  "mdi-water",
+  "mdi-water-alert",
+  "mdi-water-alert-outline",
+  "mdi-water-boiler",
+  "mdi-water-boiler-alert",
+  "mdi-water-boiler-auto",
+  "mdi-water-boiler-off",
+  "mdi-water-check",
+  "mdi-water-check-outline",
+  "mdi-water-circle",
+  "mdi-water-minus",
+  "mdi-water-minus-outline",
+  "mdi-water-off",
+  "mdi-water-off-outline",
+  "mdi-water-opacity",
+  "mdi-water-outline",
+  "mdi-water-percent",
+  "mdi-water-percent-alert",
+  "mdi-water-plus",
+  "mdi-water-plus-outline",
+  "mdi-water-polo",
+  "mdi-water-pump",
+  "mdi-water-pump-off",
+  "mdi-water-remove",
+  "mdi-water-remove-outline",
+  "mdi-water-sync",
+  "mdi-water-thermometer",
+  "mdi-water-thermometer-outline",
+  "mdi-water-well",
+  "mdi-water-well-outline",
+  "mdi-waterfall",
+  "mdi-watering-can",
+  "mdi-watering-can-outline",
+  "mdi-watermark",
+  "mdi-wave",
+  "mdi-wave-arrow-down",
+  "mdi-wave-arrow-up",
+  "mdi-wave-undercurrent",
+  "mdi-waveform",
+  "mdi-waves",
+  "mdi-waves-arrow-left",
+  "mdi-waves-arrow-right",
+  "mdi-waves-arrow-up",
+  "mdi-waze",
+  "mdi-weather-cloudy",
+  "mdi-weather-cloudy-alert",
+  "mdi-weather-cloudy-arrow-right",
+  "mdi-weather-cloudy-clock",
+  "mdi-weather-dust",
+  "mdi-weather-fog",
+  "mdi-weather-hail",
+  "mdi-weather-hazy",
+  "mdi-weather-hurricane",
+  "mdi-weather-hurricane-outline",
+  "mdi-weather-lightning",
+  "mdi-weather-lightning-rainy",
+  "mdi-weather-moonset",
+  "mdi-weather-moonset-down",
+  "mdi-weather-moonset-up",
+  "mdi-weather-night",
+  "mdi-weather-night-partly-cloudy",
+  "mdi-weather-partly-cloudy",
+  "mdi-weather-partly-lightning",
+  "mdi-weather-partly-rainy",
+  "mdi-weather-partly-snowy",
+  "mdi-weather-partly-snowy-rainy",
+  "mdi-weather-pouring",
+  "mdi-weather-rainy",
+  "mdi-weather-snowy",
+  "mdi-weather-snowy-heavy",
+  "mdi-weather-snowy-rainy",
+  "mdi-weather-sunny",
+  "mdi-weather-sunny-alert",
+  "mdi-weather-sunny-off",
+  "mdi-weather-sunset",
+  "mdi-weather-sunset-down",
+  "mdi-weather-sunset-up",
+  "mdi-weather-tornado",
+  "mdi-weather-windy",
+  "mdi-weather-windy-variant",
+  "mdi-web",
+  "mdi-web-box",
+  "mdi-web-cancel",
+  "mdi-web-check",
+  "mdi-web-clock",
+  "mdi-web-minus",
+  "mdi-web-off",
+  "mdi-web-plus",
+  "mdi-web-refresh",
+  "mdi-web-remove",
+  "mdi-web-sync",
+  "mdi-webcam",
+  "mdi-webcam-off",
+  "mdi-webhook",
+  "mdi-webpack",
+  "mdi-webrtc",
+  "mdi-wechat",
+  "mdi-weight",
+  "mdi-weight-gram",
+  "mdi-weight-kilogram",
+  "mdi-weight-lifter",
+  "mdi-weight-pound",
+  "mdi-whatsapp",
+  "mdi-wheel-barrow",
+  "mdi-wheelchair",
+  "mdi-wheelchair-accessibility",
+  "mdi-whistle",
+  "mdi-whistle-outline",
+  "mdi-white-balance-auto",
+  "mdi-white-balance-incandescent",
+  "mdi-white-balance-iridescent",
+  "mdi-white-balance-sunny",
+  "mdi-widgets",
+  "mdi-widgets-outline",
+  "mdi-wifi",
+  "mdi-wifi-alert",
+  "mdi-wifi-arrow-down",
+  "mdi-wifi-arrow-left",
+  "mdi-wifi-arrow-left-right",
+  "mdi-wifi-arrow-right",
+  "mdi-wifi-arrow-up",
+  "mdi-wifi-arrow-up-down",
+  "mdi-wifi-cancel",
+  "mdi-wifi-check",
+  "mdi-wifi-cog",
+  "mdi-wifi-lock",
+  "mdi-wifi-lock-open",
+  "mdi-wifi-marker",
+  "mdi-wifi-minus",
+  "mdi-wifi-off",
+  "mdi-wifi-plus",
+  "mdi-wifi-refresh",
+  "mdi-wifi-remove",
+  "mdi-wifi-settings",
+  "mdi-wifi-star",
+  "mdi-wifi-strength-1",
+  "mdi-wifi-strength-1-alert",
+  "mdi-wifi-strength-1-lock",
+  "mdi-wifi-strength-1-lock-open",
+  "mdi-wifi-strength-2",
+  "mdi-wifi-strength-2-alert",
+  "mdi-wifi-strength-2-lock",
+  "mdi-wifi-strength-2-lock-open",
+  "mdi-wifi-strength-3",
+  "mdi-wifi-strength-3-alert",
+  "mdi-wifi-strength-3-lock",
+  "mdi-wifi-strength-3-lock-open",
+  "mdi-wifi-strength-4",
+  "mdi-wifi-strength-4-alert",
+  "mdi-wifi-strength-4-lock",
+  "mdi-wifi-strength-4-lock-open",
+  "mdi-wifi-strength-alert-outline",
+  "mdi-wifi-strength-lock-open-outline",
+  "mdi-wifi-strength-lock-outline",
+  "mdi-wifi-strength-off",
+  "mdi-wifi-strength-off-outline",
+  "mdi-wifi-strength-outline",
+  "mdi-wifi-sync",
+  "mdi-wikipedia",
+  "mdi-wind-power",
+  "mdi-wind-power-outline",
+  "mdi-wind-turbine",
+  "mdi-wind-turbine-alert",
+  "mdi-wind-turbine-check",
+  "mdi-window-close",
+  "mdi-window-closed",
+  "mdi-window-closed-variant",
+  "mdi-window-maximize",
+  "mdi-window-minimize",
+  "mdi-window-open",
+  "mdi-window-open-variant",
+  "mdi-window-restore",
+  "mdi-window-shutter",
+  "mdi-window-shutter-alert",
+  "mdi-window-shutter-auto",
+  "mdi-window-shutter-cog",
+  "mdi-window-shutter-open",
+  "mdi-window-shutter-settings",
+  "mdi-windsock",
+  "mdi-wiper",
+  "mdi-wiper-wash",
+  "mdi-wiper-wash-alert",
+  "mdi-wizard-hat",
+  "mdi-wordpress",
+  "mdi-wrap",
+  "mdi-wrap-disabled",
+  "mdi-wrench",
+  "mdi-wrench-check",
+  "mdi-wrench-check-outline",
+  "mdi-wrench-clock",
+  "mdi-wrench-clock-outline",
+  "mdi-wrench-cog",
+  "mdi-wrench-cog-outline",
+  "mdi-wrench-outline",
+  "mdi-xamarin",
+  "mdi-xml",
+  "mdi-xmpp",
+  "mdi-yahoo",
+  "mdi-yeast",
+  "mdi-yin-yang",
+  "mdi-yoga",
+  "mdi-youtube",
+  "mdi-youtube-gaming",
+  "mdi-youtube-studio",
+  "mdi-youtube-subscription",
+  "mdi-youtube-tv",
+  "mdi-yurt",
+  "mdi-z-wave",
+  "mdi-zend",
+  "mdi-zigbee",
+  "mdi-zip-box",
+  "mdi-zip-box-outline",
+  "mdi-zip-disk",
+  "mdi-zodiac-aquarius",
+  "mdi-zodiac-aries",
+  "mdi-zodiac-cancer",
+  "mdi-zodiac-capricorn",
+  "mdi-zodiac-gemini",
+  "mdi-zodiac-leo",
+  "mdi-zodiac-libra",
+  "mdi-zodiac-pisces",
+  "mdi-zodiac-sagittarius",
+  "mdi-zodiac-scorpio",
+  "mdi-zodiac-taurus",
+  "mdi-zodiac-virgo"
+]);
+
+// src/common/plugin-input-functions.ts
+var display = { $ref: "#/definitions/requiredPluginDisplayText" };
+var PLUGIN_INPUT_FUNCTION_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["functionId", "name", "inputs"],
+  properties: {
+    functionId: { type: "string", minLength: 1, pattern: "^[a-zA-Z0-9][a-zA-Z0-9._-]*$" },
+    name: display,
+    description: display,
+    icon: { type: "string", minLength: 1 },
+    target: { type: "string", minLength: 1 },
+    inputs: {
+      type: "object",
+      additionalProperties: false,
+      minProperties: 1,
+      properties: { rotate: { enum: ["required", "optional"] }, press: { enum: ["required", "optional"] }, value: { enum: ["required", "optional"] } }
+    },
+    settings: { type: "object", additionalProperties: {
+      type: "object",
+      additionalProperties: false,
+      required: ["type", "label", "default"],
+      properties: {
+        type: { enum: ["text", "textarea", "select", "number", "switch"] },
+        label: display,
+        default: { type: ["string", "number", "boolean"] },
+        required: { type: "boolean" },
+        maxBytes: { type: "integer", minimum: 1, maximum: 24e3 },
+        min: { type: "number" },
+        max: { type: "number" },
+        step: { type: "number", exclusiveMinimum: 0 },
+        items: { type: "array", minItems: 1, maxItems: 32, items: { type: "object", additionalProperties: false, required: ["value", "title"], properties: { value: { type: "string" }, title: display } } }
+      }
+    } },
+    settingsPage: { type: "string", minLength: 1 }
+  }
+};
+var defaultText = (value) => typeof value === "string" ? value : value.default;
+function validateInputFunctionDefinitions(functions, unitIds) {
+  const ids = /* @__PURE__ */ new Set();
+  for (const definition of functions) {
+    if (ids.has(definition.functionId)) throw new Error("Duplicate input function ID");
+    ids.add(definition.functionId);
+    if (!defaultText(definition.name).trim()) throw new Error("Empty input function name");
+    if (definition.icon && !INPUT_MDI_NAMES.has(definition.icon)) throw new Error("Unsupported input function icon");
+    if (!Object.values(definition.inputs).includes("required")) throw new Error("Input function requires a channel");
+    if (definition.target && !unitIds.has(definition.target)) throw new Error("Input function target must belong to this plugin");
+    if (definition.settingsPage && (/^[a-zA-Z]+:|^[\\/]|[?#]/.test(definition.settingsPage) || definition.settingsPage.split(/[\\/]/).some((part) => part === "..") || !definition.settingsPage.endsWith(".html"))) throw new Error("Invalid input settings page");
+    for (const [key, field] of Object.entries(definition.settings ?? {})) {
+      const resolved = {
+        ...field,
+        key,
+        label: defaultText(field.label),
+        value: field.default,
+        ...field.type === "select" ? { items: field.items.map((item) => ({ value: item.value, title: defaultText(item.title) })) } : {}
+      };
+      validatePluginFormField(resolved);
+      if (pluginFormError({ requiredText: "invalid", tooLongText: "invalid" }, resolved, field.default)) throw new Error("Invalid input setting default");
+    }
+  }
+}
+
+// src/common/plugin-panel-model.ts
+var PANEL_LIMITS = Object.freeze({ modelBytes: 12288, items: 8, pagesPerItem: 8, actionsPerPage: 4, linesPerPage: 4, lineBytes: 240, defaultStaleAfterMs: 3e4 });
+var PLUGIN_UNIT_STATES = ["idle", "active", "attention", "success", "error", "disabled"];
+var PanelValidationError = class extends Error {
+  code;
+  constructor(code) {
+    super(code);
+    this.name = "PanelValidationError";
+    this.code = code;
+  }
+};
+var fail = (code = "panel-invalid") => {
+  throw new PanelValidationError(code);
+};
+var bytes = (value) => new TextEncoder().encode(value).byteLength;
+function object(value, allowed, required = []) {
+  if (!value || typeof value !== "object" || Array.isArray(value) || Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null) fail();
+  if (Object.keys(value).some((key) => !allowed.includes(key)) || required.some((key) => !Object.prototype.hasOwnProperty.call(value, key))) fail();
+}
+function text2(value, required = false) {
+  if (value === void 0 && !required) return;
+  if (typeof value !== "string" || value.includes("\0")) fail();
+  if (bytes(value) > PANEL_LIMITS.lineBytes) fail("panel-line-too-large");
+}
+function id(value) {
+  if (typeof value !== "string" || !value || value.includes("\0")) fail();
+}
+function integer(value, minimum = 0) {
+  if (!Number.isSafeInteger(value) || value < minimum) fail();
+}
+function timer(value) {
+  if (value === void 0) return;
+  object(value, ["since", "elapsedMs"], ["since"]);
+  integer(value.since);
+  if (value.elapsedMs !== void 0) integer(value.elapsedMs);
+}
+function bool(value) {
+  if (value !== void 0 && typeof value !== "boolean") fail();
+}
+function array(value, max) {
+  if (!Array.isArray(value) || value.length > max) fail("panel-limit-exceeded");
+}
+function unique(entries) {
+  const ids = /* @__PURE__ */ new Set();
+  for (const entry of entries) {
+    id(entry?.id);
+    if (ids.has(entry.id)) fail("panel-duplicate-id");
+    ids.add(entry.id);
+  }
+}
+function validatePanelModel(value) {
+  const model = value;
+  object(model, ["v", "layout", "noticeIcon", "notice", "defaultItem", "staleAfterMs", "pagination", "navigation", "items"], ["v", "items"]);
+  if (model.v !== 1) fail("panel-version-unsupported");
+  if (model.layout !== void 0 && model.layout !== "sessions") fail();
+  if (model.noticeIcon !== void 0 && !["power", "loading", "link-off", "inbox"].includes(model.noticeIcon)) fail();
+  if (model.pagination !== void 0) {
+    object(model.pagination, ["offset", "total"], ["offset", "total"]);
+    integer(model.pagination.offset);
+    integer(model.pagination.total, 1);
+    if (model.pagination.offset >= model.pagination.total || model.pagination.offset + (model.items?.length ?? 0) > model.pagination.total) fail();
+  }
+  if (model.notice !== null) text2(model.notice);
+  if (model.defaultItem !== void 0 && model.defaultItem !== null) id(model.defaultItem);
+  if (model.staleAfterMs !== void 0) integer(model.staleAfterMs, 1);
+  array(model.items, PANEL_LIMITS.items);
+  unique(model.items);
+  const occupiedSlots = /* @__PURE__ */ new Set();
+  for (const item of model.items) {
+    if (item.slot !== void 0) {
+      integer(item.slot, 1);
+      if (item.slot > 8 || occupiedSlots.has(item.slot)) fail();
+      occupiedSlots.add(item.slot);
+    }
+    object(item, ["id", "slot", "title", "subtitle", "activity", "state", "stateText", "badge", "timer", "pages"], ["id", "title", "state", "pages"]);
+    text2(item.title, true);
+    text2(item.subtitle);
+    text2(item.activity);
+    text2(item.stateText);
+    if (!PLUGIN_UNIT_STATES.includes(item.state)) fail();
+    if (item.badge !== void 0) integer(item.badge);
+    timer(item.timer);
+    array(item.pages, PANEL_LIMITS.pagesPerItem);
+    unique(item.pages);
+    for (const page of item.pages) {
+      object(page, ["id", "title", "layout", "timer", "lines", "progress", "actions"], ["id", "lines", "actions"]);
+      text2(page.title);
+      if (page.layout !== void 0 && page.layout !== "decision") fail();
+      timer(page.timer);
+      array(page.lines, PANEL_LIMITS.linesPerPage);
+      array(page.actions, PANEL_LIMITS.actionsPerPage);
+      unique(page.actions);
+      for (const line of page.lines) {
+        object(line, ["text", "mono", "secondary"], ["text"]);
+        text2(line.text, true);
+        bool(line.mono);
+        bool(line.secondary);
+      }
+      if (page.progress !== void 0) {
+        if (!Array.isArray(page.progress) || page.progress.length !== 2) fail();
+        integer(page.progress[0]);
+        integer(page.progress[1]);
+        if (page.progress[0] > page.progress[1]) fail();
+      }
+      for (const action of page.actions) {
+        object(action, ["id", "label", "description", "buttonLabel", "icon", "style", "confirm", "priority", "requireFullLabel", "enabled"], ["id", "label"]);
+        text2(action.label, true);
+        text2(action.description);
+        text2(action.buttonLabel);
+        if (action.icon !== void 0 && action.icon !== "open-in-new") fail();
+        if (action.buttonLabel !== void 0 && (!action.buttonLabel || action.description === void 0 || page.layout !== "decision")) fail();
+        if (action.style !== void 0 && !["normal", "primary", "danger"].includes(action.style)) fail();
+        if (action.confirm !== void 0 && action.confirm !== "hold") fail();
+        if (action.priority !== void 0 && !Number.isFinite(action.priority)) fail();
+        bool(action.requireFullLabel);
+        bool(action.enabled);
+      }
+    }
+  }
+  if (model.defaultItem != null && !model.items.some((item) => item.id === model.defaultItem)) fail("panel-default-item-missing");
+  if (model.navigation !== void 0) {
+    const nav = model.navigation;
+    object(nav, ["token", "view", "item", "page", "action"], ["token", "view", "item"]);
+    id(nav.token);
+    if (bytes(nav.token) > 64) fail();
+    if (!["overview", "detail"].includes(nav.view)) fail();
+    const item = model.items.find((item2) => item2.id === nav.item);
+    if (nav.item !== null) {
+      id(nav.item);
+      if (!item) fail("panel-navigation-target-missing");
+    }
+    if (nav.view === "overview") {
+      if (nav.page !== void 0 || nav.action !== void 0) fail();
+    } else {
+      if (!item) fail("panel-navigation-target-missing");
+      if (nav.page !== void 0) id(nav.page);
+      const page = nav.page === void 0 ? item.pages[0] : item.pages.find((page2) => page2.id === nav.page);
+      if (nav.page !== void 0 && !page) fail("panel-navigation-target-missing");
+      if (nav.action !== void 0) {
+        id(nav.action);
+        if (!page?.actions.some((action) => action.id === nav.action)) fail("panel-navigation-target-missing");
+      }
+    }
+  }
+  let serialized;
+  try {
+    serialized = JSON.stringify(model);
+  } catch {
+    fail();
+  }
+  if (bytes(serialized) > PANEL_LIMITS.modelBytes) fail("panel-model-too-large");
+}
+function buildPanelModel(model) {
+  validatePanelModel(model);
+  return JSON.parse(JSON.stringify(model));
+}
+function resolvePluginPanelDefinition(value) {
+  object(value, ["defaultItemCount", "sessionCatalogMethod", "staleAfterMs", "exampleModel"]);
+  const defaultItemCount = value.defaultItemCount ?? 3, staleAfterMs = value.staleAfterMs ?? PANEL_LIMITS.defaultStaleAfterMs;
+  integer(defaultItemCount, 1);
+  if (defaultItemCount > PANEL_LIMITS.items) fail();
+  integer(staleAfterMs, 1);
+  if (value.exampleModel !== void 0) validatePanelModel(value.exampleModel);
+  if (value.sessionCatalogMethod !== void 0) id(value.sessionCatalogMethod);
+  return { defaultItemCount, staleAfterMs, ...value.sessionCatalogMethod ? { sessionCatalogMethod: value.sessionCatalogMethod } : {}, ...value.exampleModel ? { exampleModel: buildPanelModel(value.exampleModel) } : {} };
+}
+
+// src/common/plugin-native-data.ts
+function supportsStatusCountElementsV1(type) {
+  return type === "standard" || type === "chart";
+}
+
+// src/main/plugin/plugin-definitions-validate.ts
+var import_ajv3 = __toESM(require_ajv(), 1);
+
+// src/common/button-group-state.ts
+var import_ajv = __toESM(require_ajv(), 1);
+
+// src/types/unit.ts
+var UnitTypeId = {
+  BASIC: "@eniacelec/basic",
+  NAVIGATION_FOLDER: "@eniacelec/navigation:folder",
+  NAVIGATION_CONTAINER: "@eniacelec/navigation:container",
+  NAVIGATION_RETURN: "@eniacelec/navigation:return",
+  NAVIGATION_PAGE_JUMP: "@eniacelec/navigation:page-jump",
+  NAVIGATION_WIDGET: "@eniacelec/navigation:widget",
+  INPUT_KEYBOARD: "@eniacelec/input:keyboard",
+  INPUT_MOUSE: "@eniacelec/input:mouse",
+  INPUT_TEXT_INPUT: "@eniacelec/input:text-input",
+  MEDIA_MEDIA_KEY: "@eniacelec/media:media-key",
+  EXECUTION_EXECUTE: "@eniacelec/execution:execute",
+  UTILITY_CLOCK: "@eniacelec/utility:clock",
+  UTILITY_CHART: "@eniacelec/utility:chart",
+  UTILITY_AUDIO_VISUALIZER: "@eniacelec/utility:audio-visualizer",
+  UTILITY_AUDIO_SPECTRUM: "@eniacelec/utility:audio-spectrum",
+  UTILITY_VU_METER: "@eniacelec/utility:vu-meter",
+  UTILITY_VOLUME_SLIDER: "@eniacelec/utility:volume-slider",
+  UTILITY_VOLUME_SLIDER_INLINE: "@eniacelec/utility:volume-slider-inline",
+  UTILITY_POMODORO: "@eniacelec/utility:pomodoro",
+  ADVANCED_MACRO_KEY: "@eniacelec/advanced:macro-key",
+  ADVANCED_CYCLED_KEY: "@eniacelec/advanced:cycled-key",
+  ADVANCED_BUTTON_GROUP: "@eniacelec/advanced:button-group",
+  MISC_NO_FUNC_KEY: "@eniacelec/misc:no-func-key"
+};
+var PLUGIN_UNIT_TYPES_V1 = ["standard", "custom", "canvas", "cycled", "slider", "value-label", "label", "button-group", "panel", "chart", "composite"];
 
 // src/common/native-text/device-fonts.ts
-var DEVICE_FONT_REFERENCES_V1 = ["builtin:font:puhuiti", "builtin:font:consola"];
+var DEVICE_FONT_REFERENCES_V1 = ["builtin:font:puhuiti", "builtin:font:consola", "builtin:font:ds-digital"];
+var DEVICE_FONT_SIZE_TIERS_V1 = [18, 20, 24, 28, 32, 40, 48];
+var DEVICE_ICON_SIZE_TIERS_V1 = [20, 24, 28, 32, 40, 48];
+
+// src/types/element.ts
+var PRIMARY_TEXT_IDENTIFIER = "primary-text";
+var PRIMARY_ICON_IDENTIFIER = "primary-icon";
+var BUTTON_LAYOUT_PRESETS_V1 = ["icon-left", "icon-top", "icon-only", "title-only", "none"];
+var BUTTON_MODES_V1 = ["key", "toggle", "cycled"];
+var PANEL_FONT_FAMILIES = ["builtin:font:puhuiti", "builtin:font:consola"];
+
+// src/common/plugin-panel-presentation.ts
+var PANEL_STATE_COLORS = Object.freeze({ active: "#4C8DFF", attention: "#F2A93B", success: "#4CC38A", error: "#F25F5C", idle: "#8A8A8A", disabled: "#555555" });
+
+// src/common/utils/generate-uuid.ts
+function generatePackageUUIDV1() {
+  const cryptoAPI = globalThis.crypto;
+  if (!cryptoAPI?.getRandomValues) throw new Error("IDENTITY_CREATION_FAILED: secure randomness unavailable");
+  const bytes2 = cryptoAPI.getRandomValues(new Uint8Array(16));
+  bytes2[6] = bytes2[6] & 15 | 64;
+  bytes2[8] = bytes2[8] & 63 | 128;
+  const hex = Array.from(bytes2, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+// src/common/plugin-panel-elements.ts
+var isLegacyPanelCard = (element) => element.typeId === "panel-card";
+var PANEL_DEFAULT_COLORS = Object.freeze({
+  text: "#F2F2F2",
+  muted: "#9A9A9A",
+  primaryAction: "#3D8BFF",
+  dangerAction: "#B5473F"
+});
+var FLOW_THEME_DEFAULTS = Object.freeze({ secondarySize: 20, tertiarySize: 16, radius: 12, buttonInset: 8 });
+var BAR_THEME_DEFAULTS = Object.freeze({ secondarySize: 16, tertiarySize: 14, radius: 8, buttonInset: 4 });
+var PANEL_VIEW_ELEMENT_TYPES = Object.freeze({
+  overview: ["panel-session"],
+  detail: [],
+  notice: []
+});
+var DEFAULT_PANEL_LABELS = Object.freeze({
+  noSessions: "No sessions",
+  expired: "Expired",
+  back: "Back",
+  updatedMinutes: (minutes) => `Updated ${minutes} min ago`
+});
+var FIXED_TEXT_METRICS = Object.freeze({
+  width: (text4, fontSize) => Math.ceil(text4.length * fontSize * 0.55),
+  lineHeight: (fontSize) => Math.ceil(fontSize * 1.3)
+});
+var STATE_ICONS = Object.freeze({
+  active: "mdi-autorenew",
+  attention: "mdi-pending-actions",
+  success: "mdi-check-circle",
+  error: "mdi-alert-circle",
+  disabled: "mdi-link-off",
+  idle: "mdi-pause-circle"
+});
+
+// src/common/unit-indicator.ts
+var UNIT_INDICATOR_COLORS = Object.freeze({ on: "#66bb6a", off: "#4a4d52" });
+
+// src/common/button-group-state.ts
+var BUTTON_GROUP_DISPLAY_MODES_V1 = ["title-only", "icon-only", "icon-left", "icon-top"];
+var object2 = (properties, required = Object.keys(properties)) => ({
+  type: "object",
+  additionalProperties: false,
+  properties,
+  required
+});
+var BUTTON_GROUP_DATA_SCHEMA_V1 = {
+  type: "object",
+  required: ["functions", "buttonGroup"],
+  properties: {
+    functions: { type: "array", minItems: 2, items: object2({
+      buttonId: { type: "string", minLength: 1 },
+      name: { type: "string" },
+      icon: { type: "string" },
+      funcTypeId: { type: "string" },
+      data: {},
+      pluginData: { type: "object" }
+    }, ["buttonId", "name", "icon", "funcTypeId", "data"]) },
+    buttonGroup: object2({
+      presentationVersion: { const: 1 },
+      selectionMode: { enum: ["single", "multiple"] },
+      mandatory: { type: "boolean" },
+      displayMode: { enum: [...BUTTON_GROUP_DISPLAY_MODES_V1] },
+      activeButtonIds: { type: "array", uniqueItems: true, items: { type: "string", minLength: 1 } },
+      fontFamily: { enum: [...DEVICE_FONT_REFERENCES_V1] },
+      fontSize: { enum: [...DEVICE_FONT_SIZE_TIERS_V1] },
+      iconSize: { enum: [...DEVICE_ICON_SIZE_TIERS_V1] },
+      foregroundColor: { type: "string" },
+      showHeader: { type: "boolean" }
+    }, [
+      "presentationVersion",
+      "selectionMode",
+      "mandatory",
+      "displayMode",
+      "activeButtonIds",
+      "fontFamily",
+      "fontSize",
+      "iconSize",
+      "foregroundColor"
+    ])
+  }
+};
+var validateData = new import_ajv.default({ allErrors: true }).compile(BUTTON_GROUP_DATA_SCHEMA_V1);
+function isButtonGroupUnit(unit) {
+  return unit?.typeId === UnitTypeId.ADVANCED_BUTTON_GROUP || unit?.plugin?.type === "button-group";
+}
+
+// src/common/composite-runtime-contract-v1.ts
+var COMPOSITE_RUNTIME_LIMITS_V1 = {
+  "maxMessageBytes": 61440,
+  "maxTransactionBytes": 32768,
+  "maxElements": 64,
+  "maxRuntimeElements": 32,
+  "maxButtons": 32,
+  "maxOperations": 64,
+  "maxIdLength": 128,
+  "maxStates": 32,
+  "maxTextLength": 2048,
+  "maxPendingRequests": 32,
+  "maxQueuedRequests": 32,
+  "requestTimeoutMs": 3e3,
+  "maxSubscriptionsPerUnit": 16,
+  "maxBufferedEvents": 128,
+  "maxQueuedBytes": 131072,
+  "maxJsonDepth": 9
+};
+var COMPOSITE_SAVED_ADMISSION_V1 = {
+  "maxElementTreeBytes": 57344,
+  "maxOutcomeBytes": 57344,
+  "estimateMarginPercent": 10
+};
+var COMPOSITE_INITIAL_OUTCOME_V1 = {
+  "ok": true,
+  "result": {
+    "committed": true,
+    "revision": 0,
+    "eventSequence": 0,
+    "presented": false,
+    "snapshot": {
+      "view": "effective",
+      "revision": 0,
+      "eventSequence": 0,
+      "presented": false,
+      "pluginOnline": false,
+      "elements": [],
+      "states": {}
+    }
+  }
+};
+var COMPOSITE_SAVED_ELEMENT_V1 = {
+  "element": null,
+  "origin": "saved",
+  "overriddenFields": []
+};
+var COMPOSITE_SAVED_BUTTON_STATE_V1 = {
+  "stateId": null
+};
+var COMPOSITE_RUNTIME_IDENTITY_FIELDS_V1 = ["uuid", "unitUuid", "typeId", "pluginUUID", "generation", "elementUuid", "correlationId", "requestId", "stateId", "initialStateId", "pendingRequestId", "interactionId", "identifier"];
+
+// src/common/composite-saved-budget-v1.ts
+var encoder;
+function estimatedBytes(value) {
+  const bytes2 = (encoder ??= new TextEncoder()).encode(JSON.stringify(value)).byteLength;
+  return Math.ceil(bytes2 * (100 + COMPOSITE_SAVED_ADMISSION_V1.estimateMarginPercent) / 100);
+}
+function compositeInitialOutcomeV1(elements) {
+  const template2 = COMPOSITE_INITIAL_OUTCOME_V1;
+  return { ...template2, result: { ...template2.result, snapshot: {
+    ...template2.result.snapshot,
+    elements: elements.map((element) => ({ ...COMPOSITE_SAVED_ELEMENT_V1, element })),
+    states: Object.fromEntries(elements.filter((element) => element.typeId === "button").map((element) => [element.uuid, { ...COMPOSITE_SAVED_BUTTON_STATE_V1, stateId: element.typeId === "button" ? element.data.initialStateId ?? null : null }]))
+  } } };
+}
+function compositeSavedBudgetIssueV1(elements) {
+  if (estimatedBytes(elements) > COMPOSITE_SAVED_ADMISSION_V1.maxElementTreeBytes) return "COMPOSITE_INSTANCE_BYTES_EXCEEDED";
+  if (estimatedBytes(compositeInitialOutcomeV1(elements)) > COMPOSITE_SAVED_ADMISSION_V1.maxOutcomeBytes) return "COMPOSITE_INITIAL_RESPONSE_BYTES_EXCEEDED";
+}
 
 // src/common/element-contracts-v1.ts
 var ELEMENT_CONTRACTS_V1 = {
   text: { schema: "textElement", rendering: "raster", resources: ["background", "font"] },
   icon: { schema: "iconElement", rendering: "raster", resources: ["background", "icon"] },
   image: { schema: "imageElement", rendering: "raster", resources: ["background", "image"] },
+  button: { schema: "buttonElement", rendering: "device", resources: ["background", "font", "button-content"] },
   "chart-progress-bar": { schema: "chartProgress", rendering: "device", resources: [] },
   "chart-line": { schema: "chartLine", rendering: "device", resources: [] },
   "chart-series-bar": { schema: "chartSeries", rendering: "device", resources: [] },
@@ -67106,6 +73638,335 @@ var ELEMENT_CONTRACTS_V1 = {
   "panel-lines": { schema: "panelLines", rendering: "device", resources: ["background", "font"] },
   "panel-action": { schema: "panelAction", rendering: "device", resources: ["background", "font"] },
   "panel-back": { schema: "panelBack", rendering: "device", resources: ["background", "font"] }
+};
+var COMPOSITE_ELEMENT_CONTRACTS_V1 = {
+  text: { writable: ["config.visible", "config.enabled", "data.text", "style.color", "style.background", "style.fontFamily", "style.fontSize"], font: true },
+  icon: { writable: ["config.visible", "config.enabled", "data.value", "style.color", "style.background", "style.fontSize"], font: false },
+  image: { writable: ["config.visible", "config.enabled"], font: false },
+  button: { writable: ["config.visible", "config.enabled", "style.background", "style.foregroundColor", "style.fontFamily", "style.fontSize", "style.iconSize", "data.layout", "data.icon", "data.title", "data.interaction", "data.states", "data.indicator"], font: true }
+};
+var object3 = (properties, required = Object.keys(properties)) => ({
+  type: "object",
+  additionalProperties: false,
+  properties,
+  required
+});
+var string = { type: "string" };
+var id2 = { type: "string", minLength: 1, pattern: "\\S" };
+var positiveMs = { type: "integer", minimum: 1, maximum: 2147483647 };
+var background = { $ref: "#/definitions/backgroundStyle" };
+var BUTTON_ELEMENT_SCHEMA_V1 = object3({
+  typeId: { const: "button" },
+  uuid: id2,
+  name: string,
+  identifier: id2,
+  config: { $ref: "#/definitions/elementConfig" },
+  geometry: { allOf: [{ $ref: "#/definitions/geometry" }, { properties: {
+    width: { type: "number", exclusiveMinimum: 0 },
+    height: { type: "number", exclusiveMinimum: 0 },
+    rotate: { const: 0 }
+  } }] },
+  style: object3({
+    background,
+    foregroundColor: string,
+    fontFamily: { enum: [...DEVICE_FONT_REFERENCES_V1] },
+    fontSize: { enum: [...DEVICE_FONT_SIZE_TIERS_V1] },
+    iconSize: { enum: [...DEVICE_ICON_SIZE_TIERS_V1] }
+  }),
+  data: object3({
+    layout: { enum: [...BUTTON_LAYOUT_PRESETS_V1] },
+    icon: string,
+    title: string,
+    interaction: object3({
+      mode: { enum: [...BUTTON_MODES_V1] },
+      longPress: object3({ thresholdMs: positiveMs }),
+      repeat: object3({ delayMs: positiveMs, intervalMs: positiveMs })
+    }, ["mode"]),
+    states: { type: "array", items: object3({
+      stateId: id2,
+      label: string,
+      overrides: object3({ icon: string, title: string, foregroundColor: string, background }, [])
+    }, ["stateId", "overrides"]) },
+    initialStateId: id2,
+    indicator: object3({ litStateIds: { type: "array", uniqueItems: true, items: id2 } })
+  }, ["layout", "interaction"])
+}, ["typeId", "uuid", "config", "geometry", "style", "data"]);
+var compositeIdentityFields = new Set(COMPOSITE_RUNTIME_IDENTITY_FIELDS_V1);
+var compositeEncoder;
+function inspectCompositeJsonLimitsV1(value, path = "", key = "", ancestors = /* @__PURE__ */ new Set(), maxDepth = COMPOSITE_RUNTIME_LIMITS_V1.maxJsonDepth) {
+  const invalid = (constraint = "COMPOSITE_INVALID_JSON", at = path) => ({ code: "INVALID_MESSAGE", path: at, constraint });
+  if (typeof value === "string") {
+    const bytes2 = (compositeEncoder ??= new TextEncoder()).encode(value).byteLength;
+    if (compositeIdentityFields.has(key) && bytes2 > COMPOSITE_RUNTIME_LIMITS_V1.maxIdLength)
+      return { code: "LIMIT_EXCEEDED", path, constraint: "COMPOSITE_ID_LIMIT_EXCEEDED" };
+    if ((key === "text" || key === "title") && bytes2 > COMPOSITE_RUNTIME_LIMITS_V1.maxTextLength)
+      return { code: "LIMIT_EXCEEDED", path, constraint: "COMPOSITE_TEXT_LIMIT_EXCEEDED" };
+    return;
+  }
+  if (value === null || typeof value === "boolean") return;
+  if (typeof value === "number") return Number.isFinite(value) ? void 0 : invalid();
+  if (typeof value !== "object") return invalid();
+  if (ancestors.has(value) || ancestors.size >= maxDepth) return invalid();
+  ancestors.add(value);
+  for (const [name2, child] of Object.entries(value)) {
+    const childPath = path ? `${path}.${name2}` : name2;
+    const segments = name2.split(".");
+    const problem = inspectCompositeJsonLimitsV1(child, childPath, segments[segments.length - 1], ancestors, maxDepth);
+    if (problem) return problem;
+  }
+  ancestors.delete(value);
+}
+function validateElementContextV1(elements, context) {
+  const issues = [];
+  const ids = /* @__PURE__ */ new Set();
+  const identifiers = /* @__PURE__ */ new Set();
+  const composite = context?.plugin?.type === "composite";
+  if (composite && elements.length > COMPOSITE_RUNTIME_LIMITS_V1.maxElements) {
+    issues.push({
+      elementUuid: elements[COMPOSITE_RUNTIME_LIMITS_V1.maxElements].uuid,
+      path: "elements",
+      code: "COMPOSITE_ELEMENT_LIMIT_EXCEEDED"
+    });
+  }
+  if (composite) {
+    const buttons = elements.filter((element) => element.typeId === "button");
+    if (buttons.length > COMPOSITE_RUNTIME_LIMITS_V1.maxButtons)
+      issues.push({
+        elementUuid: buttons[COMPOSITE_RUNTIME_LIMITS_V1.maxButtons].uuid,
+        path: "elements",
+        code: "COMPOSITE_BUTTON_LIMIT_EXCEEDED"
+      });
+  }
+  for (const [index, element] of elements.entries()) {
+    const issue = (path, code) => issues.push({ elementUuid: element.uuid, path: `elements[${index}].${path}`, code });
+    if (element.typeId === "button" && !composite) issue("typeId", "BUTTON_OUTSIDE_COMPOSITE");
+    if (!composite) continue;
+    const limit = inspectCompositeJsonLimitsV1(element);
+    if (limit) issue(limit.path, limit.constraint);
+    if (!Object.prototype.hasOwnProperty.call(COMPOSITE_ELEMENT_CONTRACTS_V1, element.typeId)) {
+      issue("typeId", "ELEMENT_NOT_ALLOWED");
+      continue;
+    }
+    if (ids.has(element.uuid)) issue("uuid", "DUPLICATE_IDENTITY");
+    ids.add(element.uuid);
+    if (element.identifier) {
+      if (identifiers.has(element.identifier)) issue("identifier", "DUPLICATE_IDENTIFIER");
+      identifiers.add(element.identifier);
+    }
+    for (const key of ["x", "y", "width", "height"]) {
+      if (!Number.isFinite(element.geometry[key]) || ["width", "height"].includes(key) && element.geometry[key] <= 0) issue(`geometry.${key}`, "INVALID_GEOMETRY");
+    }
+    if (element.geometry.rotate !== void 0 && element.geometry.rotate !== 0) issue("geometry.rotate", "ROTATION_NOT_ALLOWED");
+    const validIcon = (value, path) => {
+      if (value && findThemeBuiltinV1(value)?.kind !== "icon") issue(path, "ICON_NOT_ALLOWED");
+    };
+    if (element.typeId === "text" || element.typeId === "button") {
+      if (!DEVICE_FONT_REFERENCES_V1.includes(element.style.fontFamily)) issue("style.fontFamily", "FONT_NOT_ALLOWED");
+      if (!DEVICE_FONT_SIZE_TIERS_V1.includes(element.style.fontSize)) issue("style.fontSize", "FONT_SIZE_NOT_ALLOWED");
+    }
+    if (element.typeId === "text") {
+      if (element.style.fontWeight !== "normal" && element.style.fontWeight !== "400") issue("style.fontWeight", "SYNTHETIC_FONT_NOT_ALLOWED");
+      if (element.style.fontStyle !== "normal") issue("style.fontStyle", "SYNTHETIC_FONT_NOT_ALLOWED");
+    }
+    if ((element.typeId === "text" || element.typeId === "icon") && element.style.textShadow !== "")
+      issue("style.textShadow", "SHADOW_NOT_ALLOWED");
+    if (element.typeId === "icon") {
+      if (element.data.type !== "icon") issue("data.type", "ICON_NOT_ALLOWED");
+      validIcon(element.data.value, "data.value");
+      if (!DEVICE_ICON_SIZE_TIERS_V1.includes(element.style.fontSize)) issue("style.fontSize", "ICON_SIZE_NOT_ALLOWED");
+    }
+    if (element.typeId !== "button") continue;
+    validIcon(element.data.icon, "data.icon");
+    if (!DEVICE_ICON_SIZE_TIERS_V1.includes(element.style.iconSize)) issue("style.iconSize", "ICON_SIZE_NOT_ALLOWED");
+    const states = element.data.states ?? [];
+    if (states.length > COMPOSITE_RUNTIME_LIMITS_V1.maxStates) issue("data.states", "COMPOSITE_STATE_LIMIT_EXCEEDED");
+    const stateIds = /* @__PURE__ */ new Set();
+    for (const [stateIndex, state] of states.entries()) {
+      if (stateIds.has(state.stateId)) issue(`data.states[${stateIndex}].stateId`, "DUPLICATE_STATE");
+      stateIds.add(state.stateId);
+      validIcon(state.overrides.icon, `data.states[${stateIndex}].overrides.icon`);
+    }
+    const mode = element.data.interaction.mode;
+    if (mode === "key") {
+      if (states.length || element.data.initialStateId !== void 0 || element.data.indicator !== void 0) issue("data.states", "KEY_HAS_NO_STATE");
+    } else {
+      if (mode === "toggle" && states.length !== 2 || mode === "cycled" && states.length < 1) issue("data.states", "INVALID_STATE_COUNT");
+      if (!stateIds.has(element.data.initialStateId ?? "")) issue("data.initialStateId", "UNKNOWN_STATE");
+      if (element.data.interaction.longPress || element.data.interaction.repeat) issue("data.interaction", "REPEAT_REQUIRES_KEY");
+    }
+    for (const stateId of element.data.indicator?.litStateIds ?? []) {
+      if (!stateIds.has(stateId)) issue("data.indicator.litStateIds", "UNKNOWN_STATE");
+    }
+  }
+  if (composite && !issues.length) {
+    const budget = compositeSavedBudgetIssueV1(elements);
+    if (budget) issues.push({ elementUuid: elements[0]?.uuid ?? "", path: "elements", code: budget });
+  }
+  return issues;
+}
+
+// src/common/data/appearance-schema.ts
+var APPEARANCE_SCHEMA_DEFINITIONS = {
+  buttonElement: BUTTON_ELEMENT_SCHEMA_V1,
+  backgroundStyle: {
+    type: "object",
+    required: ["borderWidth", "borderColor", "borderStyle", "backgroundColor"],
+    additionalProperties: false,
+    properties: {
+      borderWidth: { type: "number" },
+      borderColor: { type: "string" },
+      borderStyle: { type: "string" },
+      backgroundColor: { type: "string" },
+      backgroundImage: { type: "string" },
+      borderRadius: { type: "number" },
+      backgroundFit: { type: "string", enum: ["cover", "contain", "stretch", "tile"] },
+      backgroundPosition: { type: "string" }
+    }
+  },
+  geometry: {
+    type: "object",
+    required: ["x", "y", "width", "height"],
+    additionalProperties: true,
+    properties: {
+      x: { type: "number" },
+      y: { type: "number" },
+      width: { type: "number" },
+      height: { type: "number" },
+      rotate: { type: "number" },
+      config: { type: "object", additionalProperties: true }
+    }
+  },
+  elementConfig: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      pinned: { type: "boolean" },
+      removable: { type: "boolean" },
+      visible: { type: "boolean" },
+      enabled: { type: "boolean" },
+      maxCount: { type: "number" }
+    }
+  },
+  element: {
+    oneOf: [
+      { $ref: "#/definitions/textElement" },
+      { $ref: "#/definitions/iconElement" },
+      { $ref: "#/definitions/imageElement" }
+    ]
+  },
+  textElement: {
+    type: "object",
+    required: ["typeId", "uuid", "config", "geometry", "style", "data"],
+    additionalProperties: false,
+    properties: {
+      typeId: { const: "text" },
+      uuid: { type: "string", minLength: 1 },
+      name: { type: "string" },
+      identifier: { type: "string" },
+      config: { $ref: "#/definitions/elementConfig" },
+      geometry: { $ref: "#/definitions/geometry" },
+      style: {
+        type: "object",
+        required: [
+          "backgroundColor",
+          "color",
+          "fontFamily",
+          "fontSize",
+          "fontWeight",
+          "fontStyle",
+          "textShadow",
+          "background"
+        ],
+        additionalProperties: true,
+        properties: {
+          backgroundColor: { type: "string" },
+          color: { type: "string" },
+          fontFamily: { type: "string" },
+          fontSize: { type: "number" },
+          fontWeight: { type: "string" },
+          fontStyle: { type: "string" },
+          textShadow: { type: "string" },
+          background: { $ref: "#/definitions/backgroundStyle" }
+        }
+      },
+      data: {
+        type: "object",
+        required: ["text"],
+        additionalProperties: false,
+        properties: {
+          text: { type: "string" }
+        }
+      }
+    }
+  },
+  iconElement: {
+    type: "object",
+    required: ["typeId", "uuid", "config", "geometry", "style", "data"],
+    additionalProperties: false,
+    properties: {
+      typeId: { const: "icon" },
+      uuid: { type: "string", minLength: 1 },
+      name: { type: "string" },
+      identifier: { type: "string" },
+      config: { $ref: "#/definitions/elementConfig" },
+      geometry: { $ref: "#/definitions/geometry" },
+      style: {
+        type: "object",
+        required: ["backgroundColor", "color", "fontSize", "textShadow", "background"],
+        additionalProperties: true,
+        properties: {
+          backgroundColor: { type: "string" },
+          color: { type: "string" },
+          fontSize: { type: "number" },
+          textShadow: { type: "string" },
+          background: { $ref: "#/definitions/backgroundStyle" }
+        }
+      },
+      data: {
+        type: "object",
+        required: ["value", "type"],
+        additionalProperties: true,
+        properties: {
+          value: { type: "string" },
+          type: { type: "string", enum: ["icon", "emoji", "custom"] },
+          emojiSet: { type: "string", enum: ["native", "apple", "google", "twitter", "facebook"] },
+          emojiUnified: { type: "string" },
+          emojiSheetX: { type: "number" },
+          emojiSheetY: { type: "number" }
+        }
+      }
+    }
+  },
+  imageElement: {
+    type: "object",
+    required: ["typeId", "uuid", "config", "geometry", "style", "data"],
+    additionalProperties: false,
+    properties: {
+      typeId: { const: "image" },
+      uuid: { type: "string", minLength: 1 },
+      name: { type: "string" },
+      identifier: { type: "string" },
+      config: { $ref: "#/definitions/elementConfig" },
+      geometry: { $ref: "#/definitions/geometry" },
+      style: {
+        type: "object",
+        required: ["backgroundColor", "background"],
+        additionalProperties: true,
+        properties: {
+          backgroundColor: { type: "string" },
+          background: { $ref: "#/definitions/backgroundStyle" }
+        }
+      },
+      data: {
+        type: "object",
+        required: ["value"],
+        additionalProperties: false,
+        properties: {
+          value: { type: "string" }
+        }
+      }
+    }
+  }
 };
 
 // src/common/data/theme-platform-registry-v1.ts
@@ -67128,7 +73989,7 @@ var THEME_VARIABLE_ROLES_V1 = {
 };
 
 // src/common/data/theme-package-schema-v1.ts
-var string = { type: "string" };
+var string2 = { type: "string" };
 var name = { type: "string", minLength: 1, pattern: "\\S" };
 var uuid = { type: "string", pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}(?![\\s\\S])" };
 var hash = { type: "string", pattern: "^sha256:[0-9a-f]{64}(?![\\s\\S])" };
@@ -67139,86 +74000,87 @@ var integer2 = { ...nonnegative, type: "integer" };
 var boolean = { type: "boolean" };
 var ref = (key) => ({ $ref: `#/definitions/${key}` });
 var array2 = (items, minItems = 0) => ({ type: "array", items, minItems });
-var object2 = (properties, required = Object.keys(properties)) => ({ type: "object", additionalProperties: false, properties, required });
-var optional = (properties) => object2(properties, []);
+var object4 = (properties, required = Object.keys(properties)) => ({ type: "object", additionalProperties: false, properties, required });
+var optional = (properties) => object4(properties, []);
 var kinds = ["font", "icon", "image", "derived-image", "animated-derived", "render-artifact"];
-var scope = object2({ type: { const: "device" }, deviceModelId: name });
-var commonElement = { uuid, name: string, identifier: string, config: ref("elementConfig"), geometry: ref("geometry") };
-var chartElement = (typeId, style, data) => object2(
+var scope = object4({ type: { const: "device" }, deviceModelId: name });
+var commonElement = { uuid, name: string2, identifier: string2, config: ref("elementConfig"), geometry: ref("geometry") };
+var chartElement = (typeId, style, data) => object4(
   { typeId: { const: typeId }, ...commonElement, style, data },
   ["typeId", "uuid", "config", "geometry", "style", "data"]
 );
 var panelColor = { type: "string", pattern: "^#[0-9a-fA-F]{6}$" };
 var panelView = { enum: ["overview", "detail", "notice"] };
 var panelSlot = { type: "integer", minimum: 1, maximum: 8 };
-var panelBackground = object2({ backgroundColor: { type: "string", pattern: "^(#[0-9a-fA-F]{6}|transparent)$" }, borderRadius: { type: "integer", minimum: 0, maximum: 64 } }, []);
+var panelBackground = object4({ backgroundColor: { type: "string", pattern: "^(#[0-9a-fA-F]{6}|transparent)$" }, borderRadius: { type: "integer", minimum: 0, maximum: 64 } }, []);
 var panelText = {
   color: panelColor,
-  fontFamily: { enum: [...DEVICE_FONT_REFERENCES_V1] },
+  fontFamily: { enum: [...PANEL_FONT_FAMILIES] },
   fontSize: { anyOf: [{ const: 0 }, { type: "integer", minimum: 8, maximum: 36 }] },
   fontWeight: { enum: ["normal", "bold"] },
   textAlign: { enum: ["left", "center", "right"] },
   background: panelBackground
 };
-var panelData = (properties, required) => object2(properties, required);
-var chartData = object2({ dataSourceKey: string, min: number, max: number, autoScale: boolean, updateInterval: nonnegative });
+var panelData = (properties, required) => object4(properties, required);
+var chartData = object4({ dataSourceKey: string2, min: number, max: number, autoScale: boolean, updateInterval: nonnegative });
 var definitions = {
   ...APPEARANCE_SCHEMA_DEFINITIONS,
   textElement: { ...APPEARANCE_SCHEMA_DEFINITIONS.textElement, properties: { ...APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties, uuid } },
   iconElement: { ...APPEARANCE_SCHEMA_DEFINITIONS.iconElement, properties: { ...APPEARANCE_SCHEMA_DEFINITIONS.iconElement.properties, uuid } },
   imageElement: { ...APPEARANCE_SCHEMA_DEFINITIONS.imageElement, properties: { ...APPEARANCE_SCHEMA_DEFINITIONS.imageElement.properties, uuid } },
+  buttonElement: { ...APPEARANCE_SCHEMA_DEFINITIONS.buttonElement, properties: { ...APPEARANCE_SCHEMA_DEFINITIONS.buttonElement.properties, uuid } },
   // Read-only legacy input allows saved packages to open before the layout owner removes rectangles.
   element: { oneOf: [...Object.values(ELEMENT_CONTRACTS_V1).map((contract) => ref(contract.schema)), ref("legacyPanelCard")] },
   legacyPanelCard: chartElement("panel-card", optional({ background: panelBackground }), panelData({ view: { enum: ["overview", "detail"] }, slot: panelSlot }, ["view"])),
-  slider: chartElement("slider", object2({
+  slider: chartElement("slider", object4({
     trackStyle: { enum: ["continuous", "stepped"] },
-    color: string,
-    inactiveColor: string,
-    knobColor: string
-  }), object2({})),
-  audioSpectrum: chartElement("@eniacelec/utility:audio-spectrum", object2({
-    colorLow: string,
-    colorHigh: string,
-    colorEnergy: string,
-    backgroundColor: string,
+    color: string2,
+    inactiveColor: string2,
+    knobColor: string2
+  }), object4({})),
+  audioSpectrum: chartElement("@eniacelec/utility:audio-spectrum", object4({
+    colorLow: string2,
+    colorHigh: string2,
+    colorEnergy: string2,
+    backgroundColor: string2,
     peakHold: boolean,
     transparentGradient: boolean,
     barWidth: { type: "integer", minimum: 1, maximum: 30 }
-  }), object2({})),
-  vuMeter: chartElement("@eniacelec/utility:vu-meter", object2({
+  }), object4({})),
+  vuMeter: chartElement("@eniacelec/utility:vu-meter", object4({
     visible: boolean,
-    colorLow: string,
-    colorHigh: string,
-    backgroundColor: string,
+    colorLow: string2,
+    colorHigh: string2,
+    backgroundColor: string2,
     segments: { type: "integer", minimum: 4, maximum: 32 },
     showLimiter: boolean,
     dataSource: { enum: ["BEAT", "BEAT_L", "BEAT_R", "RMS", "RMS_L", "RMS_R"] }
-  }, ["colorLow", "colorHigh", "backgroundColor", "segments", "showLimiter", "dataSource"]), object2({})),
-  chartProgress: chartElement("chart-progress-bar", object2(
+  }, ["colorLow", "colorHigh", "backgroundColor", "segments", "showLimiter", "dataSource"]), object4({})),
+  chartProgress: chartElement("chart-progress-bar", object4(
     {
-      colorStart: string,
-      colorEnd: string,
+      colorStart: string2,
+      colorEnd: string2,
       barStyle: { enum: ["linear", "step-rectangle", "step-chevron", "step-parallelogram"] },
       stepSegmentWidthPx: nonnegative
     },
     ["colorStart", "colorEnd", "barStyle"]
-  ), object2({ dataSourceKey: string, min: number, max: number, updateInterval: nonnegative })),
+  ), object4({ dataSourceKey: string2, min: number, max: number, updateInterval: nonnegative })),
   chartLine: chartElement(
     "chart-line",
-    object2({ smooth: boolean, areaFill: boolean, pointSpacing: nonnegative }),
-    object2({ sources: array2(object2({ key: string, color: string, min: number, max: number, autoScale: boolean })), updateInterval: nonnegative })
+    object4({ smooth: boolean, areaFill: boolean, pointSpacing: nonnegative }),
+    object4({ sources: array2(object4({ key: string2, color: string2, min: number, max: number, autoScale: boolean })), updateInterval: nonnegative })
   ),
-  chartSeries: chartElement("chart-series-bar", object2({ colorStart: string, colorEnd: string, pointSpacing: nonnegative }), chartData),
-  chartGauge: chartElement("chart-gauge", object2({ color: string, thresholds: { type: "array", maxItems: 8, items: object2({ max: number, color: string }) } }, ["color"]), chartData),
-  chartHeatmap: chartElement("chart-heatmap", object2({ colorStart: string, colorEnd: string, cellSize: nonnegative, cellGap: nonnegative }), chartData),
-  statusCount: chartElement("status-count", APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties.style, object2({ dataSourceKey: string, updateInterval: nonnegative, options: array2(object2({ label: name, dataSourceKey: name })) })),
+  chartSeries: chartElement("chart-series-bar", object4({ colorStart: string2, colorEnd: string2, pointSpacing: nonnegative }), chartData),
+  chartGauge: chartElement("chart-gauge", object4({ color: string2, thresholds: { type: "array", maxItems: 8, items: object4({ max: number, color: string2 }) } }, ["color"]), chartData),
+  chartHeatmap: chartElement("chart-heatmap", object4({ colorStart: string2, colorEnd: string2, cellSize: nonnegative, cellGap: nonnegative }), chartData),
+  statusCount: chartElement("status-count", APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties.style, object4({ dataSourceKey: string2, updateInterval: nonnegative, options: array2(object4({ label: name, dataSourceKey: name })) })),
   chartText: chartElement(
     "chart-text",
     APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties.style,
-    object2({ dataSourceKey: string, updateInterval: nonnegative })
+    object4({ dataSourceKey: string2, updateInterval: nonnegative })
   ),
   // Native plugin panel elements (spec 2026-10-12-plugin-panel-elements-design): every style key is optional.
-  panelSession: chartElement("panel-session", object2({}), panelData({ view: { const: "overview" }, slot: panelSlot, itemId: name, itemTitle: string }, ["view", "slot"])),
+  panelSession: chartElement("panel-session", object4({}), panelData({ view: { const: "overview" }, slot: panelSlot, itemId: name, itemTitle: string2 }, ["view", "slot"])),
   panelField: chartElement(
     "panel-field",
     optional({ ...panelText, colorMode: { enum: ["fixed", "state"] } }),
@@ -67236,26 +74098,26 @@ var definitions = {
     panelData({ view: { const: "detail" }, index: { type: "integer", minimum: 1, maximum: 4 } }, ["view", "index"])
   ),
   panelBack: chartElement("panel-back", optional(panelText), panelData({ view: { const: "detail" } }, ["view"])),
-  sourceCredit: object2(
+  sourceCredit: object4(
     { themeName: name, authorName: name, authorId: uuid, listingId: uuid, versionId: uuid, version },
     ["themeName", "authorName", "listingId", "versionId", "version"]
   ),
-  mergeSource: object2(
+  mergeSource: object4(
     { themeUUID: uuid, revision: integer2, themeName: name, authorName: name, authorId: uuid, basedOn: ref("sourceCredit") },
     ["themeUUID", "revision", "themeName", "authorName"]
   ),
-  metadata: object2(
+  metadata: object4(
     { name, description: { type: "string", maxLength: 1e4 }, authorName: name, authorId: uuid, sourceCredit: ref("sourceCredit"), mergedSources: array2(ref("mergeSource")), modifiedAt: { type: "string", format: "utc-time-v1" } },
     ["name", "authorName", "modifiedAt"]
   ),
   source: { oneOf: [
-    object2({ attachment: { const: "embedded-asset" }, assetId: uuid, contentFingerprint: hash }),
-    object2(
-      { attachment: { const: "projection-omitted" }, kind: { enum: kinds }, contentFingerprint: hash, name: string },
+    object4({ attachment: { const: "embedded-asset" }, assetId: uuid, contentFingerprint: hash }),
+    object4(
+      { attachment: { const: "projection-omitted" }, kind: { enum: kinds }, contentFingerprint: hash, name: string2 },
       ["attachment", "kind", "contentFingerprint"]
     )
   ] },
-  asset: object2({
+  asset: object4({
     assetId: uuid,
     kind: { enum: kinds },
     name,
@@ -67267,19 +74129,19 @@ var definitions = {
     origin: { enum: ["standalone-theme", "embedded-theme", "device-sync"] },
     renderParameters: { type: "object", required: ["profile"], properties: { profile: name } },
     authoringSources: array2(ref("source")),
-    provenance: optional({ sourceThemeUUID: uuid, sourceAssetId: uuid, sourceName: string, declaredLicense: string })
+    provenance: optional({ sourceThemeUUID: uuid, sourceAssetId: uuid, sourceName: string2, declaredLicense: string2 })
   }, ["assetId", "kind", "name", "modifiedAt", "blobHash", "contentFingerprint", "origin", "renderParameters"]),
-  blob: object2({ blobHash: hash, byteSize: integer2, mimeType: name, filename: name, present: { const: true } }),
-  category: object2({ categoryId: uuid, kind: { enum: ["icon", "image"] }, role: { enum: ["regular", "uncategorized"] }, name, assetIds: array2(uuid) }),
+  blob: object4({ blobHash: hash, byteSize: integer2, mimeType: name, filename: name, present: { const: true } }),
+  category: object4({ categoryId: uuid, kind: { enum: ["icon", "image"] }, role: { enum: ["regular", "uncategorized"] }, name, assetIds: array2(uuid) }),
   variables: optional({
     colors: optional(Object.fromEntries(THEME_VARIABLE_ROLES_V1.colors.map((role) => [role, name]))),
     typography: optional(Object.fromEntries(THEME_VARIABLE_ROLES_V1.typography.map((role) => [
       role,
-      object2({ fontRef: name, fontSize: nonnegative, fontWeight: { type: "integer", minimum: 1, maximum: 1e3 }, fontStyle: { enum: ["normal", "italic"] } })
+      object4({ fontRef: name, fontSize: nonnegative, fontWeight: { type: "integer", minimum: 1, maximum: 1e3 }, fontStyle: { enum: ["normal", "italic"] } })
     ]))),
     shape: optional(Object.fromEntries(THEME_VARIABLE_ROLES_V1.shape.map((role) => [role, nonnegative])))
   }),
-  unitPreset: object2({
+  unitPreset: object4({
     presetId: uuid,
     name,
     widthCells: { type: "integer", minimum: 1, maximum: 8 },
@@ -67288,25 +74150,25 @@ var definitions = {
     deviceScopes: array2(scope, 1),
     appearance: ref("unitAppearance")
   }, ["presetId", "widthCells", "heightCells", "appearance"]),
-  unitAppearance: object2({ background: ref("backgroundStyle"), elements: array2(ref("element")) }),
-  pageAppearance: object2({
-    backgroundColor: string,
-    color: string,
-    backgroundImage: string,
+  unitAppearance: object4({ background: ref("backgroundStyle"), elements: array2(ref("element")) }),
+  pageAppearance: object4({
+    backgroundColor: string2,
+    color: string2,
+    backgroundImage: string2,
     backgroundFit: { enum: ["cover", "contain", "stretch", "tile"] },
-    backgroundPosition: string
+    backgroundPosition: string2
   }, ["backgroundColor", "color"]),
-  pagePreset: object2({
+  pagePreset: object4({
     presetId: uuid,
     name,
     appearance: ref("pageAppearance")
   }, ["presetId", "appearance"]),
-  variant: object2({ variantId: uuid, deviceModelId: name, pageStylePresets: array2(ref("pagePreset")) }),
-  migration: object2({ policyId: uuid, target: scope, baseVariantId: uuid, basePresetId: uuid, algorithm: { const: "scale-page-appearance-v1" } })
+  variant: object4({ variantId: uuid, deviceModelId: name, pageStylePresets: array2(ref("pagePreset")) }),
+  migration: object4({ policyId: uuid, target: scope, baseVariantId: uuid, basePresetId: uuid, algorithm: { const: "scale-page-appearance-v1" } })
 };
 var THEME_PACKAGE_SCHEMA_V1 = {
   $schema: "http://json-schema.org/draft-07/schema#",
-  ...object2({
+  ...object4({
     schemaVersion: { const: 1 },
     kind: { const: "theme" },
     profile: { enum: ["standalone", "embedded"] },
@@ -67314,7 +74176,7 @@ var THEME_PACKAGE_SCHEMA_V1 = {
     themeUUID: uuid,
     revision: integer2,
     minStudioVersion: version,
-    core: object2({ variables: ref("variables"), assetCategories: array2(ref("category")), assets: array2(ref("asset")), unitStylePresets: array2(ref("unitPreset")) }),
+    core: object4({ variables: ref("variables"), assetCategories: array2(ref("category")), assets: array2(ref("asset")), unitStylePresets: array2(ref("unitPreset")) }),
     deviceVariants: array2(ref("variant")),
     migrationPolicies: array2(ref("migration")),
     blobs: array2(ref("blob"))
@@ -67336,6 +74198,473 @@ var PLUGIN_NATIVE_APPEARANCE_SCHEMA_DEFINITIONS = Object.fromEntries(
     return [key, { ...schema, properties: { ...schema.properties, uuid: { type: "string", minLength: 1 } } }];
   })
 );
+
+// src/common/plugin-composite-resources-schema-v1.ts
+var COMPOSITE_TEMPLATE_RESOURCE_LIMITS_V1 = {
+  maxAssets: 32,
+  maxBlobBytes: 4 * 1024 * 1024,
+  maxTotalBytes: 8 * 1024 * 1024,
+  maxDecodedPixels: 4 * 1024 * 1024,
+  maxFrames: 256
+};
+var limits = COMPOSITE_TEMPLATE_RESOURCE_LIMITS_V1;
+var theme = structuredClone(THEME_PACKAGE_SCHEMA_V1);
+theme.$id = "https://flexsdk.local/schemas/composite-template-resources-theme-v1.json";
+theme.properties.profile = { const: "embedded" };
+theme.properties.core.properties.assets.maxItems = limits.maxAssets;
+theme.properties.core.properties.assetCategories.maxItems = 0;
+theme.properties.core.properties.unitStylePresets.maxItems = 0;
+theme.properties.core.properties.variables = { type: "object", maxProperties: 0 };
+theme.properties.deviceVariants.maxItems = 0;
+theme.properties.migrationPolicies.maxItems = 0;
+theme.properties.blobs.maxItems = limits.maxAssets;
+theme.definitions.asset.properties.kind = { const: "image" };
+theme.definitions.blob.properties.byteSize.maximum = limits.maxBlobBytes;
+var COMPOSITE_TEMPLATE_RESOURCES_SCHEMA_V1 = {
+  type: "object",
+  additionalProperties: false,
+  required: ["embeddedTheme", "blobBytes"],
+  properties: {
+    embeddedTheme: theme,
+    blobBytes: {
+      type: "object",
+      maxProperties: limits.maxAssets,
+      additionalProperties: false,
+      patternProperties: { "^sha256:[0-9a-f]{64}$": {
+        type: "string",
+        maxLength: 4 * Math.ceil(limits.maxBlobBytes / 3),
+        pattern: "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+      } }
+    }
+  }
+};
+function compositeTemplateResourcesPluginSchemaV1() {
+  const schema = structuredClone(COMPOSITE_TEMPLATE_RESOURCES_SCHEMA_V1);
+  function visit(value) {
+    if (!value || typeof value !== "object") return;
+    delete value.format;
+    Object.values(value).forEach(visit);
+  }
+  visit(schema);
+  return schema;
+}
+
+// src/common/plugin-composite-schema-v1.ts
+var template = (source) => {
+  const schema = structuredClone(source);
+  schema.required = schema.required.filter((key) => key !== "uuid");
+  return schema;
+};
+var display2 = { $ref: "#/definitions/pluginDisplayText" };
+var text3 = template(APPEARANCE_SCHEMA_DEFINITIONS.textElement);
+text3.properties.data.properties.text = display2;
+var button = template(BUTTON_ELEMENT_SCHEMA_V1);
+button.properties.style.required = button.properties.style.required.filter((key) => !["fontSize", "iconSize"].includes(key));
+button.properties.data.properties.title = display2;
+button.properties.data.properties.states.items.properties.label = display2;
+button.properties.data.properties.states.items.properties.overrides.properties.title = display2;
+var COMPOSITE_DEFINITION_SCHEMA_V1 = {
+  type: "object",
+  additionalProperties: false,
+  required: ["requires", "appearance"],
+  properties: {
+    resources: compositeTemplateResourcesPluginSchemaV1(),
+    requires: { type: "object", additionalProperties: false, required: ["host", "device"], properties: { host: { const: 1 }, device: { const: 1 } } },
+    appearance: { type: "object", additionalProperties: false, required: ["background", "elements"], properties: {
+      background: { $ref: "#/definitions/backgroundStyle" },
+      elements: { type: "array", maxItems: COMPOSITE_RUNTIME_LIMITS_V1.maxElements, items: { oneOf: [text3, template(APPEARANCE_SCHEMA_DEFINITIONS.iconElement), template(APPEARANCE_SCHEMA_DEFINITIONS.imageElement), button] } }
+    } },
+    buttonConfigs: { type: "array", items: {
+      type: "object",
+      additionalProperties: false,
+      required: ["settings"],
+      oneOf: [{ required: ["identifier"], not: { required: ["mode"] } }, { required: ["mode"], not: { required: ["identifier"] } }],
+      properties: { identifier: { type: "string", minLength: 1 }, mode: { enum: ["key", "toggle", "cycled"] }, settings: PLUGIN_INPUT_FUNCTION_SCHEMA.properties.settings }
+    } }
+  }
+};
+
+// src/common/plugin-panel-schema.ts
+var PANEL_DEFINITION_JSON_SCHEMA = {
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "sessionCatalogMethod": {
+      "type": "string",
+      "minLength": 1
+    },
+    "defaultItemCount": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8
+    },
+    "staleAfterMs": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "exampleModel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "v",
+        "items"
+      ],
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "notice": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[^\\u0000]*$"
+        },
+        "defaultItem": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[^\\u0000]*$"
+        },
+        "staleAfterMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "items": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "title",
+              "state",
+              "pages"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^\\u0000]*$"
+              },
+              "title": {
+                "type": "string",
+                "pattern": "^[^\\u0000]*$"
+              },
+              "subtitle": {
+                "type": "string",
+                "pattern": "^[^\\u0000]*$"
+              },
+              "state": {
+                "enum": [
+                  "idle",
+                  "active",
+                  "attention",
+                  "success",
+                  "error",
+                  "disabled"
+                ]
+              },
+              "stateText": {
+                "type": "string",
+                "pattern": "^[^\\u0000]*$"
+              },
+              "badge": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "timer": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "since"
+                ],
+                "properties": {
+                  "since": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "elapsedMs": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                }
+              },
+              "pages": {
+                "type": "array",
+                "maxItems": 8,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "lines",
+                    "actions"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "pattern": "^[^\\u0000]*$"
+                    },
+                    "title": {
+                      "type": "string",
+                      "pattern": "^[^\\u0000]*$"
+                    },
+                    "timer": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "since"
+                      ],
+                      "properties": {
+                        "since": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "elapsedMs": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      }
+                    },
+                    "lines": {
+                      "type": "array",
+                      "maxItems": 4,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "text"
+                        ],
+                        "properties": {
+                          "text": {
+                            "type": "string",
+                            "pattern": "^[^\\u0000]*$"
+                          },
+                          "mono": {
+                            "type": "boolean"
+                          },
+                          "secondary": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    },
+                    "progress": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "actions": {
+                      "type": "array",
+                      "maxItems": 4,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "id",
+                          "label"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 1,
+                            "pattern": "^[^\\u0000]*$"
+                          },
+                          "label": {
+                            "type": "string",
+                            "pattern": "^[^\\u0000]*$"
+                          },
+                          "style": {
+                            "enum": [
+                              "normal",
+                              "primary",
+                              "danger"
+                            ]
+                          },
+                          "confirm": {
+                            "const": "hold"
+                          },
+                          "priority": {
+                            "type": "number"
+                          },
+                          "requireFullLabel": {
+                            "type": "boolean"
+                          },
+                          "enabled": {
+                            "type": "boolean"
+                          },
+                          "description": {
+                            "type": "string",
+                            "pattern": "^[^\\u0000]*$"
+                          },
+                          "buttonLabel": {
+                            "type": "string",
+                            "pattern": "^[^\\u0000]*$",
+                            "minLength": 1
+                          },
+                          "icon": {
+                            "enum": [
+                              "open-in-new"
+                            ]
+                          }
+                        },
+                        "dependencies": {
+                          "buttonLabel": [
+                            "description"
+                          ]
+                        }
+                      }
+                    },
+                    "layout": {
+                      "const": "decision"
+                    }
+                  }
+                }
+              },
+              "activity": {
+                "type": "string",
+                "pattern": "^[^\\u0000]*$"
+              },
+              "slot": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 8
+              }
+            }
+          }
+        },
+        "pagination": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "offset",
+            "total"
+          ],
+          "properties": {
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "total": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "layout": {
+          "const": "sessions"
+        },
+        "noticeIcon": {
+          "enum": [
+            "power",
+            "loading",
+            "link-off",
+            "inbox"
+          ]
+        },
+        "navigation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "token",
+            "view",
+            "item"
+          ],
+          "properties": {
+            "token": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[^\\u0000]*$",
+              "maxLength": 64
+            },
+            "view": {
+              "enum": [
+                "overview",
+                "detail"
+              ]
+            },
+            "item": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[^\\u0000]*$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "page": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[^\\u0000]*$"
+            },
+            "action": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[^\\u0000]*$"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "view": {
+                    "const": "overview"
+                  }
+                }
+              },
+              "then": {
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "page"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "action"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "else": {
+                "properties": {
+                  "item": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^\\u0000]*$"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+};
 
 // src/main/plugin/plugin-definitions-schema.ts
 var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
@@ -67386,6 +74715,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
           additionalProperties: true
         },
         pluginTemplate: { $ref: "#/definitions/pluginBuiltinTemplateBinding" },
+        layouts: { $ref: "#/definitions/pluginUnitDefinitionRuntime/properties/layouts" },
         _metadata: {
           type: "object",
           additionalProperties: true
@@ -67407,7 +74737,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
       required: ["type", "pluginUUID", "pluginVersion", "unitId"],
       additionalProperties: false,
       properties: {
-        type: { type: "string", enum: ["standard", "custom", "canvas", "cycled", "slider", "value-label", "label", "button-group", "panel", "chart"] },
+        type: { type: "string", enum: [...PLUGIN_UNIT_TYPES_V1] },
         pluginUUID: { type: "string", minLength: 1 },
         pluginVersion: { type: "string", minLength: 1 },
         unitId: { type: "string", minLength: 1 }
@@ -67435,7 +74765,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
     },
     pluginUnitDefinitionRuntime: {
       type: "object",
-      required: ["unitId", "typeId", "name", "categoryId", "plugin"],
+      required: ["unitId", "typeId", "name", "categoryId", "plugin", "layouts"],
       additionalProperties: false,
       properties: {
         unitId: { type: "string", minLength: 1 },
@@ -67455,23 +74785,48 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
           items: { type: "string", enum: ["win32", "darwin", "linux"] }
         },
         libraryUUID: { type: "string" },
-        availableElements: { type: "array", uniqueItems: true, items: { enum: ["text", "icon", "image", "status-count", "chart-text", "chart-gauge", "chart-line", "chart-series-bar", "chart-progress-bar", "chart-heatmap"] } },
-        defaultGeometry: { type: "object", additionalProperties: false, required: ["width", "height"], properties: { width: { type: "number", exclusiveMinimum: 0, maximum: 32 }, height: { type: "number", exclusiveMinimum: 0, maximum: 32 } } },
+        availableElements: { type: "array", uniqueItems: true, items: { enum: ["text", "icon", "image", "button", "status-count", "chart-text", "chart-gauge", "chart-line", "chart-series-bar", "chart-progress-bar", "chart-heatmap"] } },
+        layouts: { type: "object", required: ["default"], additionalProperties: false, properties: {
+          default: { $ref: "#/definitions/unitLayout" },
+          devices: { type: "object", additionalProperties: { $ref: "#/definitions/unitLayout" } }
+        } },
         defaultData: { $ref: "#/definitions/unitDefaultData" },
-        appearanceOverride: { $ref: "#/definitions/appearanceOverride" },
         functions: {
           type: "array",
           minItems: 2,
           items: { $ref: "#/definitions/cycledFunctionDefinition" }
         },
+        indicator: {
+          type: "object",
+          additionalProperties: false,
+          required: ["onFunctionIds"],
+          properties: { onFunctionIds: { type: "array", minItems: 1, uniqueItems: true, items: { type: "string", minLength: 1 } } }
+        },
         slider: { $ref: "#/definitions/sliderDefinition" },
         valueLabel: { $ref: "#/definitions/valueLabelDefinition" },
         label: { $ref: "#/definitions/labelDefinition" },
         panel: PANEL_DEFINITION_JSON_SCHEMA,
+        composite: COMPOSITE_DEFINITION_SCHEMA_V1,
         buttonGroup: { $ref: "#/definitions/buttonGroupDefinition" }
       },
       allOf: [
-        { if: { properties: { plugin: { properties: { type: { const: "chart" } } } } }, then: { required: ["appearanceOverride"], properties: { hasView: { const: false }, hasAppearanceEditor: { const: false }, defaultActivation: false, functions: false, slider: false, valueLabel: false, label: false, buttonGroup: false } } },
+        {
+          if: { properties: { plugin: { properties: { type: { const: "composite" } } } } },
+          then: { required: ["composite"], properties: {
+            hasView: { const: false },
+            hasAppearanceEditor: { const: false },
+            interactionMode: { const: "click" },
+            defaultActivation: false,
+            functions: false,
+            slider: false,
+            valueLabel: false,
+            label: false,
+            buttonGroup: false,
+            availableElements: { items: { enum: ["button", "text", "icon", "image"] } }
+          } },
+          else: { properties: { composite: false, availableElements: { items: { not: { const: "button" } } } } }
+        },
+        { if: { properties: { plugin: { properties: { type: { const: "chart" } } } } }, then: { properties: { hasView: { const: false }, hasAppearanceEditor: { const: false }, defaultActivation: false, functions: false, slider: false, valueLabel: false, label: false, buttonGroup: false } } },
         {
           if: { properties: { plugin: { properties: { type: { const: "panel" } } } } },
           then: {
@@ -67530,7 +74885,6 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
           then: {
             not: {
               anyOf: [
-                { required: ["appearanceOverride"] },
                 { required: ["functions"] },
                 { required: ["slider"] },
                 { required: ["valueLabel"] },
@@ -67545,7 +74899,6 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
           then: {
             not: {
               anyOf: [
-                { required: ["appearanceOverride"] },
                 { required: ["functions"] },
                 { required: ["slider"] },
                 { required: ["valueLabel"] },
@@ -67587,7 +74940,6 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
             required: ["buttonGroup"],
             properties: {
               hasView: { const: false },
-              appearanceOverride: false,
               functions: false,
               slider: false,
               valueLabel: false,
@@ -67761,9 +75113,10 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
     },
     buttonGroupDefinition: {
       type: "object",
-      required: ["buttons"],
+      required: ["presentationVersion", "buttons"],
       additionalProperties: false,
       properties: {
+        presentationVersion: { const: 1 },
         buttons: {
           type: "array",
           minItems: 2,
@@ -67771,14 +75124,17 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
         },
         selectionMode: { type: "string", enum: ["single", "multiple"] },
         mandatory: { type: "boolean" },
-        displayMode: { type: "string", enum: ["text", "icon", "icon-text", "icon-over-text"] },
+        displayMode: { type: "string", enum: [...BUTTON_GROUP_DISPLAY_MODES_V1] },
+        showHeader: { type: "boolean" },
         defaultActiveButtonIds: {
           type: "array",
           items: { type: "string" }
         },
-        inactiveBackgroundColor: { type: "string" },
+        background: { $ref: "#/definitions/backgroundStyle" },
         foregroundColor: { type: "string" },
-        activeColor: { type: "string" }
+        fontFamily: { enum: [...DEVICE_FONT_REFERENCES_V1] },
+        fontSize: { enum: [...DEVICE_FONT_SIZE_TIERS_V1] },
+        iconSize: { enum: [...DEVICE_ICON_SIZE_TIERS_V1] }
       }
     },
     buttonGroupButtonDefinition: {
@@ -67792,7 +75148,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
           type: "object",
           additionalProperties: true
         },
-        appearanceOverride: { $ref: "#/definitions/appearanceOverride" }
+        icon: { type: "string" }
       }
     },
     pluginDisplayText: {
@@ -67817,6 +75173,27 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
           type: "object",
           additionalProperties: { type: "string" }
         }
+      }
+    },
+    unitLayout: {
+      type: "object",
+      required: ["preferredSize"],
+      additionalProperties: false,
+      properties: {
+        preferredSize: {
+          type: "object",
+          required: ["width", "height"],
+          additionalProperties: false,
+          properties: { width: { type: "integer", minimum: 1, maximum: 32 }, height: { type: "integer", minimum: 1, maximum: 32 } }
+        },
+        appearance: { $ref: "#/definitions/appearanceOverride" },
+        presentation: { $ref: "#/definitions/unitDefaultData" },
+        buttonGroup: { type: "object", additionalProperties: false, properties: {
+          displayMode: { enum: [...BUTTON_GROUP_DISPLAY_MODES_V1] },
+          showHeader: { type: "boolean" },
+          fontSize: { enum: [...DEVICE_FONT_SIZE_TIERS_V1] },
+          iconSize: { enum: [...DEVICE_ICON_SIZE_TIERS_V1] }
+        } }
       }
     },
     appearanceOverride: {
@@ -68103,7 +75480,18 @@ function dedupeGraphemes(input) {
   }
   return result;
 }
-function resolvePluginValueLabelConfig(input) {
+function resolvePluginValueLabelConfig(input, unitData) {
+  const instance = unitData?.valueLabel;
+  if (instance && typeof instance === "object" && !Array.isArray(instance)) {
+    const value = instance;
+    if (value.mode === "format" && typeof value.format === "string") {
+      input = { mode: "format", format: value.format };
+    } else if (value.mode === "custom" && (value.customCharacters === void 0 || typeof value.customCharacters === "string")) {
+      input = { mode: "custom", customCharacters: value.customCharacters };
+    } else {
+      throw new Error("Invalid instance value-label configuration");
+    }
+  }
   if (input.mode === "format") {
     const { decimals } = parsePluginNumericFormat(input.format, "value-label");
     const charset = dedupeGraphemes([
@@ -68129,9 +75517,414 @@ function resolvePluginValueLabelConfig(input) {
   };
 }
 
-// src/types/element.ts
-var PRIMARY_TEXT_IDENTIFIER = "primary-text";
-var PRIMARY_ICON_IDENTIFIER = "primary-icon";
+// src/common/package-structure-v1.ts
+var import_ajv2 = __toESM(require_ajv(), 1);
+
+// src/common/utils/plugin-host-version.ts
+var packageCoreIdentifierV1 = "(0|[1-9][0-9]*)";
+var packagePrereleaseIdentifierV1 = "(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)";
+var packageVersionPatternV1 = new RegExp(`^${packageCoreIdentifierV1}\\.${packageCoreIdentifierV1}\\.${packageCoreIdentifierV1}(?:-(${packagePrereleaseIdentifierV1}(?:\\.${packagePrereleaseIdentifierV1})*))?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$`);
+function isPackageVersionV1(value) {
+  return typeof value === "string" && packageVersionPatternV1.exec(value)?.[0] === value;
+}
+
+// src/common/package-structure-v1.ts
+var ajv = new import_ajv2.default({ allErrors: true, jsonPointers: true });
+ajv.addFormat("package-semver-v1", isPackageVersionV1);
+ajv.addFormat("utc-time-v1", (value) => {
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.exec(value)?.[0] !== value) return false;
+  const date = new Date(value);
+  return Number.isFinite(date.valueOf()) && date.toISOString().slice(0, 19) === value.slice(0, 19);
+});
+function compilePackageStructureV1(schema, diagnosticDetails = false) {
+  const validate = ajv.compile(schema);
+  return (value) => {
+    if (validate(value)) return [];
+    const errors = validate.errors ?? [];
+    const unions = errors.filter((error) => error.keyword === "oneOf" || error.keyword === "anyOf");
+    const priority = { type: 0, required: 1, minLength: 2, minimum: 2, maximum: 2, pattern: 3 };
+    const byPath = /* @__PURE__ */ new Map();
+    for (const error of errors) {
+      if (unions.some((union) => union !== error && (error.dataPath === union.dataPath || error.dataPath.startsWith(`${union.dataPath}/`)))) continue;
+      const previous = byPath.get(error.dataPath);
+      if (!previous || (priority[error.keyword] ?? 4) < (priority[previous.keyword] ?? 4)) byPath.set(error.dataPath, error);
+    }
+    return [...byPath.values()].map((error) => {
+      const code = error.keyword === "format" && "format" in error.params && error.params.format === "package-semver-v1" ? "VERSION_INVALID" : "SCHEMA_INVALID";
+      return {
+        code,
+        severity: "critical",
+        subjectRef: `#${error.dataPath}`,
+        messageKey: `PublicationValidation.Findings.${code}`,
+        details: {
+          reason: "schema",
+          rule: error.keyword,
+          ...diagnosticDetails && "missingProperty" in error.params ? { missingProperty: error.params.missingProperty } : {},
+          ...diagnosticDetails && "additionalProperty" in error.params ? { additionalProperty: error.params.additionalProperty } : {}
+        }
+      };
+    });
+  };
+}
+
+// src/common/theme-resource-graph.ts
+var import_js_sha256 = __toESM(require_sha256(), 1);
+function inspectThemeResourceGraphV1(graph, observedBlobs, digest = (bytes2) => `sha256:${(0, import_js_sha256.sha256)(bytes2)}`) {
+  const findings = [];
+  const subject = (type, id3) => `theme:${graph.themeUUID}${id3 ? `/${type}:${id3}` : ""}`;
+  const report = (code, subjectRef, reason, details = {}) => {
+    findings.push({
+      code,
+      severity: "critical",
+      subjectRef,
+      messageKey: `PublicationValidation.Findings.${code}`,
+      details: { reason, ...details }
+    });
+  };
+  const assets = /* @__PURE__ */ new Map();
+  const ids = /* @__PURE__ */ new Set();
+  const renderIdentities = /* @__PURE__ */ new Map();
+  for (const asset of graph.assets) {
+    if (ids.has(asset.assetId)) report("SCHEMA_INVALID", subject("asset", asset.assetId), "duplicate-id");
+    else {
+      ids.add(asset.assetId);
+      assets.set(asset.assetId, asset);
+    }
+    const identity = `${asset.kind}:${asset.contentFingerprint}`;
+    if (graph.profile === "embedded" && renderIdentities.has(identity)) {
+      report(
+        "SCHEMA_INVALID",
+        subject("asset", asset.assetId),
+        "duplicate-render-identity",
+        { existingAssetId: renderIdentities.get(identity) }
+      );
+    } else renderIdentities.set(identity, asset.assetId);
+  }
+  const blobs = /* @__PURE__ */ new Map();
+  for (const blob of graph.blobs) {
+    if (blobs.has(blob.blobHash)) {
+      report("SCHEMA_INVALID", subject("blob", blob.blobHash), "duplicate-blob");
+      continue;
+    }
+    blobs.set(blob.blobHash, blob);
+    const observed = observedBlobs.get(blob.blobHash);
+    if (!observed) report("BLOB_MISSING", subject("blob", blob.blobHash), "declared-bytes-missing");
+    else {
+      if (observed.bytes.byteLength !== blob.byteSize) {
+        report(
+          "BLOB_HASH_MISMATCH",
+          subject("blob", blob.blobHash),
+          "byte-size",
+          { expected: blob.byteSize, actual: observed.bytes.byteLength }
+        );
+      }
+      const actual = digest(observed.bytes);
+      if (actual !== blob.blobHash) report("BLOB_HASH_MISMATCH", subject("blob", blob.blobHash), "sha256", { actual });
+      if (observed.mimeType !== blob.mimeType) {
+        report(
+          "SCHEMA_INVALID",
+          subject("blob", blob.blobHash),
+          "mime-type",
+          { expected: blob.mimeType, actual: observed.mimeType }
+        );
+      }
+    }
+  }
+  const edges = /* @__PURE__ */ new Map();
+  for (const asset of assets.values()) {
+    if (!blobs.has(asset.blobHash)) {
+      report("RESOURCE_CLOSURE_INCOMPLETE", subject("asset", asset.assetId), "undeclared-render-blob", { blobHash: asset.blobHash });
+    }
+    const dependencies = [];
+    for (const source of asset.authoringSources ?? []) {
+      if (source.attachment === "projection-omitted") continue;
+      const resolved = assets.get(source.assetId);
+      if (!resolved) {
+        report("RESOURCE_CLOSURE_INCOMPLETE", subject("asset", asset.assetId), "authoring-source-missing", { assetId: source.assetId });
+      } else {
+        dependencies.push(source.assetId);
+        if (resolved.contentFingerprint !== source.contentFingerprint) {
+          report("RESOURCE_CLOSURE_INCOMPLETE", subject("asset", asset.assetId), "authoring-source-fingerprint", { assetId: source.assetId });
+        }
+      }
+    }
+    edges.set(asset.assetId, dependencies);
+  }
+  const colors = /* @__PURE__ */ new Map();
+  for (const root of assets.keys()) {
+    if (colors.has(root)) continue;
+    const stack = [{ id: root, next: 0 }];
+    colors.set(root, 1);
+    while (stack.length) {
+      const current = stack[stack.length - 1];
+      const children = edges.get(current.id);
+      if (current.next === children.length) {
+        colors.set(current.id, 2);
+        stack.pop();
+        continue;
+      }
+      const child = children[current.next++];
+      if (colors.get(child) === 1) {
+        report("RESOURCE_CLOSURE_INCOMPLETE", subject("asset", current.id), "authoring-cycle", { assetId: child });
+      } else if (!colors.has(child)) {
+        colors.set(child, 1);
+        stack.push({ id: child, next: 0 });
+      }
+    }
+  }
+  if (graph.profile === "embedded") {
+    if (graph.assetCategories.length) report("SCHEMA_INVALID", subject("theme"), "embedded-categories-not-empty");
+    return findings;
+  }
+  const memberships = /* @__PURE__ */ new Map();
+  for (const kind of ["icon", "image"]) {
+    const categories = graph.assetCategories.filter((category) => category.kind === kind);
+    const names = /* @__PURE__ */ new Set();
+    const uncategorized = categories.filter((category) => category.role === "uncategorized");
+    if (uncategorized.length !== 1) report("SCHEMA_INVALID", subject("theme"), "uncategorized-count", { kind });
+    else if (categories[categories.length - 1] !== uncategorized[0]) {
+      report("SCHEMA_INVALID", subject("category", uncategorized[0].categoryId), "uncategorized-not-last");
+    }
+    for (const category of categories) {
+      if (ids.has(category.categoryId)) report("SCHEMA_INVALID", subject("category", category.categoryId), "duplicate-id");
+      else ids.add(category.categoryId);
+      const name2 = category.name.trim().toLowerCase();
+      if (!name2 || names.has(name2)) report("SCHEMA_INVALID", subject("category", category.categoryId), "category-name");
+      names.add(name2);
+      for (const assetId of category.assetIds) {
+        const asset = assets.get(assetId);
+        if (!asset || asset.kind !== kind) {
+          report("RESOURCE_CLOSURE_INCOMPLETE", subject("category", category.categoryId), "category-asset-kind", { assetId });
+        } else memberships.set(assetId, (memberships.get(assetId) ?? 0) + 1);
+      }
+    }
+  }
+  for (const asset of assets.values()) {
+    if ((asset.kind === "icon" || asset.kind === "image") && memberships.get(asset.assetId) !== 1) {
+      report("SCHEMA_INVALID", subject("asset", asset.assetId), "category-membership-count", { count: memberships.get(asset.assetId) ?? 0 });
+    }
+  }
+  return findings;
+}
+
+// src/common/theme-resource-references-v1.ts
+var IMAGE_ASSET_KINDS_V1 = ["image", "derived-image", "animated-derived", "render-artifact"];
+var ICON_ASSET_KINDS_V1 = ["icon", ...IMAGE_ASSET_KINDS_V1];
+function createThemeResourceVisitorV1(visit) {
+  function field(record, key, subject, allowed, required = false) {
+    const replacement = visit(record[key], subject, allowed, required);
+    if (typeof replacement === "string" && replacement !== record[key]) record[key] = replacement;
+  }
+  function background2(value, subject) {
+    field(value, "backgroundImage", `${subject}/backgroundImage`, IMAGE_ASSET_KINDS_V1);
+  }
+  function element(value, subject) {
+    if (isLegacyPanelCard(value)) return;
+    const style = value.style;
+    const data = value.data;
+    for (const resource of ELEMENT_CONTRACTS_V1[value.typeId].resources) {
+      switch (resource) {
+        case "background":
+          if (style.background) background2(style.background, `${subject}/background`);
+          break;
+        case "font":
+          if ("fontFamily" in style) field(style, "fontFamily", `${subject}/fontFamily`, ["font"], true);
+          break;
+        case "image":
+          field(data, "value", subject, IMAGE_ASSET_KINDS_V1);
+          break;
+        case "icon":
+          if (data.type !== "emoji") field(data, "value", subject, ICON_ASSET_KINDS_V1);
+          break;
+        case "button-content":
+          if (value.typeId !== "button") break;
+          field(value.data, "icon", `${subject}/icon`, ["icon"]);
+          for (const state of value.data.states ?? []) {
+            field(state.overrides, "icon", `${subject}/state:${state.stateId}/icon`, ["icon"]);
+            if (state.overrides.background) background2(state.overrides.background, `${subject}/state:${state.stateId}/background`);
+          }
+          break;
+      }
+    }
+  }
+  function appearance(value, subject) {
+    background2(value.background, subject);
+    for (const item of value.elements) element(item, `${subject}/element:${item.uuid}`);
+  }
+  function unit(value, subject) {
+    if (value.typeId && isButtonGroupUnit(value)) {
+      const group = value.data?.buttonGroup;
+      if (group) field(group, "fontFamily", `${subject}/data/buttonGroup/fontFamily`, ["font"], true);
+      const functions = value.data?.functions;
+      if (Array.isArray(functions)) functions.forEach((fn, index) => field(fn, "icon", `${subject}/data/functions/${index}/icon`, ["icon"]));
+    }
+    field(value, "icon", `${subject}/icon`, ICON_ASSET_KINDS_V1);
+    value.appearance.forEach((item, index) => appearance(item, `${subject}/appearance:${index}`));
+  }
+  function page(value, subject) {
+    background2(value.style, subject);
+    field(value, "icon", `${subject}/icon`, ICON_ASSET_KINDS_V1);
+    for (const binding of value.appBindings ?? []) field(binding, "icon", `${subject}/app:${binding.uuid}/icon`, ICON_ASSET_KINDS_V1);
+  }
+  function theme2(value, subject = `theme:${value.themeUUID}`) {
+    for (const [role, font] of Object.entries(value.core.variables.typography ?? {})) {
+      field(font, "fontRef", `${subject}/variables/typography/${role}`, ["font"], true);
+    }
+    for (const preset of value.core.unitStylePresets) appearance(preset.appearance, `${subject}/preset:${preset.presetId}`);
+    for (const variant of value.deviceVariants) for (const preset of variant.pageStylePresets) {
+      background2(preset.appearance, `${subject}/preset:${preset.presetId}`);
+    }
+  }
+  return { background: background2, element, appearance, unit, page, theme: theme2 };
+}
+
+// src/common/plugin-composite-resources-v1.ts
+var limits2 = COMPOSITE_TEMPLATE_RESOURCE_LIMITS_V1;
+var validateStructure;
+function decodeCompositeTemplateResourcesV1(value) {
+  validateStructure ??= compilePackageStructureV1(COMPOSITE_TEMPLATE_RESOURCES_SCHEMA_V1);
+  if (validateStructure(value).length) throw new Error("COMPOSITE_RESOURCE_SCHEMA_INVALID");
+  const resources = value;
+  const material = /* @__PURE__ */ new Map();
+  let total = 0;
+  for (const [hash2, encoded] of Object.entries(resources.blobBytes)) {
+    total += encoded.length / 4 * 3 - (encoded.endsWith("==") ? 2 : encoded.endsWith("=") ? 1 : 0);
+    if (total > limits2.maxTotalBytes) throw new Error("COMPOSITE_RESOURCE_LIMIT_EXCEEDED");
+    const decoded = atob(encoded);
+    if (btoa(decoded) !== encoded) throw new Error("COMPOSITE_RESOURCE_BASE64_INVALID");
+    const bytes2 = Uint8Array.from(decoded, (value2) => value2.charCodeAt(0));
+    material.set(hash2, bytes2);
+  }
+  const source = resources.embeddedTheme;
+  if (material.size !== source.blobs.length || source.blobs.some((blob) => !material.has(blob.blobHash)))
+    throw new Error("COMPOSITE_RESOURCE_BLOB_CLOSURE");
+  const findings = inspectThemeResourceGraphV1(
+    {
+      themeUUID: source.themeUUID,
+      profile: "embedded",
+      assets: source.core.assets,
+      assetCategories: [],
+      blobs: source.blobs
+    },
+    new Map(source.blobs.map((blob) => [blob.blobHash, { bytes: material.get(blob.blobHash), mimeType: blob.mimeType }]))
+  );
+  if (findings.length) throw new Error(`COMPOSITE_RESOURCE_INVALID: ${findings[0].code} ${findings[0].details?.reason}`);
+  return material;
+}
+function compositeTemplateResourceReferencesV1(appearance, resources, existing) {
+  const assets = new Map(resources?.embeddedTheme.core.assets.map((asset) => [asset.assetId, asset]) ?? []);
+  const referenced = /* @__PURE__ */ new Set();
+  const visitor = createThemeResourceVisitorV1((value, subject, allowed) => {
+    if (typeof value !== "string" || !value.startsWith("asset:")) return;
+    const id3 = value.slice(6), asset = assets.get(id3);
+    if (!asset && existing?.core.assets.some((item) => item.assetId === id3 && allowed.includes(item.kind))) return;
+    if (!asset || !allowed.includes(asset.kind)) throw new Error(`COMPOSITE_RESOURCE_CLOSURE: ${subject}`);
+    referenced.add(id3);
+  });
+  appearance.forEach((item, index) => visitor.appearance(item, `appearance:${index}`));
+  for (const id3 of referenced) for (const dependency of assets.get(id3).authoringSources ?? []) {
+    if (dependency.attachment === "embedded-asset") referenced.add(dependency.assetId);
+  }
+  if (!existing && assets.size !== referenced.size) throw new Error("COMPOSITE_RESOURCE_UNUSED_ASSET");
+  const usedBlobs = new Set([...referenced].map((id3) => assets.get(id3).blobHash));
+  if (!existing && resources && resources.embeddedTheme.blobs.some((blob) => !usedBlobs.has(blob.blobHash))) throw new Error("COMPOSITE_RESOURCE_UNUSED_BLOB");
+  return [...referenced];
+}
+
+// src/common/plugin-display-text.ts
+function resolvePluginDisplayText(value, locale) {
+  if (typeof value === "string") return value;
+  const normalizedLocale = locale.trim();
+  const exact = value.translations?.[normalizedLocale];
+  if (exact !== void 0) return exact;
+  const baseLocale = normalizedLocale.split(/[-_]/, 1)[0];
+  const base = baseLocale ? value.translations?.[baseLocale] : void 0;
+  return base ?? value.default;
+}
+
+// src/common/plugin-composite-v1.ts
+var COMPOSITE_ELEMENT_TYPES_V1 = Object.keys(COMPOSITE_ELEMENT_CONTRACTS_V1);
+function localizeCompositeDefinitionV1(source, locale) {
+  const result = structuredClone(source);
+  for (const element of result.appearance.elements) {
+    if (element.typeId === "text") element.data.text = resolvePluginDisplayText(element.data.text, locale);
+    if (element.typeId !== "button") continue;
+    if (element.data.title !== void 0) element.data.title = resolvePluginDisplayText(element.data.title, locale);
+    for (const state of element.data.states ?? []) {
+      if (state.label !== void 0) state.label = resolvePluginDisplayText(state.label, locale);
+      if (state.overrides.title !== void 0) state.overrides.title = resolvePluginDisplayText(state.overrides.title, locale);
+    }
+  }
+  return result;
+}
+function compositeButtonSettingsV1(definition, button2) {
+  const settings = {};
+  for (const declaration of definition.buttonConfigs ?? []) {
+    if (declaration.identifier !== void 0 ? declaration.identifier !== button2.identifier : declaration.mode !== button2.data.interaction.mode) continue;
+    for (const [key, field] of Object.entries(declaration.settings)) {
+      if (Object.prototype.hasOwnProperty.call(settings, key)) throw new Error(`COMPOSITE_CONFIG_DUPLICATE_FIELD: ${key}`);
+      settings[key] = field;
+    }
+  }
+  return settings;
+}
+function compositeButtonConfigDefaultsV1(definition, button2, current = {}) {
+  const fields = compositeButtonSettingsV1(definition, button2);
+  return { ...Object.fromEntries(Object.entries(fields).map(([key, field]) => [key, structuredClone(field.default)])), ...structuredClone(current) };
+}
+function materializeCompositeTemplateV1(definition, locale, uuid2 = generatePackageUUIDV1) {
+  const localized = localizeCompositeDefinitionV1(definition, locale);
+  const autoSize = {};
+  const buttonConfigs = {};
+  const elements = localized.appearance.elements.map((source) => {
+    const element = structuredClone(source);
+    element.uuid = uuid2();
+    if (element.typeId === "button") {
+      const missing = ["fontSize", "iconSize"].filter((key) => element.style[key] === void 0);
+      if (missing.length) autoSize[element.uuid] = missing;
+      element.style.fontSize ??= 18;
+      element.style.iconSize ??= 20;
+      const fields = compositeButtonSettingsV1(definition, element);
+      if (Object.keys(fields).length) buttonConfigs[element.uuid] = compositeButtonConfigDefaultsV1(definition, element);
+    }
+    return element;
+  });
+  return { appearance: [{ background: localized.appearance.background, elements }], buttonConfigs, autoSize };
+}
+function validateCompositeDefinitionV1(definition) {
+  const declaredIds = /* @__PURE__ */ new Set();
+  for (const element of definition.appearance.elements) {
+    if (element.uuid !== void 0) {
+      if (declaredIds.has(element.uuid)) throw new Error(`COMPOSITE_DUPLICATE_TEMPLATE_UUID: ${element.uuid}`);
+      declaredIds.add(element.uuid);
+    }
+  }
+  let index = 0;
+  const material = materializeCompositeTemplateV1(definition, "", () => `00000000-0000-4000-8000-${String(index++).padStart(12, "0")}`);
+  if (definition.resources) decodeCompositeTemplateResourcesV1(definition.resources);
+  compositeTemplateResourceReferencesV1(material.appearance, definition.resources);
+  const problems = validateElementContextV1(material.appearance[0].elements, { plugin: { type: "composite" } });
+  if (problems.length) throw new Error(`COMPOSITE_INVALID: ${problems[0].path} ${problems[0].code}`);
+  const buttons = material.appearance[0].elements.filter((element) => element.typeId === "button");
+  const scopes = /* @__PURE__ */ new Set();
+  for (const declaration of definition.buttonConfigs ?? []) {
+    const scope2 = declaration.identifier !== void 0 ? `identifier:${declaration.identifier}` : `mode:${declaration.mode}`;
+    if (scopes.has(scope2)) throw new Error(`COMPOSITE_CONFIG_DUPLICATE_SCOPE: ${scope2}`);
+    scopes.add(scope2);
+    if (declaration.identifier !== void 0 && !buttons.some((button2) => button2.identifier === declaration.identifier)) throw new Error(`COMPOSITE_CONFIG_UNKNOWN_BUTTON: ${declaration.identifier}`);
+    for (const [key, field] of Object.entries(declaration.settings)) {
+      const resolved = {
+        ...field,
+        key,
+        label: resolvePluginDisplayText(field.label, ""),
+        value: field.default,
+        ...field.type === "select" ? { items: field.items.map((item) => ({ ...item, title: resolvePluginDisplayText(item.title, "") })) } : {}
+      };
+      validatePluginFormField(resolved);
+      if (pluginFormError({ requiredText: "invalid", tooLongText: "invalid" }, resolved, field.default)) throw new Error(`COMPOSITE_CONFIG_INVALID_DEFAULT: ${key}`);
+    }
+  }
+}
 
 // src/main/plugin/plugin-definitions-validate.ts
 var BUILTIN_UNIT_REQUIRED_KEYS = [
@@ -68146,6 +75939,7 @@ var BUILTIN_UNIT_REQUIRED_KEYS = [
 ];
 var BUILTIN_UNIT_ALLOWED_KEYS = /* @__PURE__ */ new Set([
   ...BUILTIN_UNIT_REQUIRED_KEYS,
+  "layouts",
   "pluginTemplate",
   "_metadata",
   "fixedAppearance",
@@ -68163,8 +75957,8 @@ var BUILTIN_APPEARANCE_ELEMENT_REQUIRED_KEYS = [
 var validateCompiled = null;
 function getCompiledValidator() {
   if (!validateCompiled) {
-    const ajv = new Ajv({ allErrors: true, verbose: true });
-    validateCompiled = ajv.compile(PLUGIN_DEFINITIONS_JSON_SCHEMA);
+    const ajv2 = new import_ajv3.default({ allErrors: true, verbose: true });
+    validateCompiled = ajv2.compile(PLUGIN_DEFINITIONS_JSON_SCHEMA);
   }
   return validateCompiled;
 }
@@ -68242,6 +76036,13 @@ function validateBuiltinUnitTree(unit, path, unitByTypeId, builtinUnitUuidSeen, 
     }
   }
   validateBuiltinUnitTemplateShape(candidate, label);
+  const layouts = unit.layouts;
+  if (layouts) {
+    if (!isRoot) throw new Error(`Builtin unit ${label}: layouts are only allowed on the root definition`);
+    if ([layouts.default, ...Object.values(layouts.devices ?? {})].some((layout) => layout.presentation !== void 0 || layout.buttonGroup !== void 0)) {
+      throw new Error(`Builtin unit ${label}: layouts support preferredSize and appearance only`);
+    }
+  }
   if (typeof candidate.uuid === "string") {
     if (builtinUnitUuidSeen.has(candidate.uuid)) {
       throw new Error(`Duplicate builtin unit uuid in payload: ${candidate.uuid}`);
@@ -68397,6 +76198,11 @@ function validateBuiltinPluginTemplateBinding(pluginTemplate, label, unitByTypeI
 }
 function validateUnitTypeFields(unit) {
   const type = unit.plugin.type;
+  if (type === "composite") {
+    validateCompositeDefinitionV1(unit.composite);
+    if (unit.defaultData && Object.prototype.hasOwnProperty.call(unit.defaultData, "buttonConfigs")) throw new Error("COMPOSITE_CONFIG_DEFAULTS_REQUIRE_DECLARATIONS");
+  }
+  if (unit.indicator !== void 0) validateIndicator(unit);
   if (type === "panel") resolvePluginPanelDefinition(unit.panel);
   const disallowClick = /* @__PURE__ */ new Set(["slider", "button-group", "value-label", "label"]);
   if (unit.interactionMode === "click" && disallowClick.has(type)) {
@@ -68427,8 +76233,8 @@ function validateUnitTypeFields(unit) {
     );
   }
   if (type === "canvas") {
-    if (unit.appearanceOverride) {
-      throw new Error(`Unit ${unit.typeId}: plugin.type 'canvas' cannot have appearanceOverride`);
+    if ([unit.layouts.default, ...Object.values(unit.layouts.devices ?? {})].some((layout) => layout.appearance !== void 0)) {
+      throw new Error(`Unit ${unit.typeId}: plugin.type 'canvas' cannot have layout appearance`);
     }
     if (unit.functions) {
       throw new Error(`Unit ${unit.typeId}: plugin.type 'canvas' cannot have functions`);
@@ -68472,7 +76278,7 @@ function validateUnitTypeFields(unit) {
     if (!unit.buttonGroup) {
       throw new Error(`Unit ${unit.typeId}: plugin.type 'button-group' requires buttonGroup`);
     }
-    validateButtonGroupDefinition(unit);
+    validateButtonGroupDefinitionV1(unit);
     if (unit.functions) {
       throw new Error(`Unit ${unit.typeId}: plugin.type 'button-group' cannot have functions`);
     }
@@ -68485,8 +76291,8 @@ function validateUnitTypeFields(unit) {
     if (unit.label) {
       throw new Error(`Unit ${unit.typeId}: plugin.type 'button-group' cannot have label`);
     }
-    if (unit.appearanceOverride) {
-      throw new Error(`Unit ${unit.typeId}: plugin.type 'button-group' cannot have appearanceOverride`);
+    if ([unit.layouts.default, ...Object.values(unit.layouts.devices ?? {})].some((layout) => layout.appearance !== void 0)) {
+      throw new Error(`Unit ${unit.typeId}: plugin.type 'button-group' cannot have layout appearance`);
     }
     return;
   }
@@ -68524,56 +76330,6 @@ function validateUnitTypeFields(unit) {
     }
   }
 }
-function validateButtonGroupDefinition(unit) {
-  if (unit.plugin.type !== "button-group") return;
-  const buttons = unit.buttonGroup?.buttons ?? [];
-  if (buttons.length < 2) {
-    throw new Error(`button-group '${unit.typeId}' must declare at least two buttons`);
-  }
-  const seen = /* @__PURE__ */ new Set();
-  for (const button of buttons) {
-    const id2 = button.buttonId;
-    const normalizedId = id2.trim();
-    if (!normalizedId) {
-      throw new Error(`button-group '${unit.typeId}' has an empty buttonId`);
-    }
-    if (normalizedId !== id2) {
-      throw new Error(`button-group '${unit.typeId}' buttonId '${id2}' must not have leading or trailing whitespace`);
-    }
-    if (seen.has(id2)) {
-      throw new Error(`Duplicate button-group buttonId '${id2}' in '${unit.typeId}'`);
-    }
-    seen.add(id2);
-  }
-  const defaultSeen = /* @__PURE__ */ new Set();
-  const defaultActiveButtonIds = unit.buttonGroup?.defaultActiveButtonIds ?? [];
-  const selectionMode = unit.buttonGroup?.selectionMode ?? "single";
-  const hasExplicitDefaultActiveButtonIds = unit.buttonGroup !== void 0 && Object.prototype.hasOwnProperty.call(unit.buttonGroup, "defaultActiveButtonIds");
-  if (hasExplicitDefaultActiveButtonIds && defaultActiveButtonIds.length === 0 && unit.buttonGroup?.mandatory !== false) {
-    throw new Error(`button-group '${unit.typeId}' mandatory groups cannot declare empty defaultActiveButtonIds`);
-  }
-  for (const activeId of defaultActiveButtonIds) {
-    const normalizedActiveId = activeId.trim();
-    if (!normalizedActiveId) {
-      throw new Error(`button-group '${unit.typeId}' defaultActiveButtonIds contains an empty buttonId`);
-    }
-    if (normalizedActiveId !== activeId) {
-      throw new Error(
-        `button-group '${unit.typeId}' defaultActiveButtonIds buttonId '${activeId}' must not have leading or trailing whitespace`
-      );
-    }
-    if (defaultSeen.has(activeId)) {
-      throw new Error(`Duplicate button-group defaultActiveButtonId '${activeId}' in '${unit.typeId}'`);
-    }
-    defaultSeen.add(activeId);
-    if (!seen.has(activeId)) {
-      throw new Error(`button-group '${unit.typeId}' defaultActiveButtonIds contains unknown buttonId '${activeId}'`);
-    }
-  }
-  if (selectionMode === "single" && defaultActiveButtonIds.length > 1) {
-    throw new Error(`button-group '${unit.typeId}' selectionMode 'single' cannot declare multiple defaultActiveButtonIds`);
-  }
-}
 function validateNoRuntimeLabelFields(unit) {
   if (unit.valueLabel) {
     throw new Error(`Unit ${unit.typeId}: plugin.type '${unit.plugin.type}' cannot have valueLabel`);
@@ -68583,10 +76339,15 @@ function validateNoRuntimeLabelFields(unit) {
   }
 }
 function validateAppearanceReferences(unit) {
-  if (unit.plugin.type === "panel" && unit.appearanceOverride) throw new Error("Agent Panel appearance is platform-owned");
-  if (unit.availableElements && !supportsStatusCountElementsV1(unit.plugin.type)) throw new Error("availableElements requires a native data Unit");
+  if (unit.plugin.type === "panel" && [unit.layouts.default, ...Object.values(unit.layouts.devices ?? {})].some((layout) => layout.appearance !== void 0)) throw new Error("Agent Panel appearance is platform-owned");
+  if (unit.availableElements && unit.plugin.type !== "composite" && !supportsStatusCountElementsV1(unit.plugin.type)) throw new Error("availableElements requires a native data Unit");
   if (unit.plugin.type === "standard" && unit.availableElements?.some((type) => type.startsWith("chart-"))) throw new Error("Chart element palette requires a Chart Unit");
-  const overrides = unit.plugin.type === "cycled" ? (unit.functions ?? []).map((fn) => fn.appearanceOverride) : unit.plugin.type === "standard" || unit.plugin.type === "slider" || unit.plugin.type === "chart" || unit.plugin.type === "panel" ? [unit.appearanceOverride] : [];
+  const layouts = [unit.layouts.default, ...Object.values(unit.layouts.devices ?? {})];
+  if (unit.plugin.type !== "button-group" && layouts.some((layout) => layout.buttonGroup)) throw new Error("buttonGroup layout requires a Button Group Unit");
+  if (unit.plugin.type === "chart" && layouts.some((layout) => !layout.appearance)) throw new Error("Chart layouts require appearance");
+  if (!["custom", "canvas"].includes(unit.plugin.type) && layouts.some((layout) => layout.presentation !== void 0))
+    throw new Error("Layout presentation is only supported by custom/canvas Units");
+  const overrides = [...layouts.map((layout) => layout.appearance), ...(unit.functions ?? []).map((fn) => fn.appearanceOverride)];
   for (const override of overrides) {
     const ids = /* @__PURE__ */ new Set();
     for (const element of override?.elements ?? []) {
@@ -68599,17 +76360,25 @@ function validateAppearanceReferences(unit) {
           throw new Error("status-count requires distinct options and a selected dataSourceKey");
       }
       if (unit.plugin.type === "chart" || unit.plugin.type === "panel" || unit.availableElements) {
-        if (element.identifier !== void 0) throw new Error(`Unit ${unit.typeId}: explicit element palettes require complete elements, not primary-element patches`);
         if (element.uuid && ids.has(element.uuid)) throw new Error(`Unit ${unit.typeId}: duplicate element uuid ${element.uuid}`);
         if (element.uuid) ids.add(element.uuid);
       }
-      if (element.identifier !== void 0) {
-        if (element.identifier !== PRIMARY_TEXT_IDENTIFIER && element.identifier !== PRIMARY_ICON_IDENTIFIER) {
-          throw new Error(`Unit ${unit.typeId}: Unknown plugin appearance element identifier: ${element.identifier}`);
-        }
-      } else if (!element.typeId || !element.uuid || !isPlainObject(element.config) || !isPlainObject(element.style) || !isPlainObject(element.data) || !isPlainObject(element.geometry) || !GEOMETRY_REQUIRED_KEYS.every((key) => Number.isFinite(element.geometry?.[key]))) {
-        throw new Error(`Unit ${unit.typeId}: Plugin appearance appended element must be a complete element`);
+      const primaryPatch = !["chart", "panel", "composite"].includes(unit.plugin.type) && !unit.availableElements && (element.identifier === PRIMARY_TEXT_IDENTIFIER || element.identifier === PRIMARY_ICON_IDENTIFIER);
+      const compositePatch = unit.plugin.type === "composite" && unit.composite?.appearance.elements.some((slot) => slot.identifier === element.identifier);
+      if (!primaryPatch && !compositePatch && (!element.typeId || !element.uuid || !isPlainObject(element.config) || !isPlainObject(element.style) || !isPlainObject(element.data) || !isPlainObject(element.geometry) || !GEOMETRY_REQUIRED_KEYS.every((key) => Number.isFinite(element.geometry?.[key])))) {
+        throw new Error(`Unit ${unit.typeId}: Unknown plugin appearance element identifier; appended slots require complete elements`);
       }
+    }
+  }
+}
+function validateIndicator(unit) {
+  if (unit.plugin.type !== "cycled") {
+    throw new Error(`Unit ${unit.typeId}: indicator is only valid for plugin.type 'cycled'`);
+  }
+  const known = new Set((unit.functions ?? []).map((fn) => fn.functionId));
+  for (const functionId of unit.indicator.onFunctionIds) {
+    if (!known.has(functionId)) {
+      throw new Error(`Unit ${unit.typeId}: indicator.onFunctionIds '${functionId}' is not one of the unit's functions`);
     }
   }
 }
@@ -68640,3 +76409,18 @@ export {
   PLUGIN_DEFINITIONS_JSON_SCHEMA,
   validatePluginDefinitionsPayload
 };
+/*! Bundled license information:
+
+uri-js/dist/es5/uri.all.js:
+  (** @license URI.js v4.4.1 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js *)
+
+js-sha256/src/sha256.js:
+  (**
+   * [js-sha256]{@link https://github.com/emn178/js-sha256}
+   *
+   * @version 0.11.1
+   * @author Chen, Yi-Cyuan [emn178@gmail.com]
+   * @copyright Chen, Yi-Cyuan 2014-2025
+   * @license MIT
+   *)
+*/
