@@ -6767,6 +6767,198 @@ var require_sha256 = __commonJS({
   }
 });
 
+// src/types/unit.ts
+var UnitTypeId = {
+  BASIC: "@eniacelec/basic",
+  NAVIGATION_FOLDER: "@eniacelec/navigation:folder",
+  NAVIGATION_CONTAINER: "@eniacelec/navigation:container",
+  NAVIGATION_RETURN: "@eniacelec/navigation:return",
+  NAVIGATION_PAGE_JUMP: "@eniacelec/navigation:page-jump",
+  NAVIGATION_WIDGET: "@eniacelec/navigation:widget",
+  INPUT_KEYBOARD: "@eniacelec/input:keyboard",
+  INPUT_MOUSE: "@eniacelec/input:mouse",
+  INPUT_TEXT_INPUT: "@eniacelec/input:text-input",
+  MEDIA_MEDIA_KEY: "@eniacelec/media:media-key",
+  EXECUTION_EXECUTE: "@eniacelec/execution:execute",
+  UTILITY_CLOCK: "@eniacelec/utility:clock",
+  UTILITY_CHART: "@eniacelec/utility:chart",
+  UTILITY_AUDIO_VISUALIZER: "@eniacelec/utility:audio-visualizer",
+  UTILITY_AUDIO_SPECTRUM: "@eniacelec/utility:audio-spectrum",
+  UTILITY_VU_METER: "@eniacelec/utility:vu-meter",
+  UTILITY_VOLUME_SLIDER: "@eniacelec/utility:volume-slider",
+  UTILITY_VOLUME_SLIDER_INLINE: "@eniacelec/utility:volume-slider-inline",
+  UTILITY_POMODORO: "@eniacelec/utility:pomodoro",
+  ADVANCED_MACRO_KEY: "@eniacelec/advanced:macro-key",
+  ADVANCED_CYCLED_KEY: "@eniacelec/advanced:cycled-key",
+  ADVANCED_BUTTON_GROUP: "@eniacelec/advanced:button-group",
+  MISC_NO_FUNC_KEY: "@eniacelec/misc:no-func-key"
+};
+var PLUGIN_UNIT_TYPES_V1 = ["standard", "custom", "canvas", "cycled", "slider", "value-label", "label", "button-group", "panel", "chart", "composite"];
+
+// src/common/utils/utils.ts
+function deepCopy(obj) {
+  if (obj === null || obj === void 0 || typeof obj !== "object") {
+    return obj;
+  }
+  if (obj instanceof Date) {
+    return new Date(obj.getTime());
+  }
+  if (obj instanceof RegExp) {
+    return new RegExp(obj.source, obj.flags);
+  }
+  if (obj instanceof Map) {
+    const map = /* @__PURE__ */ new Map();
+    obj.forEach((val, key) => {
+      map.set(deepCopy(key), deepCopy(val));
+    });
+    return map;
+  }
+  if (obj instanceof Set) {
+    const set = /* @__PURE__ */ new Set();
+    obj.forEach((val) => {
+      set.add(deepCopy(val));
+    });
+    return set;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map((item) => deepCopy(item));
+  }
+  if (obj.constructor === Object || Object.getPrototypeOf(obj) === null) {
+    const result = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        result[key] = deepCopy(obj[key]);
+      }
+    }
+    return result;
+  }
+  return obj;
+}
+
+// src/common/utils/generate-uuid.ts
+function generatePackageUUIDV1() {
+  const cryptoAPI = globalThis.crypto;
+  if (!cryptoAPI?.getRandomValues) throw new Error("IDENTITY_CREATION_FAILED: secure randomness unavailable");
+  const bytes2 = cryptoAPI.getRandomValues(new Uint8Array(16));
+  bytes2[6] = bytes2[6] & 15 | 64;
+  bytes2[8] = bytes2[8] & 63 | 128;
+  const hex = Array.from(bytes2, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+// src/common/unit-element-model-v1.ts
+function assertUnitStateAssociationsV1(unit) {
+  if (unit.typeId !== UnitTypeId.ADVANCED_CYCLED_KEY && unit.plugin?.type !== "cycled") return;
+  const functions = unit.data.functions;
+  if (!Array.isArray(functions) || functions.length !== unit.appearance.length || functions.some((action, index) => !action || typeof action !== "object" || action.stateId !== unit.appearance[index].stateId)) {
+    throw new Error("CYCLED_STATE_IDENTITY_MISMATCH");
+  }
+}
+var ELEMENT_DISPLAY_DATA_KEYS_V1 = {
+  text: ["text"],
+  icon: ["value", "type", "emojiSet", "emojiUnified", "emojiSheetX", "emojiSheetY"],
+  image: ["value"],
+  button: ["icon", "title"],
+  "panel-session": ["itemTitle"],
+  indicator: [],
+  slider: [],
+  "chart-progress-bar": [],
+  "chart-line": [],
+  "chart-series-bar": [],
+  "chart-gauge": [],
+  "chart-heatmap": [],
+  "chart-text": [],
+  "status-count": [],
+  "@eniacelec/utility:audio-spectrum": [],
+  "@eniacelec/utility:vu-meter": [],
+  "panel-field": [],
+  "panel-state": [],
+  "panel-lines": [],
+  "panel-action": [],
+  "panel-back": []
+};
+function splitUnitElementV1(element) {
+  const { style, data, ...identity } = deepCopy(element);
+  const keys = ELEMENT_DISPLAY_DATA_KEYS_V1[element.typeId];
+  if (!keys) throw new Error("UNIT_ELEMENT_TYPE_INVALID");
+  const displayData = Object.fromEntries(Object.entries(data).filter(([key]) => keys.includes(key)));
+  const sharedData = Object.fromEntries(Object.entries(data).filter(([key]) => !keys.includes(key)));
+  return {
+    definition: { ...identity, sharedData },
+    value: { style, data: displayData }
+  };
+}
+function resolveUnitElementV1(definition, value) {
+  const { sharedData, ...identity } = definition;
+  return deepCopy({ ...identity, style: value.style, data: { ...sharedData, ...value.data } });
+}
+function resolveUnitAppearanceV1(unit, index) {
+  const state = unit.appearance[index];
+  if (!state) throw new Error("UNIT_APPEARANCE_TARGET_MISSING");
+  return { background: deepCopy(state.background), elements: unit.elements.map((definition) => {
+    const value = state.elementValues[definition.uuid];
+    if (!value) throw new Error("UNIT_ELEMENT_STATE_VALUE_MISSING");
+    return resolveUnitElementV1(definition, value);
+  }) };
+}
+function resolveUnitAppearancesV1(unit) {
+  return unit.appearance.map((_, index) => resolveUnitAppearanceV1(unit, index));
+}
+function equalJsonV1(left, right) {
+  if (left === right) return true;
+  if (!left || !right || typeof left !== "object" || typeof right !== "object") return false;
+  if (Array.isArray(left) !== Array.isArray(right)) return false;
+  const a = Object.keys(left), b = Object.keys(right);
+  return a.length === b.length && a.every((key) => Object.prototype.hasOwnProperty.call(right, key) && equalJsonV1(left[key], right[key]));
+}
+function assertUnitElementModelV1(unit) {
+  if (!Array.isArray(unit.elements) || !Array.isArray(unit.appearance) || !unit.appearance.length) throw new Error("UNIT_ELEMENT_MODEL_INVALID");
+  const ids = /* @__PURE__ */ new Set();
+  for (const element of unit.elements) {
+    if (!element.uuid || ids.has(element.uuid)) throw new Error("UNIT_ELEMENT_DUPLICATE_ID");
+    ids.add(element.uuid);
+    if (!Object.prototype.hasOwnProperty.call(ELEMENT_DISPLAY_DATA_KEYS_V1, element.typeId) || !element.sharedData || !element.geometry || !element.config || Object.keys(element).some((key) => !["typeId", "uuid", "name", "identifier", "config", "geometry", "sharedData"].includes(key))) throw new Error("UNIT_ELEMENT_DEFINITION_INVALID");
+  }
+  const states = /* @__PURE__ */ new Set();
+  for (const state of unit.appearance) {
+    if (!state.stateId || states.has(state.stateId)) throw new Error("UNIT_APPEARANCE_STATE_ID_INVALID");
+    states.add(state.stateId);
+    if (!state.elementValues || Object.keys(state).some((key) => !["stateId", "background", "elementValues"].includes(key)) || Object.keys(state.elementValues).length !== ids.size || Object.keys(state.elementValues).some((id3) => !ids.has(id3))) throw new Error("UNIT_ELEMENT_STATE_KEYS_INVALID");
+    for (const definition of unit.elements) {
+      const value = state.elementValues[definition.uuid];
+      if (!value || !value.style || !value.data || Object.keys(value).some((key) => !["style", "data"].includes(key))) throw new Error("UNIT_ELEMENT_STATE_VALUE_INVALID");
+      const split = splitUnitElementV1(resolveUnitElementV1(definition, value));
+      if (!equalJsonV1(split.definition, definition) || !equalJsonV1(split.value, value)) throw new Error("UNIT_ELEMENT_FIELD_OWNERSHIP_INVALID");
+    }
+  }
+}
+function createUnitElementModelV1(elements, states) {
+  const split = elements.map(splitUnitElementV1);
+  const result = { elements: split.map((entry) => entry.definition), appearance: states.map((state) => ({
+    stateId: state.stateId,
+    background: deepCopy(state.background),
+    elementValues: { ...Object.fromEntries(split.map((entry) => [entry.definition.uuid, deepCopy(entry.value)])), ...deepCopy(state.elementValues ?? {}) }
+  })) };
+  assertUnitElementModelV1(result);
+  return result;
+}
+function createUnitAppearanceModelV1(appearances, stateIds = appearances.map(() => generatePackageUUIDV1())) {
+  if (!appearances.length || stateIds.length !== appearances.length) throw new Error("UNIT_ELEMENT_MODEL_INVALID");
+  const definitions2 = appearances[0].elements.map((element) => splitUnitElementV1(element).definition);
+  for (const appearance of appearances) {
+    if (!equalJsonV1(definitions2, appearance.elements.map((element) => splitUnitElementV1(element).definition))) throw new Error("UNIT_ELEMENT_STRUCTURE_MISMATCH");
+  }
+  return createUnitElementModelV1(appearances[0].elements, appearances.map((appearance, index) => ({
+    stateId: stateIds[index],
+    background: appearance.background,
+    elementValues: Object.fromEntries(appearance.elements.map((element) => [element.uuid, splitUnitElementV1(element).value]))
+  })));
+}
+function replaceUnitResolvedAppearancesV1(unit, appearances) {
+  if (appearances.length !== unit.appearance.length) throw new Error("UNIT_APPEARANCE_STATE_COUNT_MISMATCH");
+  return { ...unit, ...createUnitAppearanceModelV1(appearances, unit.appearance.map((state) => state.stateId)) };
+}
+
 // src/common/assets/Icons.json
 var Icons_default = {
   "Developer / Languages": [
@@ -73401,99 +73593,20 @@ function supportsStatusCountElementsV1(type) {
 // src/main/plugin/plugin-definitions-validate.ts
 var import_ajv3 = __toESM(require_ajv(), 1);
 
+// src/common/indicator-element-v1.ts
+var INDICATOR_DEFAULT_COLORS_V1 = Object.freeze({ off: "#4a4d52", on: "#66bb6a" });
+function remapIndicatorBindingsV1(elements, mapping) {
+  for (const element of elements) if (element.typeId === "indicator" && element.data.binding)
+    element.data.binding.buttonId = mapping.get(element.data.binding.buttonId) ?? element.data.binding.buttonId;
+}
+
 // src/common/button-group-state.ts
 var import_ajv = __toESM(require_ajv(), 1);
-
-// src/types/unit.ts
-var UnitTypeId = {
-  BASIC: "@eniacelec/basic",
-  NAVIGATION_FOLDER: "@eniacelec/navigation:folder",
-  NAVIGATION_CONTAINER: "@eniacelec/navigation:container",
-  NAVIGATION_RETURN: "@eniacelec/navigation:return",
-  NAVIGATION_PAGE_JUMP: "@eniacelec/navigation:page-jump",
-  NAVIGATION_WIDGET: "@eniacelec/navigation:widget",
-  INPUT_KEYBOARD: "@eniacelec/input:keyboard",
-  INPUT_MOUSE: "@eniacelec/input:mouse",
-  INPUT_TEXT_INPUT: "@eniacelec/input:text-input",
-  MEDIA_MEDIA_KEY: "@eniacelec/media:media-key",
-  EXECUTION_EXECUTE: "@eniacelec/execution:execute",
-  UTILITY_CLOCK: "@eniacelec/utility:clock",
-  UTILITY_CHART: "@eniacelec/utility:chart",
-  UTILITY_AUDIO_VISUALIZER: "@eniacelec/utility:audio-visualizer",
-  UTILITY_AUDIO_SPECTRUM: "@eniacelec/utility:audio-spectrum",
-  UTILITY_VU_METER: "@eniacelec/utility:vu-meter",
-  UTILITY_VOLUME_SLIDER: "@eniacelec/utility:volume-slider",
-  UTILITY_VOLUME_SLIDER_INLINE: "@eniacelec/utility:volume-slider-inline",
-  UTILITY_POMODORO: "@eniacelec/utility:pomodoro",
-  ADVANCED_MACRO_KEY: "@eniacelec/advanced:macro-key",
-  ADVANCED_CYCLED_KEY: "@eniacelec/advanced:cycled-key",
-  ADVANCED_BUTTON_GROUP: "@eniacelec/advanced:button-group",
-  MISC_NO_FUNC_KEY: "@eniacelec/misc:no-func-key"
-};
-var PLUGIN_UNIT_TYPES_V1 = ["standard", "custom", "canvas", "cycled", "slider", "value-label", "label", "button-group", "panel", "chart", "composite"];
 
 // src/common/native-text/device-fonts.ts
 var DEVICE_FONT_REFERENCES_V1 = ["builtin:font:puhuiti", "builtin:font:consola", "builtin:font:ds-digital"];
 var DEVICE_FONT_SIZE_TIERS_V1 = [18, 20, 24, 28, 32, 40, 48];
 var DEVICE_ICON_SIZE_TIERS_V1 = [20, 24, 28, 32, 40, 48];
-
-// src/types/element.ts
-var PRIMARY_TEXT_IDENTIFIER = "primary-text";
-var PRIMARY_ICON_IDENTIFIER = "primary-icon";
-var BUTTON_LAYOUT_PRESETS_V1 = ["icon-left", "icon-top", "icon-only", "title-only", "none"];
-var BUTTON_MODES_V1 = ["key", "toggle", "cycled"];
-var PANEL_FONT_FAMILIES = ["builtin:font:puhuiti", "builtin:font:consola"];
-
-// src/common/plugin-panel-presentation.ts
-var PANEL_STATE_COLORS = Object.freeze({ active: "#4C8DFF", attention: "#F2A93B", success: "#4CC38A", error: "#F25F5C", idle: "#8A8A8A", disabled: "#555555" });
-
-// src/common/utils/generate-uuid.ts
-function generatePackageUUIDV1() {
-  const cryptoAPI = globalThis.crypto;
-  if (!cryptoAPI?.getRandomValues) throw new Error("IDENTITY_CREATION_FAILED: secure randomness unavailable");
-  const bytes2 = cryptoAPI.getRandomValues(new Uint8Array(16));
-  bytes2[6] = bytes2[6] & 15 | 64;
-  bytes2[8] = bytes2[8] & 63 | 128;
-  const hex = Array.from(bytes2, (byte) => byte.toString(16).padStart(2, "0")).join("");
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
-}
-
-// src/common/plugin-panel-elements.ts
-var isLegacyPanelCard = (element) => element.typeId === "panel-card";
-var PANEL_DEFAULT_COLORS = Object.freeze({
-  text: "#F2F2F2",
-  muted: "#9A9A9A",
-  primaryAction: "#3D8BFF",
-  dangerAction: "#B5473F"
-});
-var FLOW_THEME_DEFAULTS = Object.freeze({ secondarySize: 20, tertiarySize: 16, radius: 12, buttonInset: 8 });
-var BAR_THEME_DEFAULTS = Object.freeze({ secondarySize: 16, tertiarySize: 14, radius: 8, buttonInset: 4 });
-var PANEL_VIEW_ELEMENT_TYPES = Object.freeze({
-  overview: ["panel-session"],
-  detail: [],
-  notice: []
-});
-var DEFAULT_PANEL_LABELS = Object.freeze({
-  noSessions: "No sessions",
-  expired: "Expired",
-  back: "Back",
-  updatedMinutes: (minutes) => `Updated ${minutes} min ago`
-});
-var FIXED_TEXT_METRICS = Object.freeze({
-  width: (text4, fontSize) => Math.ceil(text4.length * fontSize * 0.55),
-  lineHeight: (fontSize) => Math.ceil(fontSize * 1.3)
-});
-var STATE_ICONS = Object.freeze({
-  active: "mdi-autorenew",
-  attention: "mdi-pending-actions",
-  success: "mdi-check-circle",
-  error: "mdi-alert-circle",
-  disabled: "mdi-link-off",
-  idle: "mdi-pause-circle"
-});
-
-// src/common/unit-indicator.ts
-var UNIT_INDICATOR_COLORS = Object.freeze({ on: "#66bb6a", off: "#4a4d52" });
 
 // src/common/button-group-state.ts
 var BUTTON_GROUP_DISPLAY_MODES_V1 = ["title-only", "icon-only", "icon-left", "icon-top"];
@@ -73503,6 +73616,17 @@ var object2 = (properties, required = Object.keys(properties)) => ({
   properties,
   required
 });
+var BUTTON_GROUP_HEADER_LAYOUT_SCHEMA_V1 = object2({
+  height: { type: "number", exclusiveMinimum: 0, maximum: 100 },
+  icon: object2(Object.fromEntries(["x", "y", "width", "height"].map((key) => [
+    key,
+    { type: "number", minimum: 0, maximum: 100 }
+  ])), ["x", "y", "width", "height"]),
+  title: object2(Object.fromEntries(["x", "y", "width", "height"].map((key) => [
+    key,
+    { type: "number", minimum: 0, maximum: 100 }
+  ])), ["x", "y", "width", "height"])
+}, ["height", "icon", "title"]);
 var BUTTON_GROUP_DATA_SCHEMA_V1 = {
   type: "object",
   required: ["functions", "buttonGroup"],
@@ -73525,7 +73649,8 @@ var BUTTON_GROUP_DATA_SCHEMA_V1 = {
       fontSize: { enum: [...DEVICE_FONT_SIZE_TIERS_V1] },
       iconSize: { enum: [...DEVICE_ICON_SIZE_TIERS_V1] },
       foregroundColor: { type: "string" },
-      showHeader: { type: "boolean" }
+      showHeader: { type: "boolean" },
+      headerLayout: BUTTON_GROUP_HEADER_LAYOUT_SCHEMA_V1
     }, [
       "presentationVersion",
       "selectionMode",
@@ -73543,6 +73668,13 @@ var validateData = new import_ajv.default({ allErrors: true }).compile(BUTTON_GR
 function isButtonGroupUnit(unit) {
   return unit?.typeId === UnitTypeId.ADVANCED_BUTTON_GROUP || unit?.plugin?.type === "button-group";
 }
+
+// src/types/element.ts
+var PRIMARY_TEXT_IDENTIFIER = "primary-text";
+var PRIMARY_ICON_IDENTIFIER = "primary-icon";
+var BUTTON_LAYOUT_PRESETS_V1 = ["icon-left", "icon-top", "icon-only", "title-only", "none"];
+var BUTTON_MODES_V1 = ["key", "toggle", "cycled"];
+var PANEL_FONT_FAMILIES = ["builtin:font:puhuiti", "builtin:font:consola"];
 
 // src/common/composite-runtime-contract-v1.ts
 var COMPOSITE_RUNTIME_LIMITS_V1 = {
@@ -73617,6 +73749,7 @@ function compositeSavedBudgetIssueV1(elements) {
 
 // src/common/element-contracts-v1.ts
 var ELEMENT_CONTRACTS_V1 = {
+  indicator: { schema: "indicatorElement", rendering: "device", resources: [] },
   text: { schema: "textElement", rendering: "raster", resources: ["background", "font"] },
   icon: { schema: "iconElement", rendering: "raster", resources: ["background", "icon"] },
   image: { schema: "imageElement", rendering: "raster", resources: ["background", "image"] },
@@ -73640,10 +73773,11 @@ var ELEMENT_CONTRACTS_V1 = {
   "panel-back": { schema: "panelBack", rendering: "device", resources: ["background", "font"] }
 };
 var COMPOSITE_ELEMENT_CONTRACTS_V1 = {
+  indicator: { writable: ["config.visible", "config.enabled", "style.color", "data.binding"], font: false },
   text: { writable: ["config.visible", "config.enabled", "data.text", "style.color", "style.background", "style.fontFamily", "style.fontSize"], font: true },
   icon: { writable: ["config.visible", "config.enabled", "data.value", "style.color", "style.background", "style.fontSize"], font: false },
   image: { writable: ["config.visible", "config.enabled"], font: false },
-  button: { writable: ["config.visible", "config.enabled", "style.background", "style.foregroundColor", "style.fontFamily", "style.fontSize", "style.iconSize", "data.layout", "data.icon", "data.title", "data.interaction", "data.states", "data.indicator"], font: true }
+  button: { writable: ["config.visible", "config.enabled", "style.background", "style.foregroundColor", "style.fontFamily", "style.fontSize", "style.iconSize", "data.layout", "data.icon", "data.title", "data.interaction", "data.states"], font: true }
 };
 var object3 = (properties, required = Object.keys(properties)) => ({
   type: "object",
@@ -73687,9 +73821,22 @@ var BUTTON_ELEMENT_SCHEMA_V1 = object3({
       label: string,
       overrides: object3({ icon: string, title: string, foregroundColor: string, background }, [])
     }, ["stateId", "overrides"]) },
-    initialStateId: id2,
-    indicator: object3({ litStateIds: { type: "array", uniqueItems: true, items: id2 } })
+    initialStateId: id2
   }, ["layout", "interaction"])
+}, ["typeId", "uuid", "config", "geometry", "style", "data"]);
+var INDICATOR_ELEMENT_SCHEMA_V1 = object3({
+  typeId: { const: "indicator" },
+  uuid: id2,
+  name: string,
+  identifier: id2,
+  config: { $ref: "#/definitions/elementConfig" },
+  geometry: { allOf: [{ $ref: "#/definitions/geometry" }, { properties: {
+    width: { type: "number", exclusiveMinimum: 0 },
+    height: { type: "number", exclusiveMinimum: 0 },
+    rotate: { const: 0 }
+  } }] },
+  style: object3({ color: string }),
+  data: object3({ binding: object3({ buttonId: id2, colors: { type: "array", items: object3({ stateId: id2, color: string }) } }) }, [])
 }, ["typeId", "uuid", "config", "geometry", "style", "data"]);
 var compositeIdentityFields = new Set(COMPOSITE_RUNTIME_IDENTITY_FIELDS_V1);
 var compositeEncoder;
@@ -73740,6 +73887,21 @@ function validateElementContextV1(elements, context) {
   for (const [index, element] of elements.entries()) {
     const issue = (path, code) => issues.push({ elementUuid: element.uuid, path: `elements[${index}].${path}`, code });
     if (element.typeId === "button" && !composite) issue("typeId", "BUTTON_OUTSIDE_COMPOSITE");
+    if (element.typeId === "indicator") {
+      if (element.geometry.rotate && element.geometry.rotate !== 0) issue("geometry.rotate", "ROTATION_NOT_ALLOWED");
+      const binding = element.data.binding;
+      if (binding) {
+        const button2 = elements.find((candidate) => candidate.typeId === "button" && candidate.uuid === binding.buttonId);
+        const group = context?.data?.buttonGroup && context.data.functions?.some((fn) => fn.buttonId === binding.buttonId);
+        if (!button2 && !group) issue("data.binding.buttonId", "UNKNOWN_BUTTON");
+        const states2 = button2?.typeId === "button" ? button2.data.states?.map((state) => state.stateId) ?? [] : group ? ["on", "off"] : [];
+        const used = /* @__PURE__ */ new Set();
+        for (const color of binding.colors) {
+          if (!states2.includes(color.stateId) || used.has(color.stateId)) issue("data.binding.colors", "UNKNOWN_OR_DUPLICATE_STATE");
+          used.add(color.stateId);
+        }
+      }
+    }
     if (!composite) continue;
     const limit = inspectCompositeJsonLimitsV1(element);
     if (limit) issue(limit.path, limit.constraint);
@@ -73788,14 +73950,11 @@ function validateElementContextV1(elements, context) {
     }
     const mode = element.data.interaction.mode;
     if (mode === "key") {
-      if (states.length || element.data.initialStateId !== void 0 || element.data.indicator !== void 0) issue("data.states", "KEY_HAS_NO_STATE");
+      if (states.length || element.data.initialStateId !== void 0) issue("data.states", "KEY_HAS_NO_STATE");
     } else {
       if (mode === "toggle" && states.length !== 2 || mode === "cycled" && states.length < 1) issue("data.states", "INVALID_STATE_COUNT");
       if (!stateIds.has(element.data.initialStateId ?? "")) issue("data.initialStateId", "UNKNOWN_STATE");
       if (element.data.interaction.longPress || element.data.interaction.repeat) issue("data.interaction", "REPEAT_REQUIRES_KEY");
-    }
-    for (const stateId of element.data.indicator?.litStateIds ?? []) {
-      if (!stateIds.has(stateId)) issue("data.indicator.litStateIds", "UNKNOWN_STATE");
     }
   }
   if (composite && !issues.length) {
@@ -73807,6 +73966,7 @@ function validateElementContextV1(elements, context) {
 
 // src/common/data/appearance-schema.ts
 var APPEARANCE_SCHEMA_DEFINITIONS = {
+  indicatorElement: INDICATOR_ELEMENT_SCHEMA_V1,
   buttonElement: BUTTON_ELEMENT_SCHEMA_V1,
   backgroundStyle: {
     type: "object",
@@ -73851,7 +74011,8 @@ var APPEARANCE_SCHEMA_DEFINITIONS = {
     oneOf: [
       { $ref: "#/definitions/textElement" },
       { $ref: "#/definitions/iconElement" },
-      { $ref: "#/definitions/imageElement" }
+      { $ref: "#/definitions/imageElement" },
+      { $ref: "#/definitions/indicatorElement" }
     ]
   },
   textElement: {
@@ -74028,6 +74189,7 @@ var definitions = {
   textElement: { ...APPEARANCE_SCHEMA_DEFINITIONS.textElement, properties: { ...APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties, uuid } },
   iconElement: { ...APPEARANCE_SCHEMA_DEFINITIONS.iconElement, properties: { ...APPEARANCE_SCHEMA_DEFINITIONS.iconElement.properties, uuid } },
   imageElement: { ...APPEARANCE_SCHEMA_DEFINITIONS.imageElement, properties: { ...APPEARANCE_SCHEMA_DEFINITIONS.imageElement.properties, uuid } },
+  indicatorElement: { ...APPEARANCE_SCHEMA_DEFINITIONS.indicatorElement, properties: { ...APPEARANCE_SCHEMA_DEFINITIONS.indicatorElement.properties, uuid } },
   buttonElement: { ...APPEARANCE_SCHEMA_DEFINITIONS.buttonElement, properties: { ...APPEARANCE_SCHEMA_DEFINITIONS.buttonElement.properties, uuid } },
   // Read-only legacy input allows saved packages to open before the layout owner removes rectangles.
   element: { oneOf: [...Object.values(ELEMENT_CONTRACTS_V1).map((contract) => ref(contract.schema)), ref("legacyPanelCard")] },
@@ -74272,7 +74434,7 @@ var COMPOSITE_DEFINITION_SCHEMA_V1 = {
     requires: { type: "object", additionalProperties: false, required: ["host", "device"], properties: { host: { const: 1 }, device: { const: 1 } } },
     appearance: { type: "object", additionalProperties: false, required: ["background", "elements"], properties: {
       background: { $ref: "#/definitions/backgroundStyle" },
-      elements: { type: "array", maxItems: COMPOSITE_RUNTIME_LIMITS_V1.maxElements, items: { oneOf: [text3, template(APPEARANCE_SCHEMA_DEFINITIONS.iconElement), template(APPEARANCE_SCHEMA_DEFINITIONS.imageElement), button] } }
+      elements: { type: "array", maxItems: COMPOSITE_RUNTIME_LIMITS_V1.maxElements, items: { oneOf: [text3, template(APPEARANCE_SCHEMA_DEFINITIONS.iconElement), template(APPEARANCE_SCHEMA_DEFINITIONS.imageElement), button, template(INDICATOR_ELEMENT_SCHEMA_V1)] } }
     } },
     buttonConfigs: { type: "array", items: {
       type: "object",
@@ -74692,7 +74854,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
   definitions: {
     builtinUnitTemplate: {
       type: "object",
-      required: ["uuid", "typeId", "name", "icon", "config", "geometry", "appearance", "data"],
+      required: ["uuid", "typeId", "name", "icon", "config", "geometry", "elements", "appearance", "data"],
       additionalProperties: false,
       not: { required: ["plugin"] },
       properties: {
@@ -74706,10 +74868,8 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
           additionalProperties: true
         },
         geometry: { $ref: "#/definitions/geometry" },
-        appearance: {
-          type: "array",
-          items: { $ref: "#/definitions/builtinAppearance" }
-        },
+        elements: { type: "array", items: { $ref: "#/definitions/unitElementDefinition" } },
+        appearance: { type: "array", minItems: 1, items: { $ref: "#/definitions/unitAppearanceState" } },
         data: {
           type: "object",
           additionalProperties: true
@@ -74777,6 +74937,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
         defaultActivation: { $ref: "#/definitions/pluginUnitDefaultActivationConfig" },
         icon: { type: "string" },
         hasFunctionEditor: { type: "boolean" },
+        functionEditorScope: { enum: ["unit", "selected-function"] },
         hasAppearanceEditor: { type: "boolean" },
         hasView: { type: "boolean" },
         visibleInLibrary: { type: "boolean" },
@@ -74785,7 +74946,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
           items: { type: "string", enum: ["win32", "darwin", "linux"] }
         },
         libraryUUID: { type: "string" },
-        availableElements: { type: "array", uniqueItems: true, items: { enum: ["text", "icon", "image", "button", "status-count", "chart-text", "chart-gauge", "chart-line", "chart-series-bar", "chart-progress-bar", "chart-heatmap"] } },
+        availableElements: { type: "array", uniqueItems: true, items: { enum: ["text", "icon", "image", "button", "indicator", "status-count", "chart-text", "chart-gauge", "chart-line", "chart-series-bar", "chart-progress-bar", "chart-heatmap"] } },
         layouts: { type: "object", required: ["default"], additionalProperties: false, properties: {
           default: { $ref: "#/definitions/unitLayout" },
           devices: { type: "object", additionalProperties: { $ref: "#/definitions/unitLayout" } }
@@ -74795,12 +74956,6 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
           type: "array",
           minItems: 2,
           items: { $ref: "#/definitions/cycledFunctionDefinition" }
-        },
-        indicator: {
-          type: "object",
-          additionalProperties: false,
-          required: ["onFunctionIds"],
-          properties: { onFunctionIds: { type: "array", minItems: 1, uniqueItems: true, items: { type: "string", minLength: 1 } } }
         },
         slider: { $ref: "#/definitions/sliderDefinition" },
         valueLabel: { $ref: "#/definitions/valueLabelDefinition" },
@@ -74822,7 +74977,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
             valueLabel: false,
             label: false,
             buttonGroup: false,
-            availableElements: { items: { enum: ["button", "text", "icon", "image"] } }
+            availableElements: { items: { enum: ["button", "text", "icon", "image", "indicator"] } }
           } },
           else: { properties: { composite: false, availableElements: { items: { not: { const: "button" } } } } }
         },
@@ -75066,7 +75221,49 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
         functionId: { type: "string", minLength: 1 },
         name: { $ref: "#/definitions/pluginDisplayText" },
         data: { $ref: "#/definitions/unitDefaultData" },
-        appearanceOverride: { $ref: "#/definitions/appearanceOverride" }
+        unitElementDefinition: {
+          type: "object",
+          required: ["uuid", "typeId", "config", "geometry", "sharedData"],
+          additionalProperties: false,
+          properties: {
+            uuid: { type: "string", minLength: 1 },
+            typeId: { type: "string", minLength: 1 },
+            name: { type: "string" },
+            identifier: { type: "string" },
+            config: { type: "object" },
+            geometry: { $ref: "#/definitions/geometry" },
+            sharedData: { type: "object" }
+          }
+        },
+        unitElementStateValue: {
+          type: "object",
+          required: ["style", "data"],
+          additionalProperties: false,
+          properties: { style: { type: "object" }, data: { type: "object" } }
+        },
+        unitAppearanceState: {
+          type: "object",
+          required: ["stateId", "background", "elementValues"],
+          additionalProperties: false,
+          properties: {
+            stateId: { type: "string", minLength: 1 },
+            background: { $ref: "#/definitions/backgroundStyle" },
+            elementValues: { type: "object", additionalProperties: { $ref: "#/definitions/unitElementStateValue" } }
+          }
+        },
+        stateAppearanceOverride: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            background: { $ref: "#/definitions/backgroundStyleOverride" },
+            elementValues: { type: "object", additionalProperties: {
+              type: "object",
+              additionalProperties: false,
+              properties: { style: { type: "object" }, data: { type: "object" } }
+            } }
+          }
+        },
+        appearanceOverride: { $ref: "#/definitions/stateAppearanceOverride" }
       }
     },
     sliderDefinition: {
@@ -75126,6 +75323,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
         mandatory: { type: "boolean" },
         displayMode: { type: "string", enum: [...BUTTON_GROUP_DISPLAY_MODES_V1] },
         showHeader: { type: "boolean" },
+        headerLayout: BUTTON_GROUP_HEADER_LAYOUT_SCHEMA_V1,
         defaultActiveButtonIds: {
           type: "array",
           items: { type: "string" }
@@ -75191,8 +75389,51 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
         buttonGroup: { type: "object", additionalProperties: false, properties: {
           displayMode: { enum: [...BUTTON_GROUP_DISPLAY_MODES_V1] },
           showHeader: { type: "boolean" },
+          headerLayout: BUTTON_GROUP_HEADER_LAYOUT_SCHEMA_V1,
           fontSize: { enum: [...DEVICE_FONT_SIZE_TIERS_V1] },
           iconSize: { enum: [...DEVICE_ICON_SIZE_TIERS_V1] }
+        } }
+      }
+    },
+    unitElementDefinition: {
+      type: "object",
+      required: ["uuid", "typeId", "config", "geometry", "sharedData"],
+      additionalProperties: false,
+      properties: {
+        uuid: { type: "string", minLength: 1 },
+        typeId: { type: "string", minLength: 1 },
+        name: { type: "string" },
+        identifier: { type: "string" },
+        config: { type: "object" },
+        geometry: { $ref: "#/definitions/geometry" },
+        sharedData: { type: "object" }
+      }
+    },
+    unitElementStateValue: {
+      type: "object",
+      required: ["style", "data"],
+      additionalProperties: false,
+      properties: { style: { type: "object" }, data: { type: "object" } }
+    },
+    unitAppearanceState: {
+      type: "object",
+      required: ["stateId", "background", "elementValues"],
+      additionalProperties: false,
+      properties: {
+        stateId: { type: "string", minLength: 1 },
+        background: { $ref: "#/definitions/backgroundStyle" },
+        elementValues: { type: "object", additionalProperties: { $ref: "#/definitions/unitElementStateValue" } }
+      }
+    },
+    stateAppearanceOverride: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        background: { $ref: "#/definitions/backgroundStyleOverride" },
+        elementValues: { type: "object", additionalProperties: {
+          type: "object",
+          additionalProperties: false,
+          properties: { style: { type: "object" }, data: { type: "object" } }
         } }
       }
     },
@@ -75707,13 +75948,54 @@ function inspectThemeResourceGraphV1(graph, observedBlobs, digest = (bytes2) => 
   return findings;
 }
 
+// src/common/plugin-panel-presentation.ts
+var PANEL_STATE_COLORS = Object.freeze({ active: "#4C8DFF", attention: "#F2A93B", success: "#4CC38A", error: "#F25F5C", idle: "#8A8A8A", disabled: "#555555" });
+
+// src/common/plugin-panel-elements.ts
+var isLegacyPanelCard = (element) => element.typeId === "panel-card";
+var PANEL_DEFAULT_COLORS = Object.freeze({
+  text: "#F2F2F2",
+  muted: "#9A9A9A",
+  primaryAction: "#3D8BFF",
+  dangerAction: "#B5473F"
+});
+var FLOW_THEME_DEFAULTS = Object.freeze({ secondarySize: 20, tertiarySize: 16, radius: 12, buttonInset: 8 });
+var BAR_THEME_DEFAULTS = Object.freeze({ secondarySize: 16, tertiarySize: 14, radius: 8, buttonInset: 4 });
+var PANEL_VIEW_ELEMENT_TYPES = Object.freeze({
+  overview: ["panel-session"],
+  detail: [],
+  notice: []
+});
+var DEFAULT_PANEL_LABELS = Object.freeze({
+  noSessions: "No sessions",
+  expired: "Expired",
+  back: "Back",
+  updatedMinutes: (minutes) => `Updated ${minutes} min ago`
+});
+var FIXED_TEXT_METRICS = Object.freeze({
+  width: (text4, fontSize) => Math.ceil(text4.length * fontSize * 0.55),
+  lineHeight: (fontSize) => Math.ceil(fontSize * 1.3)
+});
+var STATE_ICONS = Object.freeze({
+  active: "mdi-autorenew",
+  attention: "mdi-pending-actions",
+  success: "mdi-check-circle",
+  error: "mdi-alert-circle",
+  disabled: "mdi-link-off",
+  idle: "mdi-pause-circle"
+});
+
 // src/common/theme-resource-references-v1.ts
 var IMAGE_ASSET_KINDS_V1 = ["image", "derived-image", "animated-derived", "render-artifact"];
 var ICON_ASSET_KINDS_V1 = ["icon", ...IMAGE_ASSET_KINDS_V1];
 function createThemeResourceVisitorV1(visit) {
+  let replacements = 0;
   function field(record, key, subject, allowed, required = false) {
     const replacement = visit(record[key], subject, allowed, required);
-    if (typeof replacement === "string" && replacement !== record[key]) record[key] = replacement;
+    if (typeof replacement === "string" && replacement !== record[key]) {
+      record[key] = replacement;
+      replacements++;
+    }
   }
   function background2(value, subject) {
     field(value, "backgroundImage", `${subject}/backgroundImage`, IMAGE_ASSET_KINDS_V1);
@@ -75759,7 +76041,10 @@ function createThemeResourceVisitorV1(visit) {
       if (Array.isArray(functions)) functions.forEach((fn, index) => field(fn, "icon", `${subject}/data/functions/${index}/icon`, ["icon"]));
     }
     field(value, "icon", `${subject}/icon`, ICON_ASSET_KINDS_V1);
-    value.appearance.forEach((item, index) => appearance(item, `${subject}/appearance:${index}`));
+    const before = replacements;
+    const resolved = resolveUnitAppearancesV1(value);
+    resolved.forEach((item, index) => appearance(item, `${subject}/appearance:${index}`));
+    if (replacements !== before) Object.assign(value, replaceUnitResolvedAppearancesV1(value, resolved));
   }
   function page(value, subject) {
     background2(value.style, subject);
@@ -75876,9 +76161,11 @@ function materializeCompositeTemplateV1(definition, locale, uuid2 = generatePack
   const localized = localizeCompositeDefinitionV1(definition, locale);
   const autoSize = {};
   const buttonConfigs = {};
+  const mapping = /* @__PURE__ */ new Map();
   const elements = localized.appearance.elements.map((source) => {
     const element = structuredClone(source);
     element.uuid = uuid2();
+    if (source.uuid) mapping.set(source.uuid, element.uuid);
     if (element.typeId === "button") {
       const missing = ["fontSize", "iconSize"].filter((key) => element.style[key] === void 0);
       if (missing.length) autoSize[element.uuid] = missing;
@@ -75889,7 +76176,8 @@ function materializeCompositeTemplateV1(definition, locale, uuid2 = generatePack
     }
     return element;
   });
-  return { appearance: [{ background: localized.appearance.background, elements }], buttonConfigs, autoSize };
+  remapIndicatorBindingsV1(elements, mapping);
+  return { ...createUnitAppearanceModelV1([{ background: localized.appearance.background, elements }]), buttonConfigs, autoSize };
 }
 function validateCompositeDefinitionV1(definition) {
   const declaredIds = /* @__PURE__ */ new Set();
@@ -75902,10 +76190,10 @@ function validateCompositeDefinitionV1(definition) {
   let index = 0;
   const material = materializeCompositeTemplateV1(definition, "", () => `00000000-0000-4000-8000-${String(index++).padStart(12, "0")}`);
   if (definition.resources) decodeCompositeTemplateResourcesV1(definition.resources);
-  compositeTemplateResourceReferencesV1(material.appearance, definition.resources);
-  const problems = validateElementContextV1(material.appearance[0].elements, { plugin: { type: "composite" } });
+  compositeTemplateResourceReferencesV1(resolveUnitAppearancesV1(material), definition.resources);
+  const problems = validateElementContextV1(resolveUnitAppearanceV1(material, 0).elements, { plugin: { type: "composite" } });
   if (problems.length) throw new Error(`COMPOSITE_INVALID: ${problems[0].path} ${problems[0].code}`);
-  const buttons = material.appearance[0].elements.filter((element) => element.typeId === "button");
+  const buttons = resolveUnitAppearanceV1(material, 0).elements.filter((element) => element.typeId === "button");
   const scopes = /* @__PURE__ */ new Set();
   for (const declaration of definition.buttonConfigs ?? []) {
     const scope2 = declaration.identifier !== void 0 ? `identifier:${declaration.identifier}` : `mode:${declaration.mode}`;
@@ -75934,6 +76222,7 @@ var BUILTIN_UNIT_REQUIRED_KEYS = [
   "icon",
   "config",
   "geometry",
+  "elements",
   "appearance",
   "data"
 ];
@@ -75946,14 +76235,6 @@ var BUILTIN_UNIT_ALLOWED_KEYS = /* @__PURE__ */ new Set([
   "plugin"
 ]);
 var GEOMETRY_REQUIRED_KEYS = ["x", "y", "width", "height"];
-var BUILTIN_APPEARANCE_ELEMENT_REQUIRED_KEYS = [
-  "typeId",
-  "uuid",
-  "config",
-  "geometry",
-  "style",
-  "data"
-];
 var validateCompiled = null;
 function getCompiledValidator() {
   if (!validateCompiled) {
@@ -76006,6 +76287,9 @@ function validatePluginDefinitionsSemantics(payload) {
     }
     if (unit.defaultData && Object.prototype.hasOwnProperty.call(unit.defaultData, "appearance")) {
       throw new Error(`Unit ${unit.typeId}: defaultData.appearance is not allowed`);
+    }
+    if (unit.hasFunctionEditor && !unit.functionEditorScope) {
+      throw new Error(`Unit ${unit.typeId}: hasFunctionEditor requires functionEditorScope`);
     }
     validateUnitTypeFields(unit);
     validateAppearanceReferences(unit);
@@ -76095,15 +76379,30 @@ function validateBuiltinUnitTemplateShape(candidate, label) {
   if (!Array.isArray(candidate.appearance)) {
     throw new Error(`Builtin unit ${label}: appearance must be an array`);
   }
-  validateBuiltinAppearance(candidate.appearance, label);
+  if (!Array.isArray(candidate.elements)) throw new Error(`Builtin unit ${label}: elements must be an array`);
+  for (const [index, element] of candidate.elements.entries()) {
+    const path = `Builtin unit ${label}: elements[${index}]`;
+    if (!isPlainObject(element) || !isPlainObject(element.config) || !isPlainObject(element.sharedData))
+      throw new Error(`${path}: config and sharedData must be objects`);
+    validateBuiltinGeometry(element.geometry, `${path}.geometry`);
+  }
+  for (const [index, state] of candidate.appearance.entries()) {
+    if (!isPlainObject(state) || !isPlainObject(state.background) || !isPlainObject(state.elementValues))
+      throw new Error(`Builtin unit ${label}: appearance[${index}] must contain background and elementValues objects`);
+    for (const value of Object.values(state.elementValues))
+      if (!isPlainObject(value) || !isPlainObject(value.style) || !isPlainObject(value.data))
+        throw new Error(`Builtin unit ${label}: state style and data must be objects`);
+  }
+  assertUnitElementModelV1(candidate);
   if (!isPlainObject(candidate.data)) {
     throw new Error(`Builtin unit ${label}: data must be an object`);
   }
+  assertUnitStateAssociationsV1(candidate);
 }
 function isPlainObject(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const prototype = Object.getPrototypeOf(value);
-  return prototype === Object.prototype || prototype === null;
+  return prototype === null || Object.getPrototypeOf(prototype) === null;
 }
 function isPluginDisplayText(value) {
   if (typeof value === "string") return value.length > 0;
@@ -76121,47 +76420,6 @@ function validateBuiltinGeometry(value, path) {
       throw new Error(`${path}.${key} must be a finite number`);
     }
   }
-}
-function validateBuiltinAppearance(appearance, label) {
-  appearance.forEach((entry, appearanceIndex) => {
-    const appearancePath = `Builtin unit ${label}: appearance[${appearanceIndex}]`;
-    if (!isPlainObject(entry)) {
-      throw new Error(`${appearancePath} must be an object`);
-    }
-    if (!isPlainObject(entry.background)) {
-      throw new Error(`${appearancePath}.background must be an object`);
-    }
-    if (!Array.isArray(entry.elements)) {
-      throw new Error(`${appearancePath}.elements must be an array`);
-    }
-    entry.elements.forEach((element, elementIndex) => {
-      validateBuiltinAppearanceElement(
-        element,
-        `${appearancePath}.elements[${elementIndex}]`
-      );
-    });
-  });
-}
-function validateBuiltinAppearanceElement(element, path) {
-  if (!isPlainObject(element)) {
-    throw new Error(`${path} must be an object`);
-  }
-  for (const key of BUILTIN_APPEARANCE_ELEMENT_REQUIRED_KEYS) {
-    if (!Object.prototype.hasOwnProperty.call(element, key)) {
-      throw new Error(`${path}.${key} is required`);
-    }
-  }
-  for (const key of ["typeId", "uuid"]) {
-    if (typeof element[key] !== "string" || element[key].length === 0) {
-      throw new Error(`${path}.${key} must be a non-empty string`);
-    }
-  }
-  for (const key of ["config", "style", "data"]) {
-    if (!isPlainObject(element[key])) {
-      throw new Error(`${path}.${key} must be an object`);
-    }
-  }
-  validateBuiltinGeometry(element.geometry, `${path}.geometry`);
 }
 function validateBuiltinPluginTemplateBinding(pluginTemplate, label, unitByTypeId) {
   if (!pluginTemplate || typeof pluginTemplate !== "object" || Array.isArray(pluginTemplate)) {
@@ -76202,7 +76460,6 @@ function validateUnitTypeFields(unit) {
     validateCompositeDefinitionV1(unit.composite);
     if (unit.defaultData && Object.prototype.hasOwnProperty.call(unit.defaultData, "buttonConfigs")) throw new Error("COMPOSITE_CONFIG_DEFAULTS_REQUIRE_DECLARATIONS");
   }
-  if (unit.indicator !== void 0) validateIndicator(unit);
   if (type === "panel") resolvePluginPanelDefinition(unit.panel);
   const disallowClick = /* @__PURE__ */ new Set(["slider", "button-group", "value-label", "label"]);
   if (unit.interactionMode === "click" && disallowClick.has(type)) {
@@ -76347,7 +76604,7 @@ function validateAppearanceReferences(unit) {
   if (unit.plugin.type === "chart" && layouts.some((layout) => !layout.appearance)) throw new Error("Chart layouts require appearance");
   if (!["custom", "canvas"].includes(unit.plugin.type) && layouts.some((layout) => layout.presentation !== void 0))
     throw new Error("Layout presentation is only supported by custom/canvas Units");
-  const overrides = [...layouts.map((layout) => layout.appearance), ...(unit.functions ?? []).map((fn) => fn.appearanceOverride)];
+  const overrides = layouts.map((layout) => layout.appearance);
   for (const override of overrides) {
     const ids = /* @__PURE__ */ new Set();
     for (const element of override?.elements ?? []) {
@@ -76370,15 +76627,16 @@ function validateAppearanceReferences(unit) {
       }
     }
   }
-}
-function validateIndicator(unit) {
-  if (unit.plugin.type !== "cycled") {
-    throw new Error(`Unit ${unit.typeId}: indicator is only valid for plugin.type 'cycled'`);
-  }
-  const known = new Set((unit.functions ?? []).map((fn) => fn.functionId));
-  for (const functionId of unit.indicator.onFunctionIds) {
-    if (!known.has(functionId)) {
-      throw new Error(`Unit ${unit.typeId}: indicator.onFunctionIds '${functionId}' is not one of the unit's functions`);
+  for (const fn of unit.functions ?? []) {
+    for (const [identifier, value] of Object.entries(fn.appearanceOverride?.elementValues ?? {})) {
+      for (const layout of layouts) {
+        const declared = layout.appearance?.elements?.find((element) => element.identifier === identifier);
+        const typeId = declared?.typeId ?? (identifier === PRIMARY_TEXT_IDENTIFIER ? "text" : identifier === PRIMARY_ICON_IDENTIFIER ? "icon" : void 0);
+        if (!typeId) throw new Error(`Unit ${unit.typeId}: Unknown state Element identifier ${identifier}`);
+        const keys = ELEMENT_DISPLAY_DATA_KEYS_V1[typeId];
+        if (!keys || Object.keys(value.data ?? {}).some((key) => !keys.includes(key)))
+          throw new Error(`Unit ${unit.typeId}: state values cannot override shared Element data`);
+      }
     }
   }
 }

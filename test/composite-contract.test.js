@@ -12,7 +12,7 @@ function payload() {
       geometry: { x: 0, y: 0, width: 100, height: 100 },
       style: { background, foregroundColor: '#ffffff', fontFamily: 'builtin:font:puhuiti' },
       data: { layout: 'icon-top', icon: 'builtin:icon:power', title: { default: 'Power', translations: { zh: '电源' } },
-        interaction: { mode: 'toggle' }, initialStateId: 'off', indicator: { litStateIds: ['on'] },
+        interaction: { mode: 'toggle' }, initialStateId: 'off',
         states: [{ stateId: 'off', overrides: {} }, { stateId: 'on', overrides: { title: { default: 'On' } } }] },
     }] }, buttonConfigs: [{ identifier: 'power', settings: { scene: { type: 'text', label: { default: 'Scene' }, default: 'living-room' } } }] },
   }] };

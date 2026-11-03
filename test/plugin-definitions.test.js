@@ -8,13 +8,15 @@ function payload() {
     unitId: 'one', typeId: `${owner}.one`, name: { default: 'One' }, categoryId: 'plugin',
     plugin: { type: 'standard', pluginUUID: owner, pluginVersion: '1.0.0', unitId: 'one' },
     layouts: { default: { preferredSize: { width: 1, height: 1 } } },
-    visibleInLibrary: false, hasFunctionEditor: true,
+    visibleInLibrary: false, hasFunctionEditor: true, functionEditorScope: 'unit',
     interactionMode: 'click', defaultActivation: { mode: 'hold', holdDurationMs: 800 }
   }] };
 }
 function builtin(uuid, extra = {}) {
   return { uuid, typeId: '@eniacelec/layout:container', name: 'Container', icon: '', config: {},
-    geometry: { x: 0, y: 0, width: 1, height: 1 }, appearance: [], data: {}, ...extra };
+    geometry: { x: 0, y: 0, width: 1, height: 1 }, elements: [], appearance: [{ stateId: 'default',
+      background: { backgroundColor: 'transparent', borderWidth: 0, borderColor: 'transparent', borderStyle: 'none' },
+      elementValues: {} }], data: {}, ...extra };
 }
 
 test('accepts independent device layouts and rejects removed Unit fields or missing defaults', () => {
@@ -86,21 +88,39 @@ test('rejects legacy theme metadata, unknown appearance references and appearanc
   assert.equal(validatePluginDefinitionsPayload(definitions).ok, false);
 });
 
-test('cycled indicator declarations follow the host rule', () => {
+test('cycled indicator values address one shared declared layout and reject obsolete root declarations', () => {
   const owner = '@test/contract';
   const cycled = (extra = {}) => ({ libraries: [{ libraryUUID: owner, name: { default: 'Contract' } }], units: [{
     unitId: 'toggle', typeId: `${owner}.toggle`, name: { default: 'Toggle' }, categoryId: 'plugin',
     plugin: { type: 'cycled', pluginUUID: owner, pluginVersion: '1.0.0', unitId: 'toggle' },
-    layouts: { default: { preferredSize: { width: 1, height: 1 } } },
+    layouts: { default: { preferredSize: { width: 1, height: 1 }, appearance: { elements: [{
+      typeId: 'indicator', uuid: 'light', identifier: 'state-light', config: {}, geometry: { x: 5, y: 90, width: 30, height: 4 },
+      style: { color: '#777777' }, data: {},
+    }] } } },
     functions: [{ functionId: 'off' }, { functionId: 'on' }], ...extra
   }] });
-  assert.equal(validatePluginDefinitionsPayload(cycled({ indicator: { onFunctionIds: ['on'] } })).ok, true);
-  assert.equal(validatePluginDefinitionsPayload(cycled()).ok, true);
-  for (const indicator of [{ onFunctionIds: [] }, { onFunctionIds: ['missing'] }, { onFunctionIds: ['on', 'on'] }, {}]) {
+  assert.deepEqual(validatePluginDefinitionsPayload(cycled()), { ok: true, errors: [] });
+  const styled = cycled();
+  styled.units[0].functions[1].appearanceOverride = { elementValues: { 'state-light': { style: { color: '#66bb6a' } } } };
+  assert.equal(validatePluginDefinitionsPayload(styled).ok, true);
+  styled.units[0].functions[1].appearanceOverride.elementValues['state-light'].geometry = { x: 20 };
+  assert.equal(validatePluginDefinitionsPayload(styled).ok, false);
+  const unknown = cycled();
+  unknown.units[0].functions[1].appearanceOverride = { elementValues: { missing: { style: { color: '#66bb6a' } } } };
+  assert.equal(validatePluginDefinitionsPayload(unknown).ok, false);
+  for (const indicator of [{ onFunctionIds: ['on'] }, { onFunctionIds: [] }, { onFunctionIds: ['missing'] }, {}]) {
     assert.equal(validatePluginDefinitionsPayload(cycled({ indicator })).ok, false, JSON.stringify(indicator));
   }
   const standard = cycled({ indicator: { onFunctionIds: ['on'] } });
   standard.units[0].plugin.type = 'standard';
   delete standard.units[0].functions;
   assert.equal(validatePluginDefinitionsPayload(standard).ok, false);
+});
+
+test('saved builtin Units reject superseded state-local elements', () => {
+  const definitions = payload(), unit = builtin('root');
+  definitions.builtinUnits = [unit];
+  delete unit.elements;
+  unit.appearance = [{ background: unit.appearance[0].background, elements: [] }];
+  assert.equal(validatePluginDefinitionsPayload(definitions).ok, false);
 });
