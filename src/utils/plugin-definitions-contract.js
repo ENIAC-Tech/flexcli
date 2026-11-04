@@ -6780,6 +6780,7 @@ var UnitTypeId = {
   INPUT_TEXT_INPUT: "@eniacelec/input:text-input",
   MEDIA_MEDIA_KEY: "@eniacelec/media:media-key",
   EXECUTION_EXECUTE: "@eniacelec/execution:execute",
+  UTILITY_STANDBY: "@eniacelec/utility:standby",
   UTILITY_CLOCK: "@eniacelec/utility:clock",
   UTILITY_KEYBOARD_APM: "@eniacelec/utility:keyboard-apm",
   UTILITY_KEYBOARD_COMBO: "@eniacelec/utility:keyboard-combo",
