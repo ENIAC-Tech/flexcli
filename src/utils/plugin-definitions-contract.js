@@ -6782,6 +6782,7 @@ var UnitTypeId = {
   EXECUTION_EXECUTE: "@eniacelec/execution:execute",
   UTILITY_CLOCK: "@eniacelec/utility:clock",
   UTILITY_KEYBOARD_APM: "@eniacelec/utility:keyboard-apm",
+  UTILITY_KEYBOARD_COMBO: "@eniacelec/utility:keyboard-combo",
   UTILITY_TYPING_ECHO: "@eniacelec/utility:typing-echo",
   UTILITY_CHART: "@eniacelec/utility:chart",
   UTILITY_AUDIO_VISUALIZER: "@eniacelec/utility:audio-visualizer",
@@ -6862,6 +6863,7 @@ function assertUnitStateAssociationsV1(unit) {
 }
 var ELEMENT_DISPLAY_DATA_KEYS_V1 = {
   "typing-echo": [],
+  "keyboard-combo": [],
   text: ["text"],
   icon: ["value", "type", "emojiSet", "emojiUnified", "emojiSheetX", "emojiSheetY"],
   image: ["value"],
@@ -73861,6 +73863,7 @@ function compositeSavedBudgetIssueV1(elements) {
 
 // src/common/element-contracts-v1.ts
 var ELEMENT_CONTRACTS_V1 = {
+  "keyboard-combo": { schema: "keyboardCombo", rendering: "device", resources: [] },
   "typing-echo": { schema: "typingEcho", rendering: "device", resources: [] },
   indicator: { schema: "indicatorElement", rendering: "device", resources: [] },
   text: { schema: "textElement", rendering: "raster", resources: ["background", "font"] },
@@ -74299,6 +74302,10 @@ var panelData = (properties, required) => object5(properties, required);
 var chartData = object5({ dataSourceKey: string2, min: number, max: number, autoScale: boolean, updateInterval: nonnegative });
 var definitions = {
   ...APPEARANCE_SCHEMA_DEFINITIONS,
+  keyboardCombo: chartElement("keyboard-combo", {
+    ...APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties.style,
+    properties: { ...APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties.style.properties, fontFamily: { enum: [...DEVICE_FONT_REFERENCES_V1] } }
+  }, object5({})),
   typingEcho: chartElement("typing-echo", {
     ...APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties.style,
     properties: { ...APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties.style.properties, fontFamily: { enum: [...DEVICE_FONT_REFERENCES_V1] } }
