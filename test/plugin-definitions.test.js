@@ -1,19 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validatePluginDefinitionsPayload } from '../src/utils/plugin-definitions-validator.js';
+import { presentation, title } from './unit-presentation-fixtures.js';
 
 function payload() {
   const owner = '@test/contract';
   return { libraries: [{ libraryUUID: owner, name: { default: 'Contract' } }], units: [{
     unitId: 'one', typeId: `${owner}.one`, name: { default: 'One' }, categoryId: 'plugin',
     plugin: { type: 'standard', pluginUUID: owner, pluginVersion: '1.0.0', unitId: 'one' },
-    layouts: { default: { preferredSize: { width: 1, height: 1 } } },
-    visibleInLibrary: false, hasFunctionEditor: true, functionEditorScope: 'unit',
+    layouts: { default: { preferredSize: { width: 1, height: 1 }, appearance: { elements: [title()] } } },
+    requirements: { deviceCapabilities: [] },
+    presentation: presentation('captured-unit', [{ kind: 'plugin', pluginUUID: owner, typeId: `${owner}.one`, scope: 'unit' }]),
+    requirements: { deviceCapabilities: [] },
+    visibleInLibrary: false,
     interactionMode: 'click', defaultActivation: { mode: 'hold', holdDurationMs: 800 }
   }] };
 }
 function builtin(uuid, extra = {}) {
-  return { uuid, typeId: '@eniacelec/layout:container', name: 'Container', icon: '', config: {},
+  return { uuid, typeId: '@eniacelec/layout:container', name: 'Container', icon: '', config: {}, requirements: { deviceCapabilities: [] }, presentation: presentation(), requirements: { deviceCapabilities: [] },
     geometry: { x: 0, y: 0, width: 1, height: 1 }, elements: [], appearance: [{ stateId: 'default',
       background: { backgroundColor: 'transparent', borderWidth: 0, borderColor: 'transparent', borderStyle: 'none' },
       elementValues: {} }], data: {}, ...extra };
@@ -23,7 +27,7 @@ test('accepts independent device layouts and rejects removed Unit fields or miss
   const definitions = payload();
   definitions.units[0].layouts.devices = {
     FlexbarV2: { preferredSize: { width: 2, height: 1 }, appearance: {
-      elements: [{ identifier: 'primary-text', geometry: { x: 35, y: 10, width: 60, height: 80 } }]
+      elements: [{ ...title(), geometry: { x: 35, y: 10, width: 60, height: 80 } }]
     } }
   };
   assert.equal(validatePluginDefinitionsPayload(definitions).ok, true);
@@ -67,6 +71,7 @@ test('accepts button groups but rejects duplicate IDs and unknown defaults', () 
   delete unit.interactionMode;
   delete unit.defaultActivation;
   unit.plugin.type = 'button-group';
+  delete unit.layouts.default.appearance;
   unit.buttonGroup = { presentationVersion: 1, buttons: [{ buttonId: 'a' }, { buttonId: 'b' }] };
   assert.equal(validatePluginDefinitionsPayload(definitions).ok, true);
   unit.buttonGroup.defaultActiveButtonIds = ['missing'];
@@ -93,6 +98,8 @@ test('cycled indicator values address one shared declared layout and reject obso
   const cycled = (extra = {}) => ({ libraries: [{ libraryUUID: owner, name: { default: 'Contract' } }], units: [{
     unitId: 'toggle', typeId: `${owner}.toggle`, name: { default: 'Toggle' }, categoryId: 'plugin',
     plugin: { type: 'cycled', pluginUUID: owner, pluginVersion: '1.0.0', unitId: 'toggle' },
+    requirements: { deviceCapabilities: [] },
+    presentation: presentation(), requirements: { deviceCapabilities: [] },
     layouts: { default: { preferredSize: { width: 1, height: 1 }, appearance: { elements: [{
       typeId: 'indicator', uuid: 'light', identifier: 'state-light', config: {}, geometry: { x: 5, y: 90, width: 30, height: 4 },
       style: { color: '#777777' }, data: {},

@@ -162,11 +162,11 @@ var require_uri_all = __commonJS({
       function error$1(type) {
         throw new RangeError(errors[type]);
       }
-      function map(array3, fn) {
+      function map(array4, fn) {
         var result = [];
-        var length = array3.length;
+        var length = array4.length;
         while (length--) {
-          result[length] = fn(array3[length]);
+          result[length] = fn(array4[length]);
         }
         return result;
       }
@@ -202,8 +202,8 @@ var require_uri_all = __commonJS({
         }
         return output;
       }
-      var ucs2encode = function ucs2encode2(array3) {
-        return String.fromCodePoint.apply(String, toConsumableArray(array3));
+      var ucs2encode = function ucs2encode2(array4) {
+        return String.fromCodePoint.apply(String, toConsumableArray(array4));
       };
       var basicToDigit = function basicToDigit2(codePoint) {
         if (codePoint - 48 < 10) {
@@ -524,8 +524,8 @@ var require_uri_all = __commonJS({
           if (isLastFieldIPv4Address) {
             fields[fieldCount - 1] = _normalizeIPv4(fields[fieldCount - 1], protocol);
           }
-          var allZeroFields = fields.reduce(function(acc, field, index) {
-            if (!field || field === "0") {
+          var allZeroFields = fields.reduce(function(acc, field2, index) {
+            if (!field2 || field2 === "0") {
               var lastLongest = acc[acc.length - 1];
               if (lastLongest && lastLongest.index + lastLongest.length === index) {
                 lastLongest.length++;
@@ -6181,12 +6181,12 @@ var require_ajv = __commonJS({
       options = options || {};
       var separator = options.separator === void 0 ? ", " : options.separator;
       var dataVar = options.dataVar === void 0 ? "data" : options.dataVar;
-      var text4 = "";
+      var text5 = "";
       for (var i = 0; i < errors.length; i++) {
         var e = errors[i];
-        if (e) text4 += dataVar + e.dataPath + " " + e.message + separator;
+        if (e) text5 += dataVar + e.dataPath + " " + e.message + separator;
       }
-      return text4.slice(0, -separator.length);
+      return text5.slice(0, -separator.length);
     }
     function addFormat(name2, format) {
       if (typeof format == "string") format = new RegExp(format);
@@ -6781,6 +6781,8 @@ var UnitTypeId = {
   MEDIA_MEDIA_KEY: "@eniacelec/media:media-key",
   EXECUTION_EXECUTE: "@eniacelec/execution:execute",
   UTILITY_CLOCK: "@eniacelec/utility:clock",
+  UTILITY_KEYBOARD_APM: "@eniacelec/utility:keyboard-apm",
+  UTILITY_TYPING_ECHO: "@eniacelec/utility:typing-echo",
   UTILITY_CHART: "@eniacelec/utility:chart",
   UTILITY_AUDIO_VISUALIZER: "@eniacelec/utility:audio-visualizer",
   UTILITY_AUDIO_SPECTRUM: "@eniacelec/utility:audio-spectrum",
@@ -6788,6 +6790,10 @@ var UnitTypeId = {
   UTILITY_VOLUME_SLIDER: "@eniacelec/utility:volume-slider",
   UTILITY_VOLUME_SLIDER_INLINE: "@eniacelec/utility:volume-slider-inline",
   UTILITY_POMODORO: "@eniacelec/utility:pomodoro",
+  GAMES_DINOSAUR: "@eniacelec/games/dinosaur",
+  GAMES_SNAKE: "@eniacelec/games/snake",
+  GAMES_SPACE_FIGHT: "@eniacelec/games/space-fight",
+  GAMES_FLAPPY_BIRD: "@eniacelec/games/flappy-bird",
   ADVANCED_MACRO_KEY: "@eniacelec/advanced:macro-key",
   ADVANCED_CYCLED_KEY: "@eniacelec/advanced:cycled-key",
   ADVANCED_BUTTON_GROUP: "@eniacelec/advanced:button-group",
@@ -6855,6 +6861,7 @@ function assertUnitStateAssociationsV1(unit) {
   }
 }
 var ELEMENT_DISPLAY_DATA_KEYS_V1 = {
+  "typing-echo": [],
   text: ["text"],
   icon: ["value", "type", "emojiSet", "emojiUnified", "emojiSheetX", "emojiSheetY"],
   image: ["value"],
@@ -6895,7 +6902,7 @@ function resolveUnitElementV1(definition, value) {
 function resolveUnitAppearanceV1(unit, index) {
   const state = unit.appearance[index];
   if (!state) throw new Error("UNIT_APPEARANCE_TARGET_MISSING");
-  return { background: deepCopy(state.background), elements: unit.elements.map((definition) => {
+  return { ...state.foregroundColor !== void 0 ? { foregroundColor: state.foregroundColor } : {}, background: deepCopy(state.background), elements: unit.elements.map((definition) => {
     const value = state.elementValues[definition.uuid];
     if (!value) throw new Error("UNIT_ELEMENT_STATE_VALUE_MISSING");
     return resolveUnitElementV1(definition, value);
@@ -6923,7 +6930,8 @@ function assertUnitElementModelV1(unit) {
   for (const state of unit.appearance) {
     if (!state.stateId || states.has(state.stateId)) throw new Error("UNIT_APPEARANCE_STATE_ID_INVALID");
     states.add(state.stateId);
-    if (!state.elementValues || Object.keys(state).some((key) => !["stateId", "background", "elementValues"].includes(key)) || Object.keys(state.elementValues).length !== ids.size || Object.keys(state.elementValues).some((id3) => !ids.has(id3))) throw new Error("UNIT_ELEMENT_STATE_KEYS_INVALID");
+    if (state.foregroundColor !== void 0 && !/^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test(state.foregroundColor)) throw new Error("UNIT_APPEARANCE_FOREGROUND_INVALID");
+    if (!state.elementValues || Object.keys(state).some((key) => !["stateId", "background", "foregroundColor", "elementValues"].includes(key)) || Object.keys(state.elementValues).length !== ids.size || Object.keys(state.elementValues).some((id3) => !ids.has(id3))) throw new Error("UNIT_ELEMENT_STATE_KEYS_INVALID");
     for (const definition of unit.elements) {
       const value = state.elementValues[definition.uuid];
       if (!value || !value.style || !value.data || Object.keys(value).some((key) => !["style", "data"].includes(key))) throw new Error("UNIT_ELEMENT_STATE_VALUE_INVALID");
@@ -6937,6 +6945,7 @@ function createUnitElementModelV1(elements, states) {
   const result = { elements: split.map((entry) => entry.definition), appearance: states.map((state) => ({
     stateId: state.stateId,
     background: deepCopy(state.background),
+    ...state.foregroundColor !== void 0 ? { foregroundColor: state.foregroundColor } : {},
     elementValues: { ...Object.fromEntries(split.map((entry) => [entry.definition.uuid, deepCopy(entry.value)])), ...deepCopy(state.elementValues ?? {}) }
   })) };
   assertUnitElementModelV1(result);
@@ -6951,12 +6960,22 @@ function createUnitAppearanceModelV1(appearances, stateIds = appearances.map(() 
   return createUnitElementModelV1(appearances[0].elements, appearances.map((appearance, index) => ({
     stateId: stateIds[index],
     background: appearance.background,
+    ...appearance.foregroundColor !== void 0 ? { foregroundColor: appearance.foregroundColor } : {},
     elementValues: Object.fromEntries(appearance.elements.map((element) => [element.uuid, splitUnitElementV1(element).value]))
   })));
 }
 function replaceUnitResolvedAppearancesV1(unit, appearances) {
   if (appearances.length !== unit.appearance.length) throw new Error("UNIT_APPEARANCE_STATE_COUNT_MISMATCH");
   return { ...unit, ...createUnitAppearanceModelV1(appearances, unit.appearance.map((state) => state.stateId)) };
+}
+
+// src/common/unit-presentation-validation-v1.ts
+function assertUniquePresentationFieldsV1(presentation) {
+  const seen = /* @__PURE__ */ new Set();
+  for (const field2 of presentation.appearance.fields) {
+    if (seen.has(field2.field)) throw new Error(`Duplicate presentation field: ${field2.field}`);
+    seen.add(field2.field);
+  }
 }
 
 // src/common/assets/Icons.json
@@ -38612,7 +38631,8 @@ var Icons_default = {
     {
       name: "rocket-launch",
       codepoint: "F14DE",
-      aliases: []
+      aliases: [],
+      svgPath: "M13.16 22.19L11.5 18.35C13.1 17.77 14.57 17 15.93 16.08L13.15 22.19M5.65 12.5L1.81 10.85L7.92 8.07C7 9.43 6.23 10.9 5.65 12.5M21.66 2.35C21.66 2.35 23.78 7.31 18.11 13C15.91 15.17 13.53 16.5 11.38 17.34C10.64 17.62 9.81 17.44 9.26 16.88L7.13 14.75C6.57 14.19 6.39 13.37 6.66 12.62C7.5 10.5 8.83 8.09 11 5.89C16.69 .216 21.66 2.35 21.66 2.35M6.25 22H4.84L8.93 17.9C9.23 18.11 9.56 18.26 9.9 18.35L6.25 22M2 22V20.59L6.77 15.81L8.2 17.23L3.41 22H2M2 19.16V17.75L5.65 14.1C5.74 14.45 5.89 14.78 6.1 15.07L2 19.16M16 6C14.9 6 14 6.9 14 8C14 9.11 14.9 10 16 10C17.11 10 18 9.11 18 8C18 6.9 17.11 6 16 6Z"
     },
     {
       name: "rocket-launch-outline",
@@ -49478,7 +49498,8 @@ var Icons_default = {
         "dinosaur-pixel",
         "t-rex",
         "tyrannosaurus-rex"
-      ]
+      ],
+      svgPath: "M12.8511 2.8511H19.6596V3.7021H12.8511ZM12 3.7021H20.5106V4.1277H12ZM12 4.1277H13.7021V4.9787H12ZM14.5532 4.1277H20.5106V4.9787H14.5532ZM12 4.9787H20.5106V7.5319H12ZM12 7.5319H16.2553V8.383H12ZM12 8.383H18.8085V9.234H12ZM11.1489 9.234H15.4043V10.0851H11.1489ZM3.4894 9.234H4.3404V10.9362H3.4894ZM9.8723 10.0851H15.4043V10.9362H9.8723ZM3.4894 10.9362H5.1915V11.7872H3.4894ZM8.5957 10.9362H17.1064V11.7872H8.5957ZM3.4894 11.7872H6.0426V12.6383H3.4894ZM7.7447 11.7872H15.4043V12.6383H7.7447ZM16.2553 11.7872H17.1064V12.6383H16.2553ZM3.4894 12.6383H15.4043V14.3404H3.4894ZM4.3404 14.3404H15.4043V14.766H4.3404ZM4.3404 14.766H14.5532V15.1915H4.3404ZM5.1915 15.1915H14.5532V16.0426H5.1915ZM6.0426 16.0426H13.7021V16.8936H6.0426ZM6.8936 16.8936H12.8511V17.7447H6.8936ZM7.7447 17.7447H10.2979V18.5957H7.7447ZM11.1489 17.7447H12.8511V18.5957H11.1489ZM7.7447 18.5957H9.4468V19.4468H7.7447ZM7.7447 19.4468H8.5957V20.2979H7.7447ZM12 18.5957H12.8511V20.2979H12ZM7.7447 20.2979H9.4468V21.1489H7.7447ZM12 20.2979H13.7021V21.1489H12Z"
     },
     {
       name: "heart",
@@ -50000,6 +50021,14 @@ var Icons_default = {
       name: "wizard-hat",
       codepoint: "F1477",
       aliases: []
+    },
+    {
+      name: "games-snake",
+      codepoint: "F150E",
+      aliases: [
+        "snake-game"
+      ],
+      svgPath: "M3 5H13V8H6V11H17V20H3V17H14V14H3ZM17 3H21V7H17Z"
     }
   ],
   Sport: [
@@ -51487,7 +51516,8 @@ var Icons_default = {
     {
       name: "rocket-launch",
       codepoint: "F14DE",
-      aliases: []
+      aliases: [],
+      svgPath: "M13.16 22.19L11.5 18.35C13.1 17.77 14.57 17 15.93 16.08L13.15 22.19M5.65 12.5L1.81 10.85L7.92 8.07C7 9.43 6.23 10.9 5.65 12.5M21.66 2.35C21.66 2.35 23.78 7.31 18.11 13C15.91 15.17 13.53 16.5 11.38 17.34C10.64 17.62 9.81 17.44 9.26 16.88L7.13 14.75C6.57 14.19 6.39 13.37 6.66 12.62C7.5 10.5 8.83 8.09 11 5.89C16.69 .216 21.66 2.35 21.66 2.35M6.25 22H4.84L8.93 17.9C9.23 18.11 9.56 18.26 9.9 18.35L6.25 22M2 22V20.59L6.77 15.81L8.2 17.23L3.41 22H2M2 19.16V17.75L5.65 14.1C5.74 14.45 5.89 14.78 6.1 15.07L2 19.16M16 6C14.9 6 14 6.9 14 8C14 9.11 14.9 10 16 10C17.11 10 18 9.11 18 8C18 6.9 17.11 6 16 6Z"
     },
     {
       name: "rocket-launch-outline",
@@ -56414,7 +56444,8 @@ var Icons_default = {
     {
       name: "bird",
       codepoint: "F15C6",
-      aliases: []
+      aliases: [],
+      svgPath: "M23 11.5L19.95 10.37C19.69 9.22 19.04 8.56 19.04 8.56C17.4 6.92 14.75 6.92 13.11 8.56L11.63 10.04L5 3C4 7 5 11 7.45 14.22L2 19.5C2 19.5 10.89 21.5 16.07 17.45C18.83 15.29 19.45 14.03 19.84 12.7L23 11.5M17.71 11.72C17.32 12.11 16.68 12.11 16.29 11.72C15.9 11.33 15.9 10.7 16.29 10.31C16.68 9.92 17.32 9.92 17.71 10.31C18.1 10.7 18.1 11.33 17.71 11.72Z"
     },
     {
       name: "bone",
@@ -56564,7 +56595,8 @@ var Icons_default = {
         "dinosaur-pixel",
         "t-rex",
         "tyrannosaurus-rex"
-      ]
+      ],
+      svgPath: "M12.8511 2.8511H19.6596V3.7021H12.8511ZM12 3.7021H20.5106V4.1277H12ZM12 4.1277H13.7021V4.9787H12ZM14.5532 4.1277H20.5106V4.9787H14.5532ZM12 4.9787H20.5106V7.5319H12ZM12 7.5319H16.2553V8.383H12ZM12 8.383H18.8085V9.234H12ZM11.1489 9.234H15.4043V10.0851H11.1489ZM3.4894 9.234H4.3404V10.9362H3.4894ZM9.8723 10.0851H15.4043V10.9362H9.8723ZM3.4894 10.9362H5.1915V11.7872H3.4894ZM8.5957 10.9362H17.1064V11.7872H8.5957ZM3.4894 11.7872H6.0426V12.6383H3.4894ZM7.7447 11.7872H15.4043V12.6383H7.7447ZM16.2553 11.7872H17.1064V12.6383H16.2553ZM3.4894 12.6383H15.4043V14.3404H3.4894ZM4.3404 14.3404H15.4043V14.766H4.3404ZM4.3404 14.766H14.5532V15.1915H4.3404ZM5.1915 15.1915H14.5532V16.0426H5.1915ZM6.0426 16.0426H13.7021V16.8936H6.0426ZM6.8936 16.8936H12.8511V17.7447H6.8936ZM7.7447 17.7447H10.2979V18.5957H7.7447ZM11.1489 17.7447H12.8511V18.5957H11.1489ZM7.7447 18.5957H9.4468V19.4468H7.7447ZM7.7447 19.4468H8.5957V20.2979H7.7447ZM12 18.5957H12.8511V20.2979H12ZM7.7447 20.2979H9.4468V21.1489H7.7447ZM12 20.2979H13.7021V21.1489H12Z"
     },
     {
       name: "horse",
@@ -65797,7 +65829,11 @@ var BUILTIN_FONTS_V1 = {
   }
 };
 var icons = /* @__PURE__ */ new Map();
+var svgPaths = /* @__PURE__ */ new Map();
 for (const group of Object.values(Icons_default)) for (const icon of group) icons.set(icon.name, icon.codepoint);
+for (const group of Object.values(Icons_default)) for (const icon of group) {
+  if ("svgPath" in icon && typeof icon.svgPath === "string") svgPaths.set(icon.name, icon.svgPath);
+}
 var BUILTIN_ICONS_V1 = Object.entries(Icons_default).flatMap(([group, entries]) => entries.map((icon) => ({
   reference: `builtin:icon:${icon.name}`,
   name: icon.name,
@@ -65810,7 +65846,12 @@ function findThemeBuiltinV1(reference) {
   }
   if (reference.startsWith("builtin:icon:")) {
     const codepoint = icons.get(reference.slice(13));
-    if (codepoint) return { kind: "icon", minStudioVersion: "1.0.0", codepoint };
+    if (codepoint) return {
+      kind: "icon",
+      minStudioVersion: "1.0.0",
+      codepoint,
+      ...svgPaths.has(reference.slice(13)) ? { svgPath: svgPaths.get(reference.slice(13)) } : {}
+    };
   }
   return void 0;
 }
@@ -65892,16 +65933,16 @@ function validatePluginFormField(value) {
       throw new Error("invalid-plugin-form");
   }
 }
-function pluginFormError(form, field, value) {
-  if (field.type === "switch") return typeof value === "boolean" ? "" : form.requiredText;
-  if (field.type === "number") {
-    if (!finite(value) || field.min !== void 0 && value < field.min || field.max !== void 0 && value > field.max) return form.requiredText;
-    const steps = (value - (field.min ?? 0)) / (field.step ?? 1);
-    return field.step !== void 0 && Math.abs(steps - Math.round(steps)) > 1e-8 ? form.requiredText : "";
+function pluginFormError(form, field2, value) {
+  if (field2.type === "switch") return typeof value === "boolean" ? "" : form.requiredText;
+  if (field2.type === "number") {
+    if (!finite(value) || field2.min !== void 0 && value < field2.min || field2.max !== void 0 && value > field2.max) return form.requiredText;
+    const steps = (value - (field2.min ?? 0)) / (field2.step ?? 1);
+    return field2.step !== void 0 && Math.abs(steps - Math.round(steps)) > 1e-8 ? form.requiredText : "";
   }
-  if (typeof value !== "string" || field.required && !value.trim()) return form.requiredText;
-  if ("maxBytes" in field && field.maxBytes !== void 0 && new TextEncoder().encode(value).length > field.maxBytes) return form.tooLongText;
-  if (field.type === "select" && !field.items.some((i) => i.value === value)) return form.requiredText;
+  if (typeof value !== "string" || field2.required && !value.trim()) return form.requiredText;
+  if ("maxBytes" in field2 && field2.maxBytes !== void 0 && new TextEncoder().encode(value).length > field2.maxBytes) return form.tooLongText;
+  if (field2.type === "select" && !field2.items.some((i) => i.value === value)) return form.requiredText;
   return "";
 }
 
@@ -73404,16 +73445,16 @@ function validateInputFunctionDefinitions(functions, unitIds) {
     if (!Object.values(definition.inputs).includes("required")) throw new Error("Input function requires a channel");
     if (definition.target && !unitIds.has(definition.target)) throw new Error("Input function target must belong to this plugin");
     if (definition.settingsPage && (/^[a-zA-Z]+:|^[\\/]|[?#]/.test(definition.settingsPage) || definition.settingsPage.split(/[\\/]/).some((part) => part === "..") || !definition.settingsPage.endsWith(".html"))) throw new Error("Invalid input settings page");
-    for (const [key, field] of Object.entries(definition.settings ?? {})) {
+    for (const [key, field2] of Object.entries(definition.settings ?? {})) {
       const resolved = {
-        ...field,
+        ...field2,
         key,
-        label: defaultText(field.label),
-        value: field.default,
-        ...field.type === "select" ? { items: field.items.map((item) => ({ value: item.value, title: defaultText(item.title) })) } : {}
+        label: defaultText(field2.label),
+        value: field2.default,
+        ...field2.type === "select" ? { items: field2.items.map((item) => ({ value: item.value, title: defaultText(item.title) })) } : {}
       };
       validatePluginFormField(resolved);
-      if (pluginFormError({ requiredText: "invalid", tooLongText: "invalid" }, resolved, field.default)) throw new Error("Invalid input setting default");
+      if (pluginFormError({ requiredText: "invalid", tooLongText: "invalid" }, resolved, field2.default)) throw new Error("Invalid input setting default");
     }
   }
 }
@@ -73593,6 +73634,77 @@ function supportsStatusCountElementsV1(type) {
 // src/main/plugin/plugin-definitions-validate.ts
 var import_ajv3 = __toESM(require_ajv(), 1);
 
+// src/common/device-description/generated.ts
+var UNIT_DEVICE_CAPABILITIES = ["touchscreen", "lcd", "encoder", "slider", "vibration", "local-keyboard-input"];
+
+// src/common/unit-requirements-v1.ts
+var UNIT_REQUIREMENTS_SCHEMA_V1 = {
+  type: "object",
+  additionalProperties: false,
+  required: ["deviceCapabilities"],
+  properties: { deviceCapabilities: {
+    type: "array",
+    uniqueItems: true,
+    items: { enum: [...UNIT_DEVICE_CAPABILITIES] }
+  } }
+};
+
+// src/common/unit-presentation-schema-v1.ts
+var text3 = { type: "string", minLength: 1 };
+var object2 = (properties, required = Object.keys(properties)) => ({ type: "object", properties, required, additionalProperties: false });
+var array2 = (items) => ({ type: "array", items, uniqueItems: true });
+var editor = { oneOf: [
+  { type: "null" },
+  object2({ kind: { const: "builtin" }, typeId: text3 }),
+  object2({ kind: { const: "plugin" }, pluginUUID: text3, typeId: text3, scope: { enum: ["unit", "selected-function"] } }),
+  object2({ kind: { const: "host" }, adapter: { enum: ["button-group", "panel"] } })
+] };
+var binding = { oneOf: [
+  object2({ target: { enum: ["unit-name", "unit-icon", "state-foreground", "state-background-color", "state-background-image", "group-header-name", "group-header-icon"] } }),
+  object2({ target: { enum: ["element-text", "element-icon", "element-color"] }, elementId: text3 })
+] };
+var field = (id3, targets, color = false) => object2({
+  field: { const: id3 },
+  bindings: { ...array2({ allOf: [binding, { properties: { target: { enum: targets } } }] }), minItems: 1 },
+  ...color ? { colorMode: { enum: ["rgb", "rgba"] } } : {},
+  availability: { const: "group-header-visible" }
+}, ["field", "bindings", ...color ? ["colorMode"] : []]);
+var UNIT_PRESENTATION_SCHEMA_V1 = object2({
+  appearance: object2({
+    fields: array2({ oneOf: [
+      field("name", ["unit-name", "element-text", "group-header-name"]),
+      field("icon", ["unit-icon", "element-icon", "group-header-icon"]),
+      field("foreground", ["state-foreground", "element-color"], true),
+      field("background", ["state-background-color"], true),
+      field("image", ["state-background-image"])
+    ] }),
+    fonts: array2(text3),
+    fontFamilies: { ...array2(text3), minItems: 1 },
+    theme: object2({ mode: { enum: ["none", "generic", "dedicated"] }, userThemes: { enum: ["none", "editable"] } }),
+    advanced: { oneOf: [object2({ mode: { const: "none" } }), object2({ mode: { const: "elements" }, elementTypes: { ...array2(text3), minItems: 1 } })] },
+    editor,
+    styleTransfer: array2({ enum: ["copy", "paste"] })
+  }, ["fields", "fonts", "theme", "advanced", "editor", "styleTransfer"]),
+  function: object2({ editors: array2({ oneOf: editor.oneOf.filter((item) => !("type" in item && item.type === "null")) }), commonSettings: array2({ enum: ["activation", "wireless", "container-preserve", "folder-return-on-click"] }) }),
+  surface: object2({
+    mode: { enum: ["captured-unit", "captured-background-native-content", "native", "plugin-frame"] },
+    preview: { enum: ["composed", "unit-capture"] }
+  })
+});
+var REMOVED_UNIT_PRESENTATION_CONFIG_KEYS_V1 = [
+  "disableAdvancedEditor",
+  "disableThemeSelection",
+  "disableStyleCopy",
+  "disableStylePaste",
+  "disableCustomBackgroundImage",
+  "disableAppearanceName",
+  "disableAppearanceIcon",
+  "disableAppearanceBackgroundColor",
+  "disableAppearanceForegroundColor",
+  "availableElements"
+];
+var UNIT_CONFIG_PRESENTATION_CUT_SCHEMA_V1 = { type: "object", properties: Object.fromEntries(REMOVED_UNIT_PRESENTATION_CONFIG_KEYS_V1.map((key) => [key, false])) };
+
 // src/common/indicator-element-v1.ts
 var INDICATOR_DEFAULT_COLORS_V1 = Object.freeze({ off: "#4a4d52", on: "#66bb6a" });
 function remapIndicatorBindingsV1(elements, mapping) {
@@ -73610,19 +73722,19 @@ var DEVICE_ICON_SIZE_TIERS_V1 = [20, 24, 28, 32, 40, 48];
 
 // src/common/button-group-state.ts
 var BUTTON_GROUP_DISPLAY_MODES_V1 = ["title-only", "icon-only", "icon-left", "icon-top"];
-var object2 = (properties, required = Object.keys(properties)) => ({
+var object3 = (properties, required = Object.keys(properties)) => ({
   type: "object",
   additionalProperties: false,
   properties,
   required
 });
-var BUTTON_GROUP_HEADER_LAYOUT_SCHEMA_V1 = object2({
+var BUTTON_GROUP_HEADER_LAYOUT_SCHEMA_V1 = object3({
   height: { type: "number", exclusiveMinimum: 0, maximum: 100 },
-  icon: object2(Object.fromEntries(["x", "y", "width", "height"].map((key) => [
+  icon: object3(Object.fromEntries(["x", "y", "width", "height"].map((key) => [
     key,
     { type: "number", minimum: 0, maximum: 100 }
   ])), ["x", "y", "width", "height"]),
-  title: object2(Object.fromEntries(["x", "y", "width", "height"].map((key) => [
+  title: object3(Object.fromEntries(["x", "y", "width", "height"].map((key) => [
     key,
     { type: "number", minimum: 0, maximum: 100 }
   ])), ["x", "y", "width", "height"])
@@ -73631,7 +73743,7 @@ var BUTTON_GROUP_DATA_SCHEMA_V1 = {
   type: "object",
   required: ["functions", "buttonGroup"],
   properties: {
-    functions: { type: "array", minItems: 2, items: object2({
+    functions: { type: "array", minItems: 2, items: object3({
       buttonId: { type: "string", minLength: 1 },
       name: { type: "string" },
       icon: { type: "string" },
@@ -73639,7 +73751,7 @@ var BUTTON_GROUP_DATA_SCHEMA_V1 = {
       data: {},
       pluginData: { type: "object" }
     }, ["buttonId", "name", "icon", "funcTypeId", "data"]) },
-    buttonGroup: object2({
+    buttonGroup: object3({
       presentationVersion: { const: 1 },
       selectionMode: { enum: ["single", "multiple"] },
       mandatory: { type: "boolean" },
@@ -73749,6 +73861,7 @@ function compositeSavedBudgetIssueV1(elements) {
 
 // src/common/element-contracts-v1.ts
 var ELEMENT_CONTRACTS_V1 = {
+  "typing-echo": { schema: "typingEcho", rendering: "device", resources: [] },
   indicator: { schema: "indicatorElement", rendering: "device", resources: [] },
   text: { schema: "textElement", rendering: "raster", resources: ["background", "font"] },
   icon: { schema: "iconElement", rendering: "raster", resources: ["background", "icon"] },
@@ -73779,7 +73892,7 @@ var COMPOSITE_ELEMENT_CONTRACTS_V1 = {
   image: { writable: ["config.visible", "config.enabled"], font: false },
   button: { writable: ["config.visible", "config.enabled", "style.background", "style.foregroundColor", "style.fontFamily", "style.fontSize", "style.iconSize", "data.layout", "data.icon", "data.title", "data.interaction", "data.states"], font: true }
 };
-var object3 = (properties, required = Object.keys(properties)) => ({
+var object4 = (properties, required = Object.keys(properties)) => ({
   type: "object",
   additionalProperties: false,
   properties,
@@ -73789,7 +73902,7 @@ var string = { type: "string" };
 var id2 = { type: "string", minLength: 1, pattern: "\\S" };
 var positiveMs = { type: "integer", minimum: 1, maximum: 2147483647 };
 var background = { $ref: "#/definitions/backgroundStyle" };
-var BUTTON_ELEMENT_SCHEMA_V1 = object3({
+var BUTTON_ELEMENT_SCHEMA_V1 = object4({
   typeId: { const: "button" },
   uuid: id2,
   name: string,
@@ -73800,31 +73913,31 @@ var BUTTON_ELEMENT_SCHEMA_V1 = object3({
     height: { type: "number", exclusiveMinimum: 0 },
     rotate: { const: 0 }
   } }] },
-  style: object3({
+  style: object4({
     background,
     foregroundColor: string,
     fontFamily: { enum: [...DEVICE_FONT_REFERENCES_V1] },
     fontSize: { enum: [...DEVICE_FONT_SIZE_TIERS_V1] },
     iconSize: { enum: [...DEVICE_ICON_SIZE_TIERS_V1] }
   }),
-  data: object3({
+  data: object4({
     layout: { enum: [...BUTTON_LAYOUT_PRESETS_V1] },
     icon: string,
     title: string,
-    interaction: object3({
+    interaction: object4({
       mode: { enum: [...BUTTON_MODES_V1] },
-      longPress: object3({ thresholdMs: positiveMs }),
-      repeat: object3({ delayMs: positiveMs, intervalMs: positiveMs })
+      longPress: object4({ thresholdMs: positiveMs }),
+      repeat: object4({ delayMs: positiveMs, intervalMs: positiveMs })
     }, ["mode"]),
-    states: { type: "array", items: object3({
+    states: { type: "array", items: object4({
       stateId: id2,
       label: string,
-      overrides: object3({ icon: string, title: string, foregroundColor: string, background }, [])
+      overrides: object4({ icon: string, title: string, foregroundColor: string, background }, [])
     }, ["stateId", "overrides"]) },
     initialStateId: id2
   }, ["layout", "interaction"])
 }, ["typeId", "uuid", "config", "geometry", "style", "data"]);
-var INDICATOR_ELEMENT_SCHEMA_V1 = object3({
+var INDICATOR_ELEMENT_SCHEMA_V1 = object4({
   typeId: { const: "indicator" },
   uuid: id2,
   name: string,
@@ -73835,8 +73948,8 @@ var INDICATOR_ELEMENT_SCHEMA_V1 = object3({
     height: { type: "number", exclusiveMinimum: 0 },
     rotate: { const: 0 }
   } }] },
-  style: object3({ color: string }),
-  data: object3({ binding: object3({ buttonId: id2, colors: { type: "array", items: object3({ stateId: id2, color: string }) } }) }, [])
+  style: object4({ color: string }),
+  data: object4({ binding: object4({ buttonId: id2, colors: { type: "array", items: object4({ stateId: id2, color: string }) } }) }, [])
 }, ["typeId", "uuid", "config", "geometry", "style", "data"]);
 var compositeIdentityFields = new Set(COMPOSITE_RUNTIME_IDENTITY_FIELDS_V1);
 var compositeEncoder;
@@ -73889,14 +74002,14 @@ function validateElementContextV1(elements, context) {
     if (element.typeId === "button" && !composite) issue("typeId", "BUTTON_OUTSIDE_COMPOSITE");
     if (element.typeId === "indicator") {
       if (element.geometry.rotate && element.geometry.rotate !== 0) issue("geometry.rotate", "ROTATION_NOT_ALLOWED");
-      const binding = element.data.binding;
-      if (binding) {
-        const button2 = elements.find((candidate) => candidate.typeId === "button" && candidate.uuid === binding.buttonId);
-        const group = context?.data?.buttonGroup && context.data.functions?.some((fn) => fn.buttonId === binding.buttonId);
+      const binding2 = element.data.binding;
+      if (binding2) {
+        const button2 = elements.find((candidate) => candidate.typeId === "button" && candidate.uuid === binding2.buttonId);
+        const group = context?.data?.buttonGroup && context.data.functions?.some((fn) => fn.buttonId === binding2.buttonId);
         if (!button2 && !group) issue("data.binding.buttonId", "UNKNOWN_BUTTON");
         const states2 = button2?.typeId === "button" ? button2.data.states?.map((state) => state.stateId) ?? [] : group ? ["on", "off"] : [];
         const used = /* @__PURE__ */ new Set();
-        for (const color of binding.colors) {
+        for (const color of binding2.colors) {
           if (!states2.includes(color.stateId) || used.has(color.stateId)) issue("data.binding.colors", "UNKNOWN_OR_DUPLICATE_STATE");
           used.add(color.stateId);
         }
@@ -74160,20 +74273,20 @@ var nonnegative = { ...number, minimum: 0 };
 var integer2 = { ...nonnegative, type: "integer" };
 var boolean = { type: "boolean" };
 var ref = (key) => ({ $ref: `#/definitions/${key}` });
-var array2 = (items, minItems = 0) => ({ type: "array", items, minItems });
-var object4 = (properties, required = Object.keys(properties)) => ({ type: "object", additionalProperties: false, properties, required });
-var optional = (properties) => object4(properties, []);
+var array3 = (items, minItems = 0) => ({ type: "array", items, minItems });
+var object5 = (properties, required = Object.keys(properties)) => ({ type: "object", additionalProperties: false, properties, required });
+var optional = (properties) => object5(properties, []);
 var kinds = ["font", "icon", "image", "derived-image", "animated-derived", "render-artifact"];
-var scope = object4({ type: { const: "device" }, deviceModelId: name });
+var scope = object5({ type: { const: "device" }, deviceModelId: name });
 var commonElement = { uuid, name: string2, identifier: string2, config: ref("elementConfig"), geometry: ref("geometry") };
-var chartElement = (typeId, style, data) => object4(
+var chartElement = (typeId, style, data) => object5(
   { typeId: { const: typeId }, ...commonElement, style, data },
   ["typeId", "uuid", "config", "geometry", "style", "data"]
 );
-var panelColor = { type: "string", pattern: "^#[0-9a-fA-F]{6}$" };
+var panelColor = { type: "string", pattern: "^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$" };
 var panelView = { enum: ["overview", "detail", "notice"] };
 var panelSlot = { type: "integer", minimum: 1, maximum: 8 };
-var panelBackground = object4({ backgroundColor: { type: "string", pattern: "^(#[0-9a-fA-F]{6}|transparent)$" }, borderRadius: { type: "integer", minimum: 0, maximum: 64 } }, []);
+var panelBackground = object5({ backgroundColor: { type: "string", pattern: "^(#[0-9a-fA-F]{6}|transparent)$" }, borderRadius: { type: "integer", minimum: 0, maximum: 64 } }, []);
 var panelText = {
   color: panelColor,
   fontFamily: { enum: [...PANEL_FONT_FAMILIES] },
@@ -74182,10 +74295,14 @@ var panelText = {
   textAlign: { enum: ["left", "center", "right"] },
   background: panelBackground
 };
-var panelData = (properties, required) => object4(properties, required);
-var chartData = object4({ dataSourceKey: string2, min: number, max: number, autoScale: boolean, updateInterval: nonnegative });
+var panelData = (properties, required) => object5(properties, required);
+var chartData = object5({ dataSourceKey: string2, min: number, max: number, autoScale: boolean, updateInterval: nonnegative });
 var definitions = {
   ...APPEARANCE_SCHEMA_DEFINITIONS,
+  typingEcho: chartElement("typing-echo", {
+    ...APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties.style,
+    properties: { ...APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties.style.properties, fontFamily: { enum: [...DEVICE_FONT_REFERENCES_V1] } }
+  }, object5({})),
   textElement: { ...APPEARANCE_SCHEMA_DEFINITIONS.textElement, properties: { ...APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties, uuid } },
   iconElement: { ...APPEARANCE_SCHEMA_DEFINITIONS.iconElement, properties: { ...APPEARANCE_SCHEMA_DEFINITIONS.iconElement.properties, uuid } },
   imageElement: { ...APPEARANCE_SCHEMA_DEFINITIONS.imageElement, properties: { ...APPEARANCE_SCHEMA_DEFINITIONS.imageElement.properties, uuid } },
@@ -74194,13 +74311,13 @@ var definitions = {
   // Read-only legacy input allows saved packages to open before the layout owner removes rectangles.
   element: { oneOf: [...Object.values(ELEMENT_CONTRACTS_V1).map((contract) => ref(contract.schema)), ref("legacyPanelCard")] },
   legacyPanelCard: chartElement("panel-card", optional({ background: panelBackground }), panelData({ view: { enum: ["overview", "detail"] }, slot: panelSlot }, ["view"])),
-  slider: chartElement("slider", object4({
+  slider: chartElement("slider", object5({
     trackStyle: { enum: ["continuous", "stepped"] },
     color: string2,
     inactiveColor: string2,
     knobColor: string2
-  }), object4({})),
-  audioSpectrum: chartElement("@eniacelec/utility:audio-spectrum", object4({
+  }), object5({})),
+  audioSpectrum: chartElement("@eniacelec/utility:audio-spectrum", object5({
     colorLow: string2,
     colorHigh: string2,
     colorEnergy: string2,
@@ -74208,8 +74325,8 @@ var definitions = {
     peakHold: boolean,
     transparentGradient: boolean,
     barWidth: { type: "integer", minimum: 1, maximum: 30 }
-  }), object4({})),
-  vuMeter: chartElement("@eniacelec/utility:vu-meter", object4({
+  }), object5({})),
+  vuMeter: chartElement("@eniacelec/utility:vu-meter", object5({
     visible: boolean,
     colorLow: string2,
     colorHigh: string2,
@@ -74217,8 +74334,8 @@ var definitions = {
     segments: { type: "integer", minimum: 4, maximum: 32 },
     showLimiter: boolean,
     dataSource: { enum: ["BEAT", "BEAT_L", "BEAT_R", "RMS", "RMS_L", "RMS_R"] }
-  }, ["colorLow", "colorHigh", "backgroundColor", "segments", "showLimiter", "dataSource"]), object4({})),
-  chartProgress: chartElement("chart-progress-bar", object4(
+  }, ["colorLow", "colorHigh", "backgroundColor", "segments", "showLimiter", "dataSource"]), object5({})),
+  chartProgress: chartElement("chart-progress-bar", object5(
     {
       colorStart: string2,
       colorEnd: string2,
@@ -74226,23 +74343,23 @@ var definitions = {
       stepSegmentWidthPx: nonnegative
     },
     ["colorStart", "colorEnd", "barStyle"]
-  ), object4({ dataSourceKey: string2, min: number, max: number, updateInterval: nonnegative })),
+  ), object5({ dataSourceKey: string2, min: number, max: number, updateInterval: nonnegative })),
   chartLine: chartElement(
     "chart-line",
-    object4({ smooth: boolean, areaFill: boolean, pointSpacing: nonnegative }),
-    object4({ sources: array2(object4({ key: string2, color: string2, min: number, max: number, autoScale: boolean })), updateInterval: nonnegative })
+    object5({ smooth: boolean, areaFill: boolean, pointSpacing: nonnegative }),
+    object5({ sources: array3(object5({ key: string2, color: string2, min: number, max: number, autoScale: boolean })), updateInterval: nonnegative })
   ),
-  chartSeries: chartElement("chart-series-bar", object4({ colorStart: string2, colorEnd: string2, pointSpacing: nonnegative }), chartData),
-  chartGauge: chartElement("chart-gauge", object4({ color: string2, thresholds: { type: "array", maxItems: 8, items: object4({ max: number, color: string2 }) } }, ["color"]), chartData),
-  chartHeatmap: chartElement("chart-heatmap", object4({ colorStart: string2, colorEnd: string2, cellSize: nonnegative, cellGap: nonnegative }), chartData),
-  statusCount: chartElement("status-count", APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties.style, object4({ dataSourceKey: string2, updateInterval: nonnegative, options: array2(object4({ label: name, dataSourceKey: name })) })),
+  chartSeries: chartElement("chart-series-bar", object5({ colorStart: string2, colorEnd: string2, pointSpacing: nonnegative }), chartData),
+  chartGauge: chartElement("chart-gauge", object5({ color: string2, thresholds: { type: "array", maxItems: 8, items: object5({ max: number, color: string2 }) } }, ["color"]), chartData),
+  chartHeatmap: chartElement("chart-heatmap", object5({ colorStart: string2, colorEnd: string2, cellSize: nonnegative, cellGap: nonnegative }), chartData),
+  statusCount: chartElement("status-count", APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties.style, object5({ dataSourceKey: string2, updateInterval: nonnegative, options: array3(object5({ label: name, dataSourceKey: name })) })),
   chartText: chartElement(
     "chart-text",
     APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties.style,
-    object4({ dataSourceKey: string2, updateInterval: nonnegative })
+    object5({ dataSourceKey: string2, updateInterval: nonnegative })
   ),
   // Native plugin panel elements (spec 2026-10-12-plugin-panel-elements-design): every style key is optional.
-  panelSession: chartElement("panel-session", object4({}), panelData({ view: { const: "overview" }, slot: panelSlot, itemId: name, itemTitle: string2 }, ["view", "slot"])),
+  panelSession: chartElement("panel-session", object5({}), panelData({ view: { const: "overview" }, slot: panelSlot, itemId: name, itemTitle: string2 }, ["view", "slot"])),
   panelField: chartElement(
     "panel-field",
     optional({ ...panelText, colorMode: { enum: ["fixed", "state"] } }),
@@ -74260,26 +74377,26 @@ var definitions = {
     panelData({ view: { const: "detail" }, index: { type: "integer", minimum: 1, maximum: 4 } }, ["view", "index"])
   ),
   panelBack: chartElement("panel-back", optional(panelText), panelData({ view: { const: "detail" } }, ["view"])),
-  sourceCredit: object4(
+  sourceCredit: object5(
     { themeName: name, authorName: name, authorId: uuid, listingId: uuid, versionId: uuid, version },
     ["themeName", "authorName", "listingId", "versionId", "version"]
   ),
-  mergeSource: object4(
+  mergeSource: object5(
     { themeUUID: uuid, revision: integer2, themeName: name, authorName: name, authorId: uuid, basedOn: ref("sourceCredit") },
     ["themeUUID", "revision", "themeName", "authorName"]
   ),
-  metadata: object4(
-    { name, description: { type: "string", maxLength: 1e4 }, authorName: name, authorId: uuid, sourceCredit: ref("sourceCredit"), mergedSources: array2(ref("mergeSource")), modifiedAt: { type: "string", format: "utc-time-v1" } },
+  metadata: object5(
+    { name, description: { type: "string", maxLength: 1e4 }, authorName: name, authorId: uuid, sourceCredit: ref("sourceCredit"), mergedSources: array3(ref("mergeSource")), modifiedAt: { type: "string", format: "utc-time-v1" } },
     ["name", "authorName", "modifiedAt"]
   ),
   source: { oneOf: [
-    object4({ attachment: { const: "embedded-asset" }, assetId: uuid, contentFingerprint: hash }),
-    object4(
+    object5({ attachment: { const: "embedded-asset" }, assetId: uuid, contentFingerprint: hash }),
+    object5(
       { attachment: { const: "projection-omitted" }, kind: { enum: kinds }, contentFingerprint: hash, name: string2 },
       ["attachment", "kind", "contentFingerprint"]
     )
   ] },
-  asset: object4({
+  asset: object5({
     assetId: uuid,
     kind: { enum: kinds },
     name,
@@ -74290,47 +74407,47 @@ var definitions = {
     contentFingerprint: hash,
     origin: { enum: ["standalone-theme", "embedded-theme", "device-sync"] },
     renderParameters: { type: "object", required: ["profile"], properties: { profile: name } },
-    authoringSources: array2(ref("source")),
+    authoringSources: array3(ref("source")),
     provenance: optional({ sourceThemeUUID: uuid, sourceAssetId: uuid, sourceName: string2, declaredLicense: string2 })
   }, ["assetId", "kind", "name", "modifiedAt", "blobHash", "contentFingerprint", "origin", "renderParameters"]),
-  blob: object4({ blobHash: hash, byteSize: integer2, mimeType: name, filename: name, present: { const: true } }),
-  category: object4({ categoryId: uuid, kind: { enum: ["icon", "image"] }, role: { enum: ["regular", "uncategorized"] }, name, assetIds: array2(uuid) }),
+  blob: object5({ blobHash: hash, byteSize: integer2, mimeType: name, filename: name, present: { const: true } }),
+  category: object5({ categoryId: uuid, kind: { enum: ["icon", "image"] }, role: { enum: ["regular", "uncategorized"] }, name, assetIds: array3(uuid) }),
   variables: optional({
     colors: optional(Object.fromEntries(THEME_VARIABLE_ROLES_V1.colors.map((role) => [role, name]))),
     typography: optional(Object.fromEntries(THEME_VARIABLE_ROLES_V1.typography.map((role) => [
       role,
-      object4({ fontRef: name, fontSize: nonnegative, fontWeight: { type: "integer", minimum: 1, maximum: 1e3 }, fontStyle: { enum: ["normal", "italic"] } })
+      object5({ fontRef: name, fontSize: nonnegative, fontWeight: { type: "integer", minimum: 1, maximum: 1e3 }, fontStyle: { enum: ["normal", "italic"] } })
     ]))),
     shape: optional(Object.fromEntries(THEME_VARIABLE_ROLES_V1.shape.map((role) => [role, nonnegative])))
   }),
-  unitPreset: object4({
+  unitPreset: object5({
     presetId: uuid,
     name,
     widthCells: { type: "integer", minimum: 1, maximum: 8 },
     heightCells: { const: 1 },
     dedicatedForTypeId: name,
-    deviceScopes: array2(scope, 1),
+    deviceScopes: array3(scope, 1),
     appearance: ref("unitAppearance")
   }, ["presetId", "widthCells", "heightCells", "appearance"]),
-  unitAppearance: object4({ background: ref("backgroundStyle"), elements: array2(ref("element")) }),
-  pageAppearance: object4({
+  unitAppearance: object5({ background: ref("backgroundStyle"), foregroundColor: panelColor, elements: array3(ref("element")) }, ["background", "elements"]),
+  pageAppearance: object5({
     backgroundColor: string2,
     color: string2,
     backgroundImage: string2,
     backgroundFit: { enum: ["cover", "contain", "stretch", "tile"] },
     backgroundPosition: string2
   }, ["backgroundColor", "color"]),
-  pagePreset: object4({
+  pagePreset: object5({
     presetId: uuid,
     name,
     appearance: ref("pageAppearance")
   }, ["presetId", "appearance"]),
-  variant: object4({ variantId: uuid, deviceModelId: name, pageStylePresets: array2(ref("pagePreset")) }),
-  migration: object4({ policyId: uuid, target: scope, baseVariantId: uuid, basePresetId: uuid, algorithm: { const: "scale-page-appearance-v1" } })
+  variant: object5({ variantId: uuid, deviceModelId: name, pageStylePresets: array3(ref("pagePreset")) }),
+  migration: object5({ policyId: uuid, target: scope, baseVariantId: uuid, basePresetId: uuid, algorithm: { const: "scale-page-appearance-v1" } })
 };
 var THEME_PACKAGE_SCHEMA_V1 = {
   $schema: "http://json-schema.org/draft-07/schema#",
-  ...object4({
+  ...object5({
     schemaVersion: { const: 1 },
     kind: { const: "theme" },
     profile: { enum: ["standalone", "embedded"] },
@@ -74338,10 +74455,10 @@ var THEME_PACKAGE_SCHEMA_V1 = {
     themeUUID: uuid,
     revision: integer2,
     minStudioVersion: version,
-    core: object4({ variables: ref("variables"), assetCategories: array2(ref("category")), assets: array2(ref("asset")), unitStylePresets: array2(ref("unitPreset")) }),
-    deviceVariants: array2(ref("variant")),
-    migrationPolicies: array2(ref("migration")),
-    blobs: array2(ref("blob"))
+    core: object5({ variables: ref("variables"), assetCategories: array3(ref("category")), assets: array3(ref("asset")), unitStylePresets: array3(ref("unitPreset")) }),
+    deviceVariants: array3(ref("variant")),
+    migrationPolicies: array3(ref("migration")),
+    blobs: array3(ref("blob"))
   }, ["schemaVersion", "kind", "profile", "metadata", "themeUUID", "revision", "core", "deviceVariants", "migrationPolicies", "blobs"]),
   definitions
 };
@@ -74418,8 +74535,8 @@ var template = (source) => {
   return schema;
 };
 var display2 = { $ref: "#/definitions/pluginDisplayText" };
-var text3 = template(APPEARANCE_SCHEMA_DEFINITIONS.textElement);
-text3.properties.data.properties.text = display2;
+var text4 = template(APPEARANCE_SCHEMA_DEFINITIONS.textElement);
+text4.properties.data.properties.text = display2;
 var button = template(BUTTON_ELEMENT_SCHEMA_V1);
 button.properties.style.required = button.properties.style.required.filter((key) => !["fontSize", "iconSize"].includes(key));
 button.properties.data.properties.title = display2;
@@ -74434,7 +74551,7 @@ var COMPOSITE_DEFINITION_SCHEMA_V1 = {
     requires: { type: "object", additionalProperties: false, required: ["host", "device"], properties: { host: { const: 1 }, device: { const: 1 } } },
     appearance: { type: "object", additionalProperties: false, required: ["background", "elements"], properties: {
       background: { $ref: "#/definitions/backgroundStyle" },
-      elements: { type: "array", maxItems: COMPOSITE_RUNTIME_LIMITS_V1.maxElements, items: { oneOf: [text3, template(APPEARANCE_SCHEMA_DEFINITIONS.iconElement), template(APPEARANCE_SCHEMA_DEFINITIONS.imageElement), button, template(INDICATOR_ELEMENT_SCHEMA_V1)] } }
+      elements: { type: "array", maxItems: COMPOSITE_RUNTIME_LIMITS_V1.maxElements, items: { oneOf: [text4, template(APPEARANCE_SCHEMA_DEFINITIONS.iconElement), template(APPEARANCE_SCHEMA_DEFINITIONS.imageElement), button, template(INDICATOR_ELEMENT_SCHEMA_V1)] } }
     } },
     buttonConfigs: { type: "array", items: {
       type: "object",
@@ -74852,9 +74969,10 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
     revision: { type: "string" }
   },
   definitions: {
+    unitPresentation: UNIT_PRESENTATION_SCHEMA_V1,
     builtinUnitTemplate: {
       type: "object",
-      required: ["uuid", "typeId", "name", "icon", "config", "geometry", "elements", "appearance", "data"],
+      required: ["uuid", "typeId", "name", "icon", "config", "geometry", "elements", "appearance", "presentation", "requirements", "data"],
       additionalProperties: false,
       not: { required: ["plugin"] },
       properties: {
@@ -74863,10 +74981,9 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
         name: { $ref: "#/definitions/requiredPluginDisplayText" },
         icon: { type: "string" },
         fixedAppearance: { type: "boolean" },
-        config: {
-          type: "object",
-          additionalProperties: true
-        },
+        requirements: UNIT_REQUIREMENTS_SCHEMA_V1,
+        presentation: { $ref: "#/definitions/unitPresentation" },
+        config: UNIT_CONFIG_PRESENTATION_CUT_SCHEMA_V1,
         geometry: { $ref: "#/definitions/geometry" },
         elements: { type: "array", items: { $ref: "#/definitions/unitElementDefinition" } },
         appearance: { type: "array", minItems: 1, items: { $ref: "#/definitions/unitAppearanceState" } },
@@ -74925,7 +75042,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
     },
     pluginUnitDefinitionRuntime: {
       type: "object",
-      required: ["unitId", "typeId", "name", "categoryId", "plugin", "layouts"],
+      required: ["unitId", "typeId", "name", "categoryId", "plugin", "layouts", "presentation", "requirements"],
       additionalProperties: false,
       properties: {
         unitId: { type: "string", minLength: 1 },
@@ -74936,9 +75053,8 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
         interactionMode: { type: "string", enum: ["click", "continuous", "display"] },
         defaultActivation: { $ref: "#/definitions/pluginUnitDefaultActivationConfig" },
         icon: { type: "string" },
-        hasFunctionEditor: { type: "boolean" },
-        functionEditorScope: { enum: ["unit", "selected-function"] },
-        hasAppearanceEditor: { type: "boolean" },
+        requirements: UNIT_REQUIREMENTS_SCHEMA_V1,
+        presentation: { $ref: "#/definitions/unitPresentation" },
         hasView: { type: "boolean" },
         visibleInLibrary: { type: "boolean" },
         platforms: {
@@ -74946,7 +75062,6 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
           items: { type: "string", enum: ["win32", "darwin", "linux"] }
         },
         libraryUUID: { type: "string" },
-        availableElements: { type: "array", uniqueItems: true, items: { enum: ["text", "icon", "image", "button", "indicator", "status-count", "chart-text", "chart-gauge", "chart-line", "chart-series-bar", "chart-progress-bar", "chart-heatmap"] } },
         layouts: { type: "object", required: ["default"], additionalProperties: false, properties: {
           default: { $ref: "#/definitions/unitLayout" },
           devices: { type: "object", additionalProperties: { $ref: "#/definitions/unitLayout" } }
@@ -74969,24 +75084,22 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
           if: { properties: { plugin: { properties: { type: { const: "composite" } } } } },
           then: { required: ["composite"], properties: {
             hasView: { const: false },
-            hasAppearanceEditor: { const: false },
             interactionMode: { const: "click" },
             defaultActivation: false,
             functions: false,
             slider: false,
             valueLabel: false,
             label: false,
-            buttonGroup: false,
-            availableElements: { items: { enum: ["button", "text", "icon", "image", "indicator"] } }
+            buttonGroup: false
           } },
-          else: { properties: { composite: false, availableElements: { items: { not: { const: "button" } } } } }
+          else: { properties: { composite: false } }
         },
-        { if: { properties: { plugin: { properties: { type: { const: "chart" } } } } }, then: { properties: { hasView: { const: false }, hasAppearanceEditor: { const: false }, defaultActivation: false, functions: false, slider: false, valueLabel: false, label: false, buttonGroup: false } } },
+        { if: { properties: { plugin: { properties: { type: { const: "chart" } } } } }, then: { properties: { hasView: { const: false }, defaultActivation: false, functions: false, slider: false, valueLabel: false, label: false, buttonGroup: false } } },
         {
           if: { properties: { plugin: { properties: { type: { const: "panel" } } } } },
           then: {
             required: ["panel"],
-            properties: { hasView: { const: false }, hasAppearanceEditor: { const: false }, interactionMode: false, defaultActivation: false, functions: false, slider: false, valueLabel: false, label: false, buttonGroup: false }
+            properties: { hasView: { const: false }, interactionMode: false, defaultActivation: false, functions: false, slider: false, valueLabel: false, label: false, buttonGroup: false }
           },
           else: { properties: { panel: false } }
         },
@@ -75247,6 +75360,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
           additionalProperties: false,
           properties: {
             stateId: { type: "string", minLength: 1 },
+            foregroundColor: { type: "string", pattern: "^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$" },
             background: { $ref: "#/definitions/backgroundStyle" },
             elementValues: { type: "object", additionalProperties: { $ref: "#/definitions/unitElementStateValue" } }
           }
@@ -75255,6 +75369,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
           type: "object",
           additionalProperties: false,
           properties: {
+            foregroundColor: { type: "string", pattern: "^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$" },
             background: { $ref: "#/definitions/backgroundStyleOverride" },
             elementValues: { type: "object", additionalProperties: {
               type: "object",
@@ -75421,6 +75536,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
       additionalProperties: false,
       properties: {
         stateId: { type: "string", minLength: 1 },
+        foregroundColor: { type: "string", pattern: "^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$" },
         background: { $ref: "#/definitions/backgroundStyle" },
         elementValues: { type: "object", additionalProperties: { $ref: "#/definitions/unitElementStateValue" } }
       }
@@ -75429,6 +75545,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
       type: "object",
       additionalProperties: false,
       properties: {
+        foregroundColor: { type: "string", pattern: "^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$" },
         background: { $ref: "#/definitions/backgroundStyleOverride" },
         elementValues: { type: "object", additionalProperties: {
           type: "object",
@@ -75518,6 +75635,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
       required: ["background", "elements"],
       additionalProperties: false,
       properties: {
+        foregroundColor: { type: "string", pattern: "^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$" },
         background: { $ref: "#/definitions/backgroundStyle" },
         elements: {
           type: "array",
@@ -75973,7 +76091,7 @@ var DEFAULT_PANEL_LABELS = Object.freeze({
   updatedMinutes: (minutes) => `Updated ${minutes} min ago`
 });
 var FIXED_TEXT_METRICS = Object.freeze({
-  width: (text4, fontSize) => Math.ceil(text4.length * fontSize * 0.55),
+  width: (text5, fontSize) => Math.ceil(text5.length * fontSize * 0.55),
   lineHeight: (fontSize) => Math.ceil(fontSize * 1.3)
 });
 var STATE_ICONS = Object.freeze({
@@ -75990,7 +76108,7 @@ var IMAGE_ASSET_KINDS_V1 = ["image", "derived-image", "animated-derived", "rende
 var ICON_ASSET_KINDS_V1 = ["icon", ...IMAGE_ASSET_KINDS_V1];
 function createThemeResourceVisitorV1(visit) {
   let replacements = 0;
-  function field(record, key, subject, allowed, required = false) {
+  function field2(record, key, subject, allowed, required = false) {
     const replacement = visit(record[key], subject, allowed, required);
     if (typeof replacement === "string" && replacement !== record[key]) {
       record[key] = replacement;
@@ -75998,7 +76116,7 @@ function createThemeResourceVisitorV1(visit) {
     }
   }
   function background2(value, subject) {
-    field(value, "backgroundImage", `${subject}/backgroundImage`, IMAGE_ASSET_KINDS_V1);
+    field2(value, "backgroundImage", `${subject}/backgroundImage`, IMAGE_ASSET_KINDS_V1);
   }
   function element(value, subject) {
     if (isLegacyPanelCard(value)) return;
@@ -76010,19 +76128,19 @@ function createThemeResourceVisitorV1(visit) {
           if (style.background) background2(style.background, `${subject}/background`);
           break;
         case "font":
-          if ("fontFamily" in style) field(style, "fontFamily", `${subject}/fontFamily`, ["font"], true);
+          if ("fontFamily" in style) field2(style, "fontFamily", `${subject}/fontFamily`, ["font"], true);
           break;
         case "image":
-          field(data, "value", subject, IMAGE_ASSET_KINDS_V1);
+          field2(data, "value", subject, IMAGE_ASSET_KINDS_V1);
           break;
         case "icon":
-          if (data.type !== "emoji") field(data, "value", subject, ICON_ASSET_KINDS_V1);
+          if (data.type !== "emoji") field2(data, "value", subject, ICON_ASSET_KINDS_V1);
           break;
         case "button-content":
           if (value.typeId !== "button") break;
-          field(value.data, "icon", `${subject}/icon`, ["icon"]);
+          field2(value.data, "icon", `${subject}/icon`, ["icon"]);
           for (const state of value.data.states ?? []) {
-            field(state.overrides, "icon", `${subject}/state:${state.stateId}/icon`, ["icon"]);
+            field2(state.overrides, "icon", `${subject}/state:${state.stateId}/icon`, ["icon"]);
             if (state.overrides.background) background2(state.overrides.background, `${subject}/state:${state.stateId}/background`);
           }
           break;
@@ -76036,11 +76154,11 @@ function createThemeResourceVisitorV1(visit) {
   function unit(value, subject) {
     if (value.typeId && isButtonGroupUnit(value)) {
       const group = value.data?.buttonGroup;
-      if (group) field(group, "fontFamily", `${subject}/data/buttonGroup/fontFamily`, ["font"], true);
+      if (group) field2(group, "fontFamily", `${subject}/data/buttonGroup/fontFamily`, ["font"], true);
       const functions = value.data?.functions;
-      if (Array.isArray(functions)) functions.forEach((fn, index) => field(fn, "icon", `${subject}/data/functions/${index}/icon`, ["icon"]));
+      if (Array.isArray(functions)) functions.forEach((fn, index) => field2(fn, "icon", `${subject}/data/functions/${index}/icon`, ["icon"]));
     }
-    field(value, "icon", `${subject}/icon`, ICON_ASSET_KINDS_V1);
+    field2(value, "icon", `${subject}/icon`, ICON_ASSET_KINDS_V1);
     const before = replacements;
     const resolved = resolveUnitAppearancesV1(value);
     resolved.forEach((item, index) => appearance(item, `${subject}/appearance:${index}`));
@@ -76048,12 +76166,12 @@ function createThemeResourceVisitorV1(visit) {
   }
   function page(value, subject) {
     background2(value.style, subject);
-    field(value, "icon", `${subject}/icon`, ICON_ASSET_KINDS_V1);
-    for (const binding of value.appBindings ?? []) field(binding, "icon", `${subject}/app:${binding.uuid}/icon`, ICON_ASSET_KINDS_V1);
+    field2(value, "icon", `${subject}/icon`, ICON_ASSET_KINDS_V1);
+    for (const binding2 of value.appBindings ?? []) field2(binding2, "icon", `${subject}/app:${binding2.uuid}/icon`, ICON_ASSET_KINDS_V1);
   }
   function theme2(value, subject = `theme:${value.themeUUID}`) {
     for (const [role, font] of Object.entries(value.core.variables.typography ?? {})) {
-      field(font, "fontRef", `${subject}/variables/typography/${role}`, ["font"], true);
+      field2(font, "fontRef", `${subject}/variables/typography/${role}`, ["font"], true);
     }
     for (const preset of value.core.unitStylePresets) appearance(preset.appearance, `${subject}/preset:${preset.presetId}`);
     for (const variant of value.deviceVariants) for (const preset of variant.pageStylePresets) {
@@ -76146,16 +76264,16 @@ function compositeButtonSettingsV1(definition, button2) {
   const settings = {};
   for (const declaration of definition.buttonConfigs ?? []) {
     if (declaration.identifier !== void 0 ? declaration.identifier !== button2.identifier : declaration.mode !== button2.data.interaction.mode) continue;
-    for (const [key, field] of Object.entries(declaration.settings)) {
+    for (const [key, field2] of Object.entries(declaration.settings)) {
       if (Object.prototype.hasOwnProperty.call(settings, key)) throw new Error(`COMPOSITE_CONFIG_DUPLICATE_FIELD: ${key}`);
-      settings[key] = field;
+      settings[key] = field2;
     }
   }
   return settings;
 }
 function compositeButtonConfigDefaultsV1(definition, button2, current = {}) {
   const fields = compositeButtonSettingsV1(definition, button2);
-  return { ...Object.fromEntries(Object.entries(fields).map(([key, field]) => [key, structuredClone(field.default)])), ...structuredClone(current) };
+  return { ...Object.fromEntries(Object.entries(fields).map(([key, field2]) => [key, structuredClone(field2.default)])), ...structuredClone(current) };
 }
 function materializeCompositeTemplateV1(definition, locale, uuid2 = generatePackageUUIDV1) {
   const localized = localizeCompositeDefinitionV1(definition, locale);
@@ -76200,16 +76318,16 @@ function validateCompositeDefinitionV1(definition) {
     if (scopes.has(scope2)) throw new Error(`COMPOSITE_CONFIG_DUPLICATE_SCOPE: ${scope2}`);
     scopes.add(scope2);
     if (declaration.identifier !== void 0 && !buttons.some((button2) => button2.identifier === declaration.identifier)) throw new Error(`COMPOSITE_CONFIG_UNKNOWN_BUTTON: ${declaration.identifier}`);
-    for (const [key, field] of Object.entries(declaration.settings)) {
+    for (const [key, field2] of Object.entries(declaration.settings)) {
       const resolved = {
-        ...field,
+        ...field2,
         key,
-        label: resolvePluginDisplayText(field.label, ""),
-        value: field.default,
-        ...field.type === "select" ? { items: field.items.map((item) => ({ ...item, title: resolvePluginDisplayText(item.title, "") })) } : {}
+        label: resolvePluginDisplayText(field2.label, ""),
+        value: field2.default,
+        ...field2.type === "select" ? { items: field2.items.map((item) => ({ ...item, title: resolvePluginDisplayText(item.title, "") })) } : {}
       };
       validatePluginFormField(resolved);
-      if (pluginFormError({ requiredText: "invalid", tooLongText: "invalid" }, resolved, field.default)) throw new Error(`COMPOSITE_CONFIG_INVALID_DEFAULT: ${key}`);
+      if (pluginFormError({ requiredText: "invalid", tooLongText: "invalid" }, resolved, field2.default)) throw new Error(`COMPOSITE_CONFIG_INVALID_DEFAULT: ${key}`);
     }
   }
 }
@@ -76224,6 +76342,8 @@ var BUILTIN_UNIT_REQUIRED_KEYS = [
   "geometry",
   "elements",
   "appearance",
+  "presentation",
+  "requirements",
   "data"
 ];
 var BUILTIN_UNIT_ALLOWED_KEYS = /* @__PURE__ */ new Set([
@@ -76268,6 +76388,7 @@ function validatePluginDefinitionsSemantics(payload) {
   const typeIdSeen = /* @__PURE__ */ new Set();
   const unitByTypeId = /* @__PURE__ */ new Map();
   for (const unit of payload.units) {
+    assertUniquePresentationFieldsV1(unit.presentation);
     if (unitIdSeen.has(unit.unitId)) {
       throw new Error(`Duplicate unitId in payload: ${unit.unitId}`);
     }
@@ -76287,9 +76408,6 @@ function validatePluginDefinitionsSemantics(payload) {
     }
     if (unit.defaultData && Object.prototype.hasOwnProperty.call(unit.defaultData, "appearance")) {
       throw new Error(`Unit ${unit.typeId}: defaultData.appearance is not allowed`);
-    }
-    if (unit.hasFunctionEditor && !unit.functionEditorScope) {
-      throw new Error(`Unit ${unit.typeId}: hasFunctionEditor requires functionEditorScope`);
     }
     validateUnitTypeFields(unit);
     validateAppearanceReferences(unit);
@@ -76394,6 +76512,7 @@ function validateBuiltinUnitTemplateShape(candidate, label) {
         throw new Error(`Builtin unit ${label}: state style and data must be objects`);
   }
   assertUnitElementModelV1(candidate);
+  assertUniquePresentationFieldsV1(candidate.presentation);
   if (!isPlainObject(candidate.data)) {
     throw new Error(`Builtin unit ${label}: data must be an object`);
   }
@@ -76425,32 +76544,32 @@ function validateBuiltinPluginTemplateBinding(pluginTemplate, label, unitByTypeI
   if (!pluginTemplate || typeof pluginTemplate !== "object" || Array.isArray(pluginTemplate)) {
     throw new Error(`Builtin unit ${label}: pluginTemplate must be an object`);
   }
-  const binding = pluginTemplate;
+  const binding2 = pluginTemplate;
   const allowedKeys = /* @__PURE__ */ new Set(["pluginUUID", "unitId", "editorTypeId"]);
-  for (const key of Object.keys(binding)) {
+  for (const key of Object.keys(binding2)) {
     if (!allowedKeys.has(key)) {
       throw new Error(`Builtin unit ${label}: pluginTemplate.${key} is not allowed`);
     }
   }
   for (const key of ["pluginUUID", "unitId", "editorTypeId"]) {
-    if (typeof binding[key] !== "string" || binding[key].length === 0) {
+    if (typeof binding2[key] !== "string" || binding2[key].length === 0) {
       throw new Error(`Builtin unit ${label}: pluginTemplate.${key} must be a non-empty string`);
     }
   }
-  const editor = unitByTypeId.get(binding.editorTypeId);
-  if (!editor) {
+  const editor2 = unitByTypeId.get(binding2.editorTypeId);
+  if (!editor2) {
     throw new Error(
-      `Builtin unit ${label}: pluginTemplate.editorTypeId ${binding.editorTypeId} is not registered`
+      `Builtin unit ${label}: pluginTemplate.editorTypeId ${binding2.editorTypeId} is not registered`
     );
   }
-  if (editor.plugin.pluginUUID !== binding.pluginUUID) {
+  if (editor2.plugin.pluginUUID !== binding2.pluginUUID) {
     throw new Error(
-      `Builtin unit ${label}: pluginTemplate editor ${binding.editorTypeId} pluginUUID ${editor.plugin.pluginUUID} does not match ${binding.pluginUUID}`
+      `Builtin unit ${label}: pluginTemplate editor ${binding2.editorTypeId} pluginUUID ${editor2.plugin.pluginUUID} does not match ${binding2.pluginUUID}`
     );
   }
-  if (editor.hasFunctionEditor !== true) {
+  if (!editor2.presentation.function.editors.some((reference) => reference.kind === "plugin")) {
     throw new Error(
-      `Builtin unit ${label}: pluginTemplate editor ${binding.editorTypeId} must declare hasFunctionEditor: true`
+      `Builtin unit ${label}: pluginTemplate editor ${binding2.editorTypeId} must declare a plugin function editor`
     );
   }
 }
@@ -76484,9 +76603,9 @@ function validateUnitTypeFields(unit) {
   if (unit.hasView) {
     throw new Error(`Unit ${unit.typeId}: plugin.type '${type}' cannot have hasView: true`);
   }
-  if (unit.hasAppearanceEditor) {
+  if (unit.presentation.appearance.editor?.kind === "plugin") {
     throw new Error(
-      `Unit ${unit.typeId}: hasAppearanceEditor is only allowed for plugin.type 'custom'`
+      `Unit ${unit.typeId}: plugin appearance editor is only allowed for plugin.type 'custom'`
     );
   }
   if (type === "canvas") {
@@ -76597,9 +76716,19 @@ function validateNoRuntimeLabelFields(unit) {
 }
 function validateAppearanceReferences(unit) {
   if (unit.plugin.type === "panel" && [unit.layouts.default, ...Object.values(unit.layouts.devices ?? {})].some((layout) => layout.appearance !== void 0)) throw new Error("Agent Panel appearance is platform-owned");
-  if (unit.availableElements && unit.plugin.type !== "composite" && !supportsStatusCountElementsV1(unit.plugin.type)) throw new Error("availableElements requires a native data Unit");
-  if (unit.plugin.type === "standard" && unit.availableElements?.some((type) => type.startsWith("chart-"))) throw new Error("Chart element palette requires a Chart Unit");
+  if (unit.plugin.type === "standard" && (unit.presentation.appearance.advanced.mode === "elements" ? unit.presentation.appearance.advanced.elementTypes : [])?.some((type) => type.startsWith("chart-"))) throw new Error("Chart element palette requires a Chart Unit");
+  if (unit.presentation.appearance.advanced.mode === "elements" && unit.presentation.appearance.advanced.elementTypes.some((type) => !Object.prototype.hasOwnProperty.call(ELEMENT_DISPLAY_DATA_KEYS_V1, type))) {
+    throw new Error(`Unit ${unit.typeId}: Unknown presentation element type`);
+  }
   const layouts = [unit.layouts.default, ...Object.values(unit.layouts.devices ?? {})];
+  if (["standard", "cycled"].includes(unit.plugin.type) && layouts.some((layout) => !Array.isArray(layout.appearance?.elements))) {
+    throw new Error(`Unit ${unit.typeId}: standard/cycled layouts require explicit appearance.elements`);
+  }
+  for (const editor2 of [...unit.presentation.function.editors, ...unit.presentation.appearance.editor ? [unit.presentation.appearance.editor] : []]) {
+    if (editor2.kind === "plugin" && (editor2.pluginUUID !== unit.plugin.pluginUUID || editor2.typeId !== unit.typeId)) {
+      throw new Error(`Unit ${unit.typeId}: presentation editor must reference the declaring plugin Unit`);
+    }
+  }
   if (unit.plugin.type !== "button-group" && layouts.some((layout) => layout.buttonGroup)) throw new Error("buttonGroup layout requires a Button Group Unit");
   if (unit.plugin.type === "chart" && layouts.some((layout) => !layout.appearance)) throw new Error("Chart layouts require appearance");
   if (!["custom", "canvas"].includes(unit.plugin.type) && layouts.some((layout) => layout.presentation !== void 0))
@@ -76616,11 +76745,11 @@ function validateAppearanceReferences(unit) {
         if (!Array.isArray(options) || !options.length || new Set(options.map((option) => option.dataSourceKey)).size !== options.length || !options.some((option) => option.dataSourceKey === element.data?.dataSourceKey))
           throw new Error("status-count requires distinct options and a selected dataSourceKey");
       }
-      if (unit.plugin.type === "chart" || unit.plugin.type === "panel" || unit.availableElements) {
+      if (element.uuid) {
         if (element.uuid && ids.has(element.uuid)) throw new Error(`Unit ${unit.typeId}: duplicate element uuid ${element.uuid}`);
         if (element.uuid) ids.add(element.uuid);
       }
-      const primaryPatch = !["chart", "panel", "composite"].includes(unit.plugin.type) && !unit.availableElements && (element.identifier === PRIMARY_TEXT_IDENTIFIER || element.identifier === PRIMARY_ICON_IDENTIFIER);
+      const primaryPatch = ["slider", "label", "value-label"].includes(unit.plugin.type) && (element.identifier === PRIMARY_TEXT_IDENTIFIER || element.identifier === PRIMARY_ICON_IDENTIFIER);
       const compositePatch = unit.plugin.type === "composite" && unit.composite?.appearance.elements.some((slot) => slot.identifier === element.identifier);
       if (!primaryPatch && !compositePatch && (!element.typeId || !element.uuid || !isPlainObject(element.config) || !isPlainObject(element.style) || !isPlainObject(element.data) || !isPlainObject(element.geometry) || !GEOMETRY_REQUIRED_KEYS.every((key) => Number.isFinite(element.geometry?.[key])))) {
         throw new Error(`Unit ${unit.typeId}: Unknown plugin appearance element identifier; appended slots require complete elements`);
