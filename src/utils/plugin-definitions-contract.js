@@ -74090,6 +74090,9 @@ var APPEARANCE_SCHEMA_DEFINITIONS = {
     required: ["borderWidth", "borderColor", "borderStyle", "backgroundColor"],
     additionalProperties: false,
     properties: {
+      sliderTrackStyle: { type: "string", enum: ["continuous", "stepped"] },
+      sliderTrackColor: { type: "string" },
+      sliderInactiveColor: { type: "string" },
       borderWidth: { type: "number" },
       borderColor: { type: "string" },
       borderStyle: { type: "string" },
