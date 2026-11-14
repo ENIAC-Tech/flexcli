@@ -73498,6 +73498,18 @@ function timer(value) {
   integer(value.since);
   if (value.elapsedMs !== void 0) integer(value.elapsedMs);
 }
+function telemetry(value) {
+  if (value === void 0) return;
+  object(value, ["provider", "model", "effort", "tokensPerSecond", "progressPercent"]);
+  if (value.provider !== void 0 && value.provider !== "codex" && value.provider !== "claude") fail();
+  text2(value.model);
+  text2(value.effort);
+  if (value.tokensPerSecond !== void 0 && (!Number.isFinite(value.tokensPerSecond) || value.tokensPerSecond < 0 || value.tokensPerSecond > 1e5)) fail();
+  if (value.progressPercent !== void 0) {
+    integer(value.progressPercent);
+    if (value.progressPercent > 100) fail();
+  }
+}
 function bool(value) {
   if (value !== void 0 && typeof value !== "boolean") fail();
 }
@@ -73536,11 +73548,12 @@ function validatePanelModel(value) {
       if (item.slot > 8 || occupiedSlots.has(item.slot)) fail();
       occupiedSlots.add(item.slot);
     }
-    object(item, ["id", "slot", "title", "subtitle", "activity", "state", "stateText", "badge", "timer", "pages"], ["id", "title", "state", "pages"]);
+    object(item, ["id", "slot", "title", "subtitle", "activity", "state", "stateText", "badge", "timer", "telemetry", "pages"], ["id", "title", "state", "pages"]);
     text2(item.title, true);
     text2(item.subtitle);
     text2(item.activity);
     text2(item.stateText);
+    telemetry(item.telemetry);
     if (!PLUGIN_UNIT_STATES.includes(item.state)) fail();
     if (item.badge !== void 0) integer(item.badge);
     timer(item.timer);
@@ -74361,13 +74374,26 @@ var definitions = {
     object5({ sources: array3(object5({ key: string2, color: string2, min: number, max: number, autoScale: boolean })), updateInterval: nonnegative })
   ),
   chartSeries: chartElement("chart-series-bar", object5({ colorStart: string2, colorEnd: string2, pointSpacing: nonnegative }), chartData),
-  chartGauge: chartElement("chart-gauge", object5({ color: string2, thresholds: { type: "array", maxItems: 8, items: object5({ max: number, color: string2 }) } }, ["color"]), chartData),
+  chartGauge: chartElement("chart-gauge", object5({
+    color: string2,
+    thresholds: { type: "array", maxItems: 8, items: object5({ max: number, color: string2 }) },
+    startDegrees: { ...integer2, maximum: 359 },
+    sweepDegrees: { ...integer2, minimum: 1, maximum: 360 },
+    strokePercent: { ...integer2, minimum: 1, maximum: 100 }
+  }, ["color"]), object5({
+    dataSourceKey: string2,
+    min: number,
+    max: number,
+    autoScale: boolean,
+    updateInterval: nonnegative,
+    hideWhenUnavailable: boolean
+  }, ["dataSourceKey", "min", "max", "autoScale", "updateInterval"])),
   chartHeatmap: chartElement("chart-heatmap", object5({ colorStart: string2, colorEnd: string2, cellSize: nonnegative, cellGap: nonnegative }), chartData),
   statusCount: chartElement("status-count", APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties.style, object5({ dataSourceKey: string2, updateInterval: nonnegative, options: array3(object5({ label: name, dataSourceKey: name })) })),
   chartText: chartElement(
     "chart-text",
     APPEARANCE_SCHEMA_DEFINITIONS.textElement.properties.style,
-    object5({ dataSourceKey: string2, updateInterval: nonnegative })
+    object5({ dataSourceKey: string2, updateInterval: nonnegative, hideWhenUnavailable: boolean }, ["dataSourceKey", "updateInterval"])
   ),
   // Native plugin panel elements (spec 2026-10-12-plugin-panel-elements-design): every style key is optional.
   panelSession: chartElement("panel-session", object5({}), panelData({ view: { const: "overview" }, slot: panelSlot, itemId: name, itemTitle: string2 }, ["view", "slot"])),
@@ -74662,6 +74688,36 @@ var PANEL_DEFINITION_JSON_SCHEMA = {
               "stateText": {
                 "type": "string",
                 "pattern": "^[^\\u0000]*$"
+              },
+              "telemetry": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "provider": {
+                    "enum": [
+                      "codex",
+                      "claude"
+                    ]
+                  },
+                  "model": {
+                    "type": "string",
+                    "pattern": "^[^\\u0000]*$"
+                  },
+                  "effort": {
+                    "type": "string",
+                    "pattern": "^[^\\u0000]*$"
+                  },
+                  "tokensPerSecond": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1e5
+                  },
+                  "progressPercent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
               },
               "badge": {
                 "type": "integer",
@@ -75067,6 +75123,7 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
         requirements: UNIT_REQUIREMENTS_SCHEMA_V1,
         presentation: { $ref: "#/definitions/unitPresentation" },
         hasView: { type: "boolean" },
+        renderFrameFormat: { enum: ["jpeg", "png"] },
         visibleInLibrary: { type: "boolean" },
         platforms: {
           type: "array",
@@ -75091,6 +75148,13 @@ var PLUGIN_DEFINITIONS_JSON_SCHEMA = {
         buttonGroup: { $ref: "#/definitions/buttonGroupDefinition" }
       },
       allOf: [
+        {
+          if: { anyOf: [
+            { $ref: "#/definitions/isCustomUnitDefinition" },
+            { $ref: "#/definitions/isCanvasUnitDefinition" }
+          ] },
+          else: { properties: { renderFrameFormat: false } }
+        },
         {
           if: { properties: { plugin: { properties: { type: { const: "composite" } } } } },
           then: { required: ["composite"], properties: {

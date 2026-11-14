@@ -86,6 +86,36 @@ const PANEL_DEFINITION_JSON_SCHEMA = {
                 "type": "string",
                 "pattern": "^[^\\u0000]*$"
               },
+              "telemetry": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "provider": {
+                    "enum": [
+                      "codex",
+                      "claude"
+                    ]
+                  },
+                  "model": {
+                    "type": "string",
+                    "pattern": "^[^\\u0000]*$"
+                  },
+                  "effort": {
+                    "type": "string",
+                    "pattern": "^[^\\u0000]*$"
+                  },
+                  "tokensPerSecond": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1e5
+                  },
+                  "progressPercent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              },
               "badge": {
                 "type": "integer",
                 "minimum": 0,

@@ -33,6 +33,18 @@ function timer(value) {
   integer(value.since);
   if (value.elapsedMs !== void 0) integer(value.elapsedMs);
 }
+function telemetry(value) {
+  if (value === void 0) return;
+  object(value, ["provider", "model", "effort", "tokensPerSecond", "progressPercent"]);
+  if (value.provider !== void 0 && value.provider !== "codex" && value.provider !== "claude") fail();
+  text(value.model);
+  text(value.effort);
+  if (value.tokensPerSecond !== void 0 && (!Number.isFinite(value.tokensPerSecond) || value.tokensPerSecond < 0 || value.tokensPerSecond > 1e5)) fail();
+  if (value.progressPercent !== void 0) {
+    integer(value.progressPercent);
+    if (value.progressPercent > 100) fail();
+  }
+}
 function bool(value) {
   if (value !== void 0 && typeof value !== "boolean") fail();
 }
@@ -71,11 +83,12 @@ function validatePanelModel(value) {
       if (item.slot > 8 || occupiedSlots.has(item.slot)) fail();
       occupiedSlots.add(item.slot);
     }
-    object(item, ["id", "slot", "title", "subtitle", "activity", "state", "stateText", "badge", "timer", "pages"], ["id", "title", "state", "pages"]);
+    object(item, ["id", "slot", "title", "subtitle", "activity", "state", "stateText", "badge", "timer", "telemetry", "pages"], ["id", "title", "state", "pages"]);
     text(item.title, true);
     text(item.subtitle);
     text(item.activity);
     text(item.stateText);
+    telemetry(item.telemetry);
     if (!PLUGIN_UNIT_STATES.includes(item.state)) fail();
     if (item.badge !== void 0) integer(item.badge);
     timer(item.timer);
