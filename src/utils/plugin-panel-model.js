@@ -61,9 +61,10 @@ function unique(entries) {
 }
 function validatePanelModel(value) {
   const model = value;
-  object(model, ["v", "layout", "noticeIcon", "notice", "defaultItem", "staleAfterMs", "pagination", "navigation", "items"], ["v", "items"]);
+  object(model, ["v", "layout", "followPriority", "noticeIcon", "notice", "defaultItem", "staleAfterMs", "pagination", "navigation", "items"], ["v", "items"]);
   if (model.v !== 1) fail("panel-version-unsupported");
   if (model.layout !== void 0 && model.layout !== "sessions") fail();
+  bool(model.followPriority);
   if (model.noticeIcon !== void 0 && !["power", "loading", "link-off", "inbox"].includes(model.noticeIcon)) fail();
   if (model.pagination !== void 0) {
     object(model.pagination, ["offset", "total"], ["offset", "total"]);
@@ -178,7 +179,7 @@ function validatePanelEvent(value) {
   } else if (event.event === "longPress") {
     id(event.item);
     if (!["card", "info"].includes(event.area)) fail("panel-event-invalid");
-  } else fail("panel-event-invalid");
+  } else if (event.event !== "dragEnd") fail("panel-event-invalid");
 }
 function resolvePluginPanelDefinition(value) {
   object(value, ["defaultItemCount", "sessionCatalogMethod", "staleAfterMs", "exampleModel"]);
@@ -195,6 +196,7 @@ function validatePanelDelivery(model, uuid, typeId) {
     if (new TextEncoder().encode(JSON.stringify({ uuid, typeId, ...event })).length > 1024)
       throw new Error("panel-event-size-exceeded");
   };
+  if (model.followPriority !== void 0) check({ event: "dragEnd" });
   for (const item of model.items) {
     check({ event: "select", item: item.id });
     check({ event: "longPress", item: item.id, area: "card" });

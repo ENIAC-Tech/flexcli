@@ -27,6 +27,9 @@ const PANEL_DEFINITION_JSON_SCHEMA = {
         "v": {
           "const": 1
         },
+        "followPriority": {
+          "type": "boolean"
+        },
         "notice": {
           "type": [
             "string",

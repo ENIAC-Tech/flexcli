@@ -73526,9 +73526,10 @@ function unique(entries) {
 }
 function validatePanelModel(value) {
   const model = value;
-  object(model, ["v", "layout", "noticeIcon", "notice", "defaultItem", "staleAfterMs", "pagination", "navigation", "items"], ["v", "items"]);
+  object(model, ["v", "layout", "followPriority", "noticeIcon", "notice", "defaultItem", "staleAfterMs", "pagination", "navigation", "items"], ["v", "items"]);
   if (model.v !== 1) fail("panel-version-unsupported");
   if (model.layout !== void 0 && model.layout !== "sessions") fail();
+  bool(model.followPriority);
   if (model.noticeIcon !== void 0 && !["power", "loading", "link-off", "inbox"].includes(model.noticeIcon)) fail();
   if (model.pagination !== void 0) {
     object(model.pagination, ["offset", "total"], ["offset", "total"]);
@@ -74629,6 +74630,9 @@ var PANEL_DEFINITION_JSON_SCHEMA = {
       "properties": {
         "v": {
           "const": 1
+        },
+        "followPriority": {
+          "type": "boolean"
         },
         "notice": {
           "type": [
