@@ -74378,6 +74378,7 @@ var definitions = {
   chartSeries: chartElement("chart-series-bar", object5({ colorStart: string2, colorEnd: string2, pointSpacing: nonnegative }), chartData),
   chartGauge: chartElement("chart-gauge", object5({
     color: string2,
+    shape: { enum: ["ring", "horizontal"] },
     thresholds: { type: "array", maxItems: 8, items: object5({ max: number, color: string2 }) },
     startDegrees: { ...integer2, maximum: 359 },
     sweepDegrees: { ...integer2, minimum: 1, maximum: 360 },
