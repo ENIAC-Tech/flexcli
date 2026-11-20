@@ -74174,6 +74174,7 @@ var APPEARANCE_SCHEMA_DEFINITIONS = {
         ],
         additionalProperties: true,
         properties: {
+          textAlign: { enum: ["left", "center", "right"] },
           backgroundColor: { type: "string" },
           color: { type: "string" },
           fontFamily: { type: "string" },
@@ -75975,8 +75976,9 @@ ajv.addFormat("utc-time-v1", (value) => {
   return Number.isFinite(date.valueOf()) && date.toISOString().slice(0, 19) === value.slice(0, 19);
 });
 function compilePackageStructureV1(schema, diagnosticDetails = false) {
-  const validate = ajv.compile(schema);
+  let validator;
   return (value) => {
+    const validate = validator ??= ajv.compile(schema);
     if (validate(value)) return [];
     const errors = validate.errors ?? [];
     const unions = errors.filter((error) => error.keyword === "oneOf" || error.keyword === "anyOf");
